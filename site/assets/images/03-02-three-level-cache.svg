@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 470" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="860" height="470" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">三级缓存解决循环依赖：A、B 互相注入的完整剧本</text>
+
+  <!-- lanes -->
+  <rect x="46" y="64" width="180" height="380" rx="12" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="136" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#1D4ED8">缓存区（三个 Map）</text>
+  <g font-size="12" text-anchor="middle">
+    <rect x="62" y="108" width="148" height="56" rx="8" fill="#FFFFFF" stroke="#93C5FD"/>
+    <text x="136" y="130" fill="#1E3A8A" font-weight="700">一级 singletonObjects</text>
+    <text x="136" y="150" fill="#475569">成品 Bean</text>
+    <rect x="62" y="180" width="148" height="56" rx="8" fill="#FFFFFF" stroke="#93C5FD"/>
+    <text x="136" y="202" fill="#1E3A8A" font-weight="700">二级 earlySingleton</text>
+    <text x="136" y="222" fill="#475569">半成品（提前曝光）</text>
+    <rect x="62" y="252" width="148" height="56" rx="8" fill="#FFFFFF" stroke="#93C5FD"/>
+    <text x="136" y="274" fill="#1E3A8A" font-weight="700">三级 singletonFactories</text>
+    <text x="136" y="294" fill="#475569">能造早期引用的工厂</text>
+    <text x="136" y="336" fill="#64748B">为什么要三级？</text>
+    <text x="136" y="356" fill="#64748B">循环依赖 + AOP 时，</text>
+    <text x="136" y="374" fill="#64748B">工厂能"提前生成代理"，</text>
+    <text x="136" y="392" fill="#64748B">且保证全局只建一次</text>
+  </g>
+
+  <!-- steps -->
+  <g font-size="12" fill="#334155">
+    <rect x="260" y="72" width="560" height="52" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="276" y="96" font-weight="700" fill="#1E293B">① 实例化 A（毛坯）→ 把"A 的工厂"挂进三级缓存</text>
+    <text x="276" y="114" fill="#64748B">还没填充属性，但已经可以"给个地址"了</text>
+
+    <rect x="260" y="132" width="560" height="52" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="276" y="156" font-weight="700" fill="#1E293B">② A 填充属性：需要 B → 触发 getBean(B)</text>
+    <text x="276" y="174" fill="#64748B">A 暂停，先去造 B（递归）</text>
+
+    <rect x="260" y="192" width="560" height="52" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="276" y="216" font-weight="700" fill="#1E293B">③ B 实例化 → B 填充属性：需要 A → getBean(A)</text>
+    <text x="276" y="234" fill="#64748B">一二级缓存没有 → 三级缓存有 A 的工厂！</text>
+
+    <rect x="260" y="252" width="560" height="52" rx="10" fill="#FEF3C7" stroke="#D97706"/>
+    <text x="276" y="276" font-weight="700" fill="#B45309">④ 调工厂拿 A 的早期引用（必要时提前建代理）→ 升入二级缓存</text>
+    <text x="276" y="294" fill="#92400E">B 拿到"半成品 A"，B 自己装配完成 → 成品 B 进一级缓存</text>
+
+    <rect x="260" y="312" width="560" height="52" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="276" y="336" font-weight="700" fill="#1E293B">⑤ 回到 A：用 B 成品完成注入 → A 初始化 → 成品 A 进一级缓存</text>
+    <text x="276" y="354" fill="#64748B">清掉二三级缓存的痕迹，从此 getBean(A) 都是同一成品</text>
+
+    <rect x="260" y="372" width="560" height="60" rx="10" fill="#FEE2E2" stroke="#DC2626"/>
+    <text x="276" y="396" font-weight="700" fill="#B91C1C">无解场景：构造器注入循环（实例化都完不成）、prototype、@Async 代理</text>
+    <text x="276" y="416" fill="#991B1B">解药：@Lazy 注入代理壳（首次调用才真查）；根治：拆职责，别让 A↔B 互相抱死</text>
+  </g>
+</svg>

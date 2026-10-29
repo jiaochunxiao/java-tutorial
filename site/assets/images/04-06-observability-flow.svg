@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 380" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="860" height="380" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">可观测三支柱：一次故障的"侦探接力"</text>
+
+  <!-- alert -->
+  <rect x="46" y="140" width="150" height="110" rx="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+  <text x="121" y="172" text-anchor="middle" font-size="14" font-weight="700" fill="#B91C1C">🔔 告警触发</text>
+  <text x="121" y="198" text-anchor="middle" font-size="11" fill="#991B1B">凌晨 2:00</text>
+  <text x="121" y="218" text-anchor="middle" font-size="11" fill="#991B1B">下单 P99 &gt; 1s</text>
+  <text x="121" y="238" text-anchor="middle" font-size="10.5" fill="#B91C1C">持续 5 分钟</text>
+
+  <line x1="196" y1="195" x2="232" y2="195" stroke="#475569" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- metrics -->
+  <rect x="236" y="140" width="170" height="110" rx="12" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="321" y="170" text-anchor="middle" font-size="14" font-weight="700" fill="#1D4ED8">📊 Metrics</text>
+  <text x="321" y="196" text-anchor="middle" font-size="11" fill="#475569">Grafana 大盘</text>
+  <text x="321" y="216" text-anchor="middle" font-size="11.5" fill="#1E40AF" font-weight="700">先答"哪一层慢"</text>
+  <text x="321" y="236" text-anchor="middle" font-size="10.5" fill="#475569">DB 连接池 pending 飙升</text>
+
+  <line x1="406" y1="195" x2="442" y2="195" stroke="#475569" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- tracing -->
+  <rect x="446" y="140" width="170" height="110" rx="12" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+  <text x="531" y="170" text-anchor="middle" font-size="14" font-weight="700" fill="#047857">🔍 Tracing</text>
+  <text x="531" y="196" text-anchor="middle" font-size="11" fill="#475569">链路瀑布图</text>
+  <text x="531" y="216" text-anchor="middle" font-size="11.5" fill="#047852" font-weight="700">再答"哪一环慢"</text>
+  <text x="531" y="236" text-anchor="middle" font-size="10.5" fill="#475569">某条 SQL 占 700ms</text>
+
+  <line x1="616" y1="195" x2="652" y2="195" stroke="#475569" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- logging -->
+  <rect x="656" y="140" width="170" height="110" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+  <text x="741" y="170" text-anchor="middle" font-size="14" font-weight="700" fill="#B45309">📝 Logging</text>
+  <text x="741" y="196" text-anchor="middle" font-size="11" fill="#475569">grep traceId</text>
+  <text x="741" y="216" text-anchor="middle" font-size="11.5" fill="#92400E" font-weight="700">最后答"哪一行错"</text>
+  <text x="741" y="236" text-anchor="middle" font-size="10.5" fill="#475569">连接超时堆栈 + 参数</text>
+
+  <!-- bottom timeline -->
+  <rect x="46" y="286" width="780" height="70" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="62" y="312" font-size="13" font-weight="700" fill="#1E293B">时间线复盘：5 分钟定位，而不是 2 小时盲翻日志</text>
+  <text x="62" y="338" font-size="12" fill="#475569">告警知道"出事了"→ 指标知道"哪层出事"→ 链路知道"哪环出事"→ 日志知道"哪行出事"——四步接力，每步都靠前一步的输出缩小范围。</text>
+  <text x="430" y="368" text-anchor="middle" font-size="11" fill="#64748B">缺任何一支柱，就得靠"人肉猜"补位——这就是为什么上线清单里三支柱必须配齐。</text>
+</svg>

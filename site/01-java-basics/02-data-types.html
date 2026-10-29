@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>变量与数据类型：8 大基本类型排排坐 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item active" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 变量与数据类型：8 大基本类型排排坐</div>
+  <article>
+<h1>变量与数据类型：8 大基本类型排排坐</h1>
+<p>去超市存过包裹吧？扫一下码，&quot;叮&quot;的一声，一个储物柜弹开。你把东西塞进去，小票上打出一个编号。内存的世界和这一模一样：柜子是内存空间，你放的包裹是数据，小票上的编号就是变量名——凭&quot;票&quot;取件，随存随用。</p>
+<p>再打个比方：计算机的内存像一家巨型酒店，几亿个房间一眼望不到头。你不能跟前台说&quot;给我个房间&quot;就完了，前台会反问你三个问题：住几口人（占几个字节）？房号贴谁的名（变量叫什么）？住到什么时候（生命周期）？这三个问题的答案，就是今天的主角——变量与数据类型。</p>
+<p>这一篇是整个 Java 大厦的地基，别看名字朴素，坑却多得像秋天的落叶：整型会溢出、浮点会撒谎、Integer 会&quot;精神分裂&quot;。我们一个一个来排排坐。</p>
+<h2>一、变量的本质：栈上一块贴了标签的内存</h2>
+<p>先看最朴实的一行代码：</p>
+<pre><code class="language-java">int age = 18; // 向 JVM 申请一块 4 字节内存，贴上标签 age，放进值 18
+</code></pre>
+<p>这一行干了三件事，对应变量的三要素：<strong>类型</strong>（int，告诉编译器开多大的房间、按什么格式解读里面的 0 和 1）、<strong>名字</strong>（age，这块内存的标签，以后凭它访问）、<strong>值</strong>（18，实际存放的数据）。</p>
+<p>变量必须先声明再使用，这是 Java 和一些弱类型脚本语言的重要区别——Java 是静态强类型语言，类型在编译期就定死，想临时把字符串塞给 int？编译器一巴掌拍回来。这种&quot;死板&quot;换来的好处是：大量低级错误在编译期就被拦截，而不是上线后在生产环境半夜炸给你看。</p>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：变量命名用&quot;小驼峰&quot;（首单词小写、后续单词首字母大写，如 maxRetryCount），并且要见名知意。别用 a、b、c、temp 这类名字——三个月后回看自己的代码，你会以为公司招了个实习生顶替你写的。</p>
+</blockquote>
+<h2>二、八大基本类型排排坐：四类八种</h2>
+<p><img src="/assets/images/01-02-primitive-types.svg" alt="8 大基本类型按字节大小&quot;排排坐&quot;，方块越大越占内存"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：8 大基本类型按字节大小&quot;排排坐&quot;，方块越大越占内存</p>
+</blockquote>
+<p>Java 把基本类型（primitive type）分为四类八种，念起来像一套组合拳：<strong>整数四兄弟、浮点两姐妹、字符独苗、布尔一根筋</strong>。表格奉上，这张表建议存进手机相册：</p>
+<table>
+<thead>
+<tr>
+<th>分类</th>
+<th>类型</th>
+<th>占用字节</th>
+<th>取值范围</th>
+<th>默认值（成员变量）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>整数</td>
+<td>byte</td>
+<td>1 字节</td>
+<td>-128 ~ 127</td>
+<td>0</td>
+</tr>
+<tr>
+<td>整数</td>
+<td>short</td>
+<td>2 字节</td>
+<td>-32768 ~ 32767</td>
+<td>0</td>
+</tr>
+<tr>
+<td>整数</td>
+<td>int</td>
+<td>4 字节</td>
+<td>约 -21.4 亿 ~ 21.4 亿</td>
+<td>0</td>
+</tr>
+<tr>
+<td>整数</td>
+<td>long</td>
+<td>8 字节</td>
+<td>约 -922 亿亿 ~ 922 亿亿</td>
+<td>0L</td>
+</tr>
+<tr>
+<td>浮点</td>
+<td>float</td>
+<td>4 字节</td>
+<td>约 ±3.4E38，有效数字约 6~7 位</td>
+<td>0.0f</td>
+</tr>
+<tr>
+<td>浮点</td>
+<td>double</td>
+<td>8 字节</td>
+<td>约 ±1.7E308，有效数字约 15 位</td>
+<td>0.0d</td>
+</tr>
+<tr>
+<td>字符</td>
+<td>char</td>
+<td>2 字节</td>
+<td>0 ~ 65535（无符号）</td>
+<td>&#39;\u0000&#39;</td>
+</tr>
+<tr>
+<td>布尔</td>
+<td>boolean</td>
+<td>规范未严格定义</td>
+<td>true / false</td>
+<td>false</td>
+</tr>
+</tbody></table>
+<p>几个高频细节必须交代清楚。</p>
+<p>三个高频细节必须交代清楚。第一，整数字面量默认是 int，小数字面量默认是 double，所以给 long 赋值要加 L、给 float 赋值要加 F，否则编译器直接翻脸。第二，Java 7 之后数字可以用下划线分隔，专治&quot;零数不清&quot;：<code>int salary = 1_000_000;</code>，编译器自动忽略下划线。第三，char 是个&quot;两面派&quot;：它存的是字符，骨子里是个无符号 16 位整数（Unicode 编码），这意味着 <code>&#39;中&#39;</code> 合法，也意味着字符可以参与数学运算。一段代码，后两个细节现场验证：</p>
+<pre><code class="language-java">long population = 140000000000L;             // 不加 L：整数太大，超出 int 范围，编译报错
+float price = 9.9F;                          // 不加 F：9.9 默认是 double，装不进 float，报错
+
+char letter = &#39;A&#39;;                           // char：单引号，只能放一个字符
+System.out.println(letter + 1);              // 66：&#39;A&#39; 的编码是 65，加 1 变整数 66
+System.out.println((char)(letter + 1));      // B：强制转回 char 才按字符解读
+</code></pre>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：默认值只属于成员变量（类里、方法外）。局部变量（方法里）没有默认值，不初始化就使用，编译器直接报错 &quot;variable might not have been initialized&quot;——这是新手第一天就会撞上的墙。</p>
+</blockquote>
+<h2>三、基本类型 vs 引用类型：两套户口</h2>
+<p>八大家族之外，Java 还有一大门派：引用类型（reference type），比如 String、数组和所有对象。两者的核心区别在于<strong>值放在哪</strong>：</p>
+<ul>
+<li>基本类型：变量里直接装着&quot;值本身&quot;，比如 <code>int x = 10;</code>，栈（stack）上那块 4 字节内存里就躺着 10；</li>
+<li>引用类型：变量里装的是&quot;地址&quot;，对象本体住在堆（heap）里，栈上的变量只存了一串&quot;门牌号&quot;。</li>
+</ul>
+<div class="mermaid">flowchart LR
+    subgraph STACK["栈 Stack"]
+        X["int x = 10<br/>直接存值"]
+        ARR["int[] arr<br/>存的是地址 0x7a3f"]
+    end
+    subgraph HEAP["堆 Heap"]
+        A0["arr[0] = 0"]
+        A1["arr[1] = 0"]
+        A2["arr[2] = 0"]
+    end
+    ARR -->|"指向"| A0
+</div>
+<p>这个区别会引发一个著名的现象：赋值时，基本类型拷贝的是值，引用类型拷贝的是地址。把一个数组变量赋给另一个变量，俩变量管的是同一个对象——一处修改，处处可见。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：我带过的学员几乎人人都写过这个方法——<code>swap(int a, int b)</code>，想在方法里交换两个数，结果调用完纹丝不动。原因：Java 只有值传递，传进方法的是变量的&quot;复印件&quot;。基本类型复印的是值，改复印件不影响原件；引用类型复印的是地址，所以方法里改数组元素、改对象字段能生效。搞懂&quot;复印的是什么&quot;，这类题就再也不会错。</p>
+</blockquote>
+<h2>四、类型转换：小房间搬大房间随便，大房间搬小房间要签字</h2>
+<p>不同类型之间能不能混？能，但讲究方向。</p>
+<p><strong>自动类型转换（隐式转换）</strong>：小容量的值放进大容量变量，编译器自动放行，方向是 byte → short → int → long → float → double，另外 char 可以自动转 int。就像从标间搬进总统套房，行李随便放。</p>
+<p><strong>强制类型转换（显式转换）</strong>：大容量往小容量塞，必须手动写 <code>(目标类型)</code>，相当于签字画押：&quot;丢了数据我负责&quot;。比如 <code>(int) 3.99</code> 结果是 3——注意是直接<strong>截断</strong>，不是四舍五入，小数部分直接扔掉。</p>
+<p>强制转换最刺激的地方是<strong>整型溢出</strong>。数据太大装不下会怎样？不是报错，而是&quot;绕一圈从负数重新开始&quot;，因为底层是二进制补码，最高位溢出后符号位被顶成了 1：</p>
+<pre><code class="language-java">int max = Integer.MAX_VALUE;
+System.out.println(max);      // 2147483647
+System.out.println(max + 1); // -2147483648：一个 int 的极限加 1，直接穿越到最小值
+
+byte b = (byte) 130;         // 130 超出 byte 范围
+System.out.println(b);       // -126：高位溢出，&quot;岁月史书&quot;倒转
+</code></pre>
+<p>还有一个隐蔽规则：byte、short、char 参与算术运算时，会先自动提升为 int 再计算，所以两个 byte 相加的结果是 int，想存回 byte 又得强转。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：真实项目事故——文件下载进度计算。文件 3GB，字节数用 int 接收，3GB 超过 21.4 亿直接溢出成负数，进度条当场表演&quot;倒着走&quot;，用户以为电脑中邪。凡是可能超 21 亿的量（大文件字节数、时间戳毫秒值、销量累计），一律用 long。<code>System.currentTimeMillis()</code> 返回 long 就是为了这个。</p>
+</blockquote>
+<h2>五、浮点数的百年老坑：0.1 + 0.2 为什么不等于 0.3</h2>
+<p>先上代码，眼见为实：</p>
+<pre><code class="language-java">System.out.println(0.1 + 0.2);         // 0.30000000000000004
+System.out.println(0.1 + 0.2 == 0.3);  // false，当场社死
+</code></pre>
+<p>为什么？因为计算机只认识二进制。十进制的 0.1 换算成二进制是无限循环小数（0.0001100110011...），就像十进制永远写不准 1/3（0.3333...）一样。double 采用 IEEE 754 标准的科学计数法存储（符号位 + 指数位 + 尾数位），只有 52 位尾数，装不下无限循环，只能截断——于是存进内存的那一刻，0.1 就已经变成了 0.1000000000000000055511151231257827...，误差从出生就带着。</p>
+<p>单次误差小到看不见，但金融系统一天几百万笔累加下来，账目就能差出一顿火锅钱——这不是玩笑，是真实发生过的生产事故。</p>
+<p>正确姿势是 BigDecimal（java.math 包）：</p>
+<pre><code class="language-java">BigDecimal a = new BigDecimal(&quot;0.1&quot;); // 必须用字符串构造！
+BigDecimal b = new BigDecimal(&quot;0.2&quot;);
+System.out.println(a.add(b));                                  // 0.3
+System.out.println(a.add(b).compareTo(new BigDecimal(&quot;0.3&quot;))); // 0：比较大小用 compareTo
+</code></pre>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：涉及金额，一律 BigDecimal（或者用 long 存&quot;分&quot;）。两个铁律：第一，<code>new BigDecimal(0.1)</code> 这种 double 构造方式本身就把误差带进场了，必须用字符串构造或 <code>BigDecimal.valueOf()</code>；第二，BigDecimal 比较大小用 <code>compareTo</code> 而不是 <code>equals</code>——equals 会连精度一起比，1.0 和 1.00 用 equals 是不相等的。</p>
+</blockquote>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：数据库的金额字段要用 DECIMAL 类型，Java 侧对应 BigDecimal，两侧都别用 float/double。浮点类型留给科学计算和图形渲染，那里&quot;差不多&quot;就是精确。</p>
+</blockquote>
+<h2>六、自动装箱拆箱与 Integer 缓存池：面试绞肉机</h2>
+<p>Java 5 之后，基本类型和对应的包装类（wrapper class）可以自动互转：int 变 Integer 叫<strong>装箱（boxing）</strong>，Integer 变 int 叫<strong>拆箱（unboxing）</strong>，编译器在背后帮你调 <code>Integer.valueOf()</code> 和 <code>intValue()</code>。集合泛型只认包装类（<code>List&lt;Integer&gt;</code>），所以装箱拆箱无处不在。</p>
+<p>然后就是那道流传了十几年的经典面试题，请先自己猜答案再看注释：</p>
+<pre><code class="language-java">Integer a = 127;
+Integer b = 127;
+Integer c = 128;
+Integer d = 128;
+System.out.println(a == b); // true：127 在缓存池里，a 和 b 是同一个对象
+System.out.println(c == d); // false：128 超出缓存，new 了两个不同对象，== 比较地址
+System.out.println(c.equals(d)); // true：equals 比较&quot;内容&quot;，这才是正解
+</code></pre>
+<p>玄机在 <code>Integer.valueOf()</code> 的内部实现：Java 对 -128 到 127 之间的整数做了缓存（IntegerCache），这个区间的值装箱时直接返回同一个缓存对象，超出区间才真正新建对象。所以 127 岁月静好，128 当场翻脸。同理，<code>Integer</code> 与 <code>int</code> 用 == 比较时会自动拆箱按值比较，又是另一套结果——一个符号三种命运，怪不得是面试绞肉机。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：包装类型的比较，一律使用 <code>equals()</code>，把 == 留给基本类型。这不是技巧，是纪律。</p>
+</blockquote>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：真实生产事故——同事用 Integer 接收数据库里可为空的字段，另一个接口把它当 int 参与运算，字段为 null 时拆箱直接抛 NullPointerException，系统在凌晨三点集体报警。记住：包装类型可能是 null，用之前判空；三元运算符两个分支一边是 int 一边是 Integer 时会强制拆箱，也是 NPE 高发区。</p>
+</blockquote>
+<h2>七、运算符优先级与短路运算：记不住就加括号</h2>
+<p>运算符优先级不用死记，记住一条祖训：<strong>记不住就加括号</strong>。括号永远是最高的优先级，还能让读代码的人感谢你。大致顺序心里有个数即可：</p>
+<table>
+<thead>
+<tr>
+<th>优先级（高到低）</th>
+<th>运算符举例</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>()、[]、.</td>
+<td>括号、下标、成员访问</td>
+</tr>
+<tr>
+<td>2</td>
+<td>!、~、++、--、强转</td>
+<td>一元运算符</td>
+</tr>
+<tr>
+<td>3</td>
+<td>*、/、%</td>
+<td>乘除模</td>
+</tr>
+<tr>
+<td>4</td>
+<td>+、-</td>
+<td>加减</td>
+</tr>
+<tr>
+<td>5</td>
+<td>&lt;&lt;、&gt;&gt;、&gt;&gt;&gt;</td>
+<td>移位</td>
+</tr>
+<tr>
+<td>6</td>
+<td>&lt;、&gt;、&lt;=、&gt;=、instanceof</td>
+<td>大小比较</td>
+</tr>
+<tr>
+<td>7</td>
+<td>==、!=</td>
+<td>相等比较</td>
+</tr>
+<tr>
+<td>8</td>
+<td>&amp;&amp;、||</td>
+<td>逻辑与、逻辑或</td>
+</tr>
+<tr>
+<td>9</td>
+<td>? :</td>
+<td>三元</td>
+</tr>
+<tr>
+<td>10</td>
+<td>=、+=、*= 等</td>
+<td>赋值</td>
+</tr>
+</tbody></table>
+<p>比优先级更重要的是<strong>短路运算</strong>。<code>&amp;&amp;</code> 和 <code>||</code> 是&quot;聪明&quot;的逻辑运算符：<code>&amp;&amp;</code> 左边是 false 时右边直接不执行（结果已注定是 false）；<code>||</code> 左边是 true 时右边也不执行。而 <code>&amp;</code> 和 <code>|</code> 是&quot;老实人&quot;，两边都会执行，同时还身兼位运算的职位。</p>
+<pre><code class="language-java">String s = null;
+// 正确顺序：先判空再取长度，&amp;&amp; 前半段 false 后直接短路，后半段根本不执行
+if (s != null &amp;&amp; s.length() &gt; 0) {
+    System.out.println(&quot;非空字符串&quot;);
+}
+// 如果把顺序反过来：s.length() 先执行，null 调方法，当场 NullPointerException
+</code></pre>
+<p>顺嘴一提 <code>i++</code> 与 <code>++i</code>：前者先用后加（表达式的值是旧值），后者先加后用（表达式的值是新值）。单行使用时两者没区别，混进表达式里就是考题。宁可拆成两行，也别炫技。说到这里插播一个企业级的真实观察：代码评审（Code Review）中被打回最多的，往往不是什么高深架构问题，而是 <code>=</code> 与 <code>==</code> 写混、<code>&amp;&amp;</code> 顺序写反、<code>i++</code> 放错位置这类&quot;小学题&quot;。越基础的地方翻车，排查成本越高——因为没人怀疑那里会出错。所以别嫌这些细节琐碎，它们是程序员的&quot;握筷姿势&quot;。</p>
+<h2>八、final 关键字：给变量贴上&quot;一次性封印&quot;</h2>
+<p>final 修饰变量，意味着它只能被赋值一次，赋完就&quot;封印&quot;，再改就编译报错：</p>
+<pre><code class="language-java">final double TAX_RATE = 0.13; // 常量：命名全大写，单词间下划线分隔
+// TAX_RATE = 0.15;           // 编译报错：cannot assign a value to final variable
+
+final int[] arr = {1, 2, 3};
+arr[0] = 99;    // 合法：final 锁的是&quot;地址&quot;，不是对象内容
+// arr = new int[5]; // 报错：不能换一个新数组
+</code></pre>
+<p>这里藏着 final 最容易被误解的一点：final 修饰<strong>基本类型</strong>，值不可变；修饰<strong>引用类型</strong>，锁的是引用（地址）不可变，对象内部的内容照样能改。就像你把行李箱的提取牌塑封了——牌子不能换，但箱子里装什么你随便。</p>
+<p>常量在工程里的意义是&quot;单一事实来源&quot;：税率、重试次数、超时时间这类魔法数字（magic number），写成 <code>static final</code> 常量集中管理，改配置只改一处，而不是在两千行代码里玩&quot;大家来找茬&quot;。</p>
+<h2>本篇小结</h2>
+<ul>
+<li>变量三要素：类型、名字、值；本质是一块贴了标签、约定了格式的内存；</li>
+<li>八大基本类型：整数 byte/short/int/long，浮点 float/double，字符 char，布尔 boolean；整数默认 int、小数默认 double，long 加 L、float 加 F；</li>
+<li>基本类型栈上存值，引用类型栈上存地址、对象在堆上；</li>
+<li>自动转换方向&quot;小到大&quot;，强制转换&quot;大到小&quot;会截断或溢出，溢出不报错只变值；</li>
+<li>0.1 + 0.2 != 0.3 的根因是二进制无法精确表示多数十进制小数，金额必须用 BigDecimal（字符串构造）；</li>
+<li>Integer 缓存池 -128~127：包装类型比较一律 equals；</li>
+<li>&amp;&amp; 和 || 有短路特性，判空逻辑的顺序就是生死线；</li>
+<li>final 锁基本类型的值、锁引用类型的地址，常量命名全大写。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>不看资料，默写 8 大基本类型的名称、占用字节数，并说明哪些类型有默认值、哪些场景下没有。</li>
+<li>解释下面代码的输出并说明原因：<code>Integer a = 128; Integer b = 128; System.out.println(a == b); System.out.println(a.equals(b));</code></li>
+<li>为什么 <code>0.1 + 0.2 == 0.3</code> 返回 false？如果让你设计一个记账模块，你会怎么存储金额？</li>
+<li>【编程题】编写 BMI 计算器：用 Scanner 输入身高（米）和体重（千克），用 double 计算 BMI = 体重 / (身高 × 身高)，用 <code>System.out.printf</code> 保留 1 位小数输出，并按区间输出建议（低于 18.5 偏瘦、18.5<del>23.9 正常、24</del>27.9 偏胖、28 及以上肥胖——顺便预习下一篇的 if-else）。</li>
+<li>【读代码题】预测以下代码的输出结果并亲手验证，解释每一行为什么：<code>final int[] nums = {1, 2, 3}; nums[0] = 100; System.out.println(nums[0]);</code> 以及 <code>char c = &#39;a&#39;; System.out.println(c + 1); System.out.println((char) (c + 1));</code></li>
+</ol>
+<p>下一篇预告：有了数据和运算，程序还只是个&quot;计算器&quot;，下一步要让它学会&quot;自己做选择、自己转圈圈&quot;——下一篇《流程控制与数组：程序的岔路口》，if、switch、三大循环全员登场，还有那个让新手闻风丧胆的 ArrayIndexOutOfBoundsException。我们岔路口见！</p>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/01-java-basics/01-hello-java.html"><span>← 上一篇</span><b>Hello Java：从一杯咖啡到一个世界</b></a><a class="pn" href="/01-java-basics/03-control-flow-arrays.html"><span>下一篇 →</span><b>流程控制与数组：程序的岔路口</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

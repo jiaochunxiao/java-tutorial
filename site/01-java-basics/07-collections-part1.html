@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>集合框架（上）：容器选型地图 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item active" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 集合框架（上）：容器选型地图</div>
+  <article>
+<h1>集合框架（上）：容器选型地图</h1>
+<p>同学们，想象一下这个场景：你开了家奶茶店，一开始用一张固定格子的小柜子放原料——10 个格子，编号 0 到 9。生意好了想加第 11 种原料？对不起，柜子是焊死的，要么整个柜子扔了换大的，要么别加。更抓狂的是，&quot;把珍珠挪到椰果前面&quot;这种操作，你得把中间的格子挨个搬一遍。这就是数组：定容、查快、挪死人。</p>
+<p>Java 集合框架（Java Collections Framework，JCF）就是给这个柜子来了一场工业革命：能自动扩容的柜子（ArrayList）、前后都能进出的传送带（Deque）、自动去重的分拣机（Set）、按键取货的智能货架（Map）、还能自动排序的强迫症货架（TreeMap）。今天这节课，咱们不抠源码（源码大餐留到下一篇炖 HashMap），先把<strong>选型地图</strong>画明白——什么时候掏哪个容器，三秒内做决定。</p>
+<p>为啥先讲选型？因为我带过太多学员，代码写出来全是 ArrayList 一把梭，存键值对也用两个 ArrayList 对着下标配对（我亲眼见过，血压当场拉满）。工具箱里十几种工具，只会用锤子，看啥都是钉子——这不行。选型是内功，源码是招式，内功先练。</p>
+<h2>一、为什么需要集合：数组的&quot;七大罪&quot;</h2>
+<p>数组的罪状，我给数落数落，大家边听边对照自己写过的代码：</p>
+<ol>
+<li><strong>长度固定</strong>：生下来多长就多长，容量不够只能 <code>Arrays.copyOf</code> 手动搬家；</li>
+<li><strong>没有现成的增删方法</strong>：中间插一个元素、删一个元素，全得自己写搬移逻辑；</li>
+<li><strong>无法动态感知元素个数</strong>：只能靠额外维护一个 size 变量，<code>array.length</code> 是容量不是元素数，一不留神就遍历出一堆 null；</li>
+<li><strong>只能存同一种类型且不支持键值对</strong>：想存&quot;学号→学生&quot;的映射？自己开两个数组手动对齐下标吧，对不齐就是 bug 温床；</li>
+<li><strong>不支持去重、排序等通用算法</strong>：想去重？自己写双层循环；想排序？自己写快排（当然 <code>Arrays.sort</code> 能救一点）；</li>
+<li><strong>类型不安全（配合协变的历史包袱）</strong>：<code>Object[]</code> 啥都能塞，取出来强转，<code>ClassCastException</code> 在暗处冷笑；</li>
+<li><strong>API 贫瘠</strong>：contains、indexOf、遍历删除……统统没有，全都手搓。</li>
+</ol>
+<p>集合框架就是官方对这七宗罪的总回应：一套统一的接口（<code>Collection</code>、<code>Map</code>、<code>Iterator</code>）+ 一堆各怀绝技的实现类 + 配套的算法工具类（<code>Collections</code>、<code>Arrays</code>）。<strong>用了集合，你的关注点从&quot;怎么存&quot;升级到&quot;存什么、怎么取&quot;</strong>——这才是工程师该操心的层次。</p>
+<h2>二、集合框架总览：先看地图再上路</h2>
+<p><img src="/assets/images/01-07-collections-overview.svg" alt="Collection 与 Map 两大展厅，先认门牌再挑实现"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：Collection 与 Map 两大展厅，先认门牌再挑实现</p>
+</blockquote>
+<p>整个 JCF 就两棵树：<code>Collection</code> 一族（装单个元素）和 <code>Map</code> 一族（装键值对）。注意 <strong>Map 不继承 Collection</strong>，它是独立门派，这个面试也爱考。</p>
+<div class="mermaid">classDiagram
+    class Iterable {
+        <<interface>>
+        +iterator() Iterator
+    }
+    class Collection {
+        <<interface>>
+        +add(E) boolean
+        +remove(Object) boolean
+        +size() int
+        +contains(Object) boolean
+    }
+    class List {
+        <<interface>>
+        +get(int) E
+        +add(int, E) void
+    }
+    class Set {
+        <<interface>>
+    }
+    class Queue {
+        <<interface>>
+        +offer(E) boolean
+        +poll() E
+    }
+    class Deque {
+        <<interface>>
+    }
+    class ArrayList
+    class LinkedList
+    class Vector
+    class HashSet
+    class LinkedHashSet
+    class TreeSet
+    class ArrayDeque
+    class PriorityQueue
+    class Map {
+        <<interface>>
+        +put(K, V) V
+        +get(Object) V
+        +keySet() Set
+    }
+    class HashMap
+    class LinkedHashMap
+    class TreeMap
+    class Hashtable
+
+    Iterable <|-- Collection
+    Collection <|-- List
+    Collection <|-- Set
+    Collection <|-- Queue
+    Queue <|-- Deque
+    List <|.. ArrayList
+    List <|.. LinkedList
+    List <|.. Vector
+    Set <|.. HashSet
+    Set <|.. LinkedHashSet
+    Set <|.. TreeSet
+    Queue <|.. PriorityQueue
+    Deque <|.. ArrayDeque
+    LinkedList ..|> Deque
+    Map <|.. HashMap
+    Map <|.. LinkedHashMap
+    Map <|.. TreeMap
+    Map <|.. Hashtable
+    LinkedHashSet ..|> LinkedHashMap : 内部持有Map
+    TreeSet ..|> TreeMap : 内部持有Map
+</div>
+<p>看图记住三个冷知识：<code>LinkedList</code> 是双面间谍（既实现 List 又实现 Deque）；<code>LinkedHashSet</code> 和 <code>TreeSet</code> 底层其实是穿着 Set 马甲的 <code>LinkedHashMap</code>/<code>TreeMap</code>；<code>Vector</code> 和 <code>Hashtable</code> 是 JDK 1.0 的远古化石，方法全加 <code>synchronized</code>，性能拉胯，新代码别碰。</p>
+<h2>三、List 三兄弟：ArrayList、LinkedList 与老古董 Vector</h2>
+<p>List 的特点是<strong>有序（按插入顺序）、可重复、可按索引访问</strong>。三兄弟的底细先上对比表：</p>
+<table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>ArrayList</th>
+<th>LinkedList</th>
+<th>Vector</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>底层数据结构</td>
+<td>动态数组 <code>Object[]</code></td>
+<td>双向链表</td>
+<td>动态数组</td>
+</tr>
+<tr>
+<td>扩容</td>
+<td>1.5 倍（<code>oldCap + oldCap&gt;&gt;1</code>）</td>
+<td>无需扩容（链表随意长）</td>
+<td>2 倍</td>
+</tr>
+<tr>
+<td>随机访问 get(i)</td>
+<td>O(1)，数组的看家本领</td>
+<td>O(n)，得从头数</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>中间插入/删除</td>
+<td>O(n)，要搬移后面元素</td>
+<td>O(1) 改指针，<strong>但定位要先 O(n)</strong></td>
+<td>O(n)</td>
+</tr>
+<tr>
+<td>线程安全</td>
+<td>否</td>
+<td>否</td>
+<td>是（全方法 synchronized）</td>
+</tr>
+<tr>
+<td>额外开销</td>
+<td>尾部预留空间</td>
+<td>每个节点两个指针 + 对象头</td>
+<td>同 ArrayList 外加锁开销</td>
+</tr>
+<tr>
+<td>使用建议</td>
+<td>默认首选</td>
+<td>极少使用（当 Deque 用还行）</td>
+<td>别用，要线程安全上并发包</td>
+</tr>
+</tbody></table>
+<p>重点来了，我要纠正一个<strong>流传甚广的误导性说法</strong>：&quot;LinkedList 查询慢、增删快，所以频繁增删用 LinkedList。&quot;这话半对半错，错的那半坑了无数人。</p>
+<p>正确的理解是：LinkedList 的<strong>增删动作本身是 O(1)</strong>（改两个指针嘛），但增删前你得先<strong>找到那个位置</strong>，定位是 O(n)。所以&quot;在中间某处插入&quot;这个完整操作，LinkedList 是 O(n) 定位 + O(1) 插入 = O(n)；ArrayList 是 O(1) 定位 + O(n) 搬移 = O(n)。<strong>打平了！</strong> 甚至因为数组内存连续、缓存友好（CPU 缓存行一次加载一片，链表节点散落堆里各处，缓存老 miss），实际跑起来 ArrayList 的搬移经常比 LinkedList 的指针跳转还快。</p>
+<p>再加上链表每个节点的指针开销和 GC 压力，结论很反直觉但很明确：<strong>几乎一切场景 ArrayList 都不输，绝大多数场景它更优</strong>。LinkedList 真正的用武之地是当 Deque（队列/栈）用。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：&quot;LinkedList 增删快&quot;是不完整的表述。它的增删快仅限于<strong>已经拿到节点位置</strong>的场景；完整操作要算上 O(n) 的定位成本。日常开发无脑 ArrayList 即可，有 benchmark 数据再换不迟。</p>
+</blockquote>
+<h3>ArrayList 使用速览</h3>
+<pre><code class="language-java">List&lt;String&gt; list = new ArrayList&lt;&gt;();     // 接口类型声明，实现随时可换
+list.add(&quot;Java&quot;);                          // 尾插，平均 O(1)
+list.add(0, &quot;Hello&quot;);                      // 指定下标插入，后面元素整体后移
+list.get(1);                               // 随机访问 O(1)
+list.set(1, &quot;Java17&quot;);                     // 替换
+list.remove(0);                            // 按下标删除，后面元素前移
+list.contains(&quot;Java&quot;);                     // 查存在，O(n) 线性查找
+list.size();                               // 元素个数（不是容量！）
+
+// 已知大概规模时，给初始容量，减少扩容拷贝
+List&lt;Integer&gt; nums = new ArrayList&lt;&gt;(1024);  // 预期存 1000 个，直接给 1024
+
+// 一把梭的工厂方法（JDK 9+），返回不可变集合
+List&lt;String&gt; immutable = List.of(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;);
+</code></pre>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：声明集合一律用接口类型（<code>List&lt;String&gt; list = new ArrayList&lt;&gt;()</code>），别用 <code>ArrayList&lt;String&gt; list</code>。哪天想换实现，只改 new 那一行；用具体类型声明，调用处可能偷偷用了 ArrayList 特有方法，换实现就是全文件大手术。</p>
+</blockquote>
+<h2>四、Set 三兄弟：去重分拣机的三种性格</h2>
+<p>Set 的特点是<strong>不重复、无索引</strong>。三兄弟性格迥异：</p>
+<table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>HashSet</th>
+<th>LinkedHashSet</th>
+<th>TreeSet</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>底层实现</td>
+<td>HashMap（值当 key 存）</td>
+<td>LinkedHashMap</td>
+<td>TreeMap（红黑树）</td>
+</tr>
+<tr>
+<td>元素顺序</td>
+<td>无序（哈希散布）</td>
+<td>插入顺序</td>
+<td>排序顺序（自然序或 Comparator）</td>
+</tr>
+<tr>
+<td>增删查性能</td>
+<td>O(1) 平均</td>
+<td>O(1) 平均</td>
+<td>O(log n)</td>
+</tr>
+<tr>
+<td>是否允许 null</td>
+<td>允许 1 个</td>
+<td>允许 1 个</td>
+<td>不允许（比较会 NPE）</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>通用去重</td>
+<td>去重且保持插入序</td>
+<td>去重且要排序/范围查找</td>
+</tr>
+</tbody></table>
+<h3>去重的原理：hashCode + equals 联合办案</h3>
+<p>HashSet 判断&quot;重复&quot;不是靠 <code>==</code>，而是<strong>先比 <code>hashCode</code>，再比 <code>equals</code></strong>，像安检先看证件号（hashCode 快筛），对不上的直接放行不同的；证件号撞了再人脸比对（equals 精确确认）。这里埋个伏笔：如果只重写 <code>equals</code> 不重写 <code>hashCode</code>，两个&quot;逻辑相等&quot;的对象 hashCode 不同，安检直接判为不同的人——去重失效。这个坑咱们在第八节现场爆破演示。</p>
+<pre><code class="language-java">Set&lt;String&gt; set = new HashSet&lt;&gt;();
+set.add(&quot;Java&quot;);
+set.add(&quot;Java&quot;);              // 第二次 add 返回 false，没塞进去
+System.out.println(set.size()); // 1
+
+// 经典操作：用 HashSet 给 List 去重（不保序）
+List&lt;Integer&gt; dup = Arrays.asList(1, 2, 2, 3, 3, 3);
+Set&lt;Integer&gt; unique = new HashSet&lt;&gt;(dup);   // [1, 2, 3]，顺序不保证
+
+// 保序去重：LinkedHashSet
+Set&lt;Integer&gt; ordered = new LinkedHashSet&lt;&gt;(dup);  // [1, 2, 3]，保持出现顺序
+
+// 排序去重：TreeSet
+Set&lt;Integer&gt; sorted = new TreeSet&lt;&gt;(dup);    // [1, 2, 3]，天然升序
+SortedSet&lt;Integer&gt; top = ((TreeSet&lt;Integer&gt;) sorted).headSet(3); // [1, 2]：比 3 小的
+</code></pre>
+<h2>五、Queue 与 Deque：排队的艺术</h2>
+<p>队列（Queue）是先进先出 FIFO，双端队列（Deque）是两端都能进出。这家族在业务里的出场率被严重低估：消息缓冲、任务池、限流滑动窗口、撤销/重做栈……到处是它们。</p>
+<p><strong>第一件事：把 Stack 扔出工具箱。</strong> <code>java.util.Stack</code> 继承自 Vector，它最大的罪是<strong>你不但能 push/pop，还能用父类的 add/insert 干预中间元素</strong>——一个&quot;栈&quot;能被从腰上捅一刀，这就不是栈了。替代品是 <code>ArrayDeque</code>：基于循环数组，两端操作均摊 O(1)，且严格只暴露双端操作。下面是它的两副面孔：</p>
+<pre><code class="language-java">// 当栈（LIFO）用：后进先出
+Deque&lt;String&gt; stack = new ArrayDeque&lt;&gt;();
+stack.push(&quot;第一页&quot;);       // push = addFirst
+stack.push(&quot;第二页&quot;);
+stack.pop();                // pop = removeFirst，弹出&quot;第二页&quot; —— 浏览器后退就这么实现
+stack.peek();               // 看栈顶不弹出
+
+// 当队列（FIFO）用：先进先出
+Queue&lt;String&gt; queue = new ArrayDeque&lt;&gt;();
+queue.offer(&quot;用户A&quot;);       // offer = addLast，队尾进
+queue.offer(&quot;用户B&quot;);
+queue.poll();               // poll = removeFirst，队头出，取走&quot;用户A&quot; —— 排队叫号
+
+// PriorityQueue：优先队列，出队顺序看优先级而不是先来后到
+Queue&lt;Integer&gt; pq = new PriorityQueue&lt;&gt;();       // 默认小顶堆，最小的先出
+pq.addAll(Arrays.asList(5, 1, 3));
+pq.poll();   // 1 —— 不是最早进队的 5！
+pq.poll();   // 3
+// 大顶堆：传比较器
+Queue&lt;Integer&gt; maxHeap = new PriorityQueue&lt;&gt;(Comparator.reverseOrder());
+</code></pre>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：学员用 <code>ArrayDeque</code> 存任务，某处误调了 <code>add(index, element)</code>——编译报错才想起来 ArrayDeque 根本没有这个方法（Deque 接口没这 API），他悻悻换成 LinkedList 才编译过。但另一组学员用 Stack 时，<code>stack.add(0, &quot;x&quot;)</code> 从中间插数据，编译器一声不吭，上线后任务顺序错乱查了半天。这就是 Stack 的设计缺陷：它没有&quot;防呆&quot;。工具选不对，编译器都救不了你。</p>
+</blockquote>
+<p>另外注意 <code>remove()</code>/<code>poll()</code> 的区别：队列空时 <code>remove()</code> 抛 <code>NoSuchElementException</code>，<code>poll()</code> 返回 null。生产代码里 <code>offer/poll/peek</code> 这套&quot;温柔型&quot;API 更好控场。</p>
+<h2>六、Map 四巨头：键值对的四个门派</h2>
+<p>Map 存键值对，key 不重复，一个 key 对应一个 value。四个门派对比：</p>
+<table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>HashMap</th>
+<th>LinkedHashMap</th>
+<th>TreeMap</th>
+<th>Hashtable</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>底层结构</td>
+<td>数组+链表+红黑树</td>
+<td>HashMap + 双向链表串序</td>
+<td>红黑树</td>
+<td>数组+链表（老结构）</td>
+</tr>
+<tr>
+<td>顺序</td>
+<td>无序</td>
+<td>插入序或访问序（LRU 神器）</td>
+<td>按 key 排序</td>
+<td>无序</td>
+</tr>
+<tr>
+<td>null key/value</td>
+<td>都允许（key 一个）</td>
+<td>都允许</td>
+<td>都不允许</td>
+<td>都不允许（直接 NPE）</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>O(1) 平均</td>
+<td>O(1) 平均 + 链表维护小开销</td>
+<td>O(log n)</td>
+<td>O(1) 但有锁开销</td>
+</tr>
+<tr>
+<td>线程安全</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+<td>是（全表锁，性能差）</td>
+</tr>
+<tr>
+<td>使用建议</td>
+<td>默认首选</td>
+<td>要保序/做 LRU 缓存</td>
+<td>要排序/范围查询</td>
+<td>别用，换 ConcurrentHashMap</td>
+</tr>
+</tbody></table>
+<pre><code class="language-java">Map&lt;String, Integer&gt; scores = new HashMap&lt;&gt;();
+scores.put(&quot;张三&quot;, 90);
+scores.put(&quot;李四&quot;, 85);
+scores.getOrDefault(&quot;王五&quot;, 0);        // 不存在给默认值，防 null
+scores.putIfAbsent(&quot;赵六&quot;, 70);        // 没有才放
+scores.merge(&quot;张三&quot;, 5, Integer::sum); // 统计计数的神器：95 = 90 + 5
+scores.computeIfAbsent(&quot;分组A&quot;, k -&gt; new ArrayList&lt;&gt;()).add(&quot;张三&quot;); // 多值映射
+
+// 统计词频一行流
+Map&lt;String, Integer&gt; freq = new HashMap&lt;&gt;();
+for (String w : words) {
+    freq.merge(w, 1, Integer::sum);   // 出现一次加 1，比 get+put 判空优雅一百倍
+}
+
+// LRU 缓存：访问序 LinkedHashMap，三行造一个
+Map&lt;String, String&gt; lru = new LinkedHashMap&lt;&gt;(16, 0.75f, true) {
+    @Override
+    protected boolean removeEldestEntry(Map.Entry&lt;String, String&gt; eldest) {
+        return size() &gt; 100;          // 超过 100 个自动淘汰最久未访问的
+    }
+};
+</code></pre>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：<code>Hashtable</code> 是 1996 年的遗产，连命名都没驼峰（Hashtable 而不是 HashTable）。要线程安全用 <code>ConcurrentHashMap</code>（下篇细讲）；它 null 都不让存的设计也不贴合现代开发习惯。面试问&quot;HashMap 和 Hashtable 区别&quot;，答完表面差异，补一句&quot;实际开发中两者都不该直接用 Hashtable&quot;，才显得真懂。</p>
+</blockquote>
+<h2>七、遍历方式盘点与&quot;删除悬案&quot;</h2>
+<p>集合遍历姿势不少，以 List 和 Map 为例：</p>
+<pre><code class="language-java">List&lt;String&gt; list = new ArrayList&lt;&gt;(Arrays.asList(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;));
+
+// 姿势一：普通 for + 下标 —— 只有 List 支持，需要下标时用
+for (int i = 0; i &lt; list.size(); i++) { ... }
+
+// 姿势二：增强 for —— 最常用，底层是 iterator
+for (String s : list) { ... }
+
+// 姿势三：显式迭代器 —— 需要边遍历边删除时用
+for (Iterator&lt;String&gt; it = list.iterator(); it.hasNext(); ) {
+    if (it.next().startsWith(&quot;a&quot;)) {
+        it.remove();                  // 唯一安全的删除方式
+    }
+}
+
+// 姿势四：forEach + Lambda（JDK 8+）
+list.forEach(s -&gt; System.out.println(s));
+
+// 姿势五：removeIf —— 删除条件元素的最佳姿势（JDK 8+）
+list.removeIf(s -&gt; s.startsWith(&quot;a&quot;)); // 内部就是迭代器删除，安全又简洁
+
+// Map 的遍历（entrySet 最高效，一次拿到 k 和 v）
+Map&lt;String, Integer&gt; map = new HashMap&lt;&gt;();
+for (Map.Entry&lt;String, Integer&gt; e : map.entrySet()) {
+    System.out.println(e.getKey() + &quot; = &quot; + e.getValue());
+}
+map.forEach((k, v) -&gt; System.out.println(k + &quot; = &quot; + v));  // Lambda 版
+</code></pre>
+<p><strong>遍历悬案：ConcurrentModificationException（CME）。</strong> 先看案发现场：</p>
+<pre><code class="language-java">// 翻车现场：增强 for 里直接调 list.remove
+for (String s : list) {
+    if (&quot;b&quot;.equals(s)) {
+        list.remove(s);   // 抛 ConcurrentModificationException！
+    }
+}
+</code></pre>
+<p>原理：ArrayList 内部有个 <code>modCount</code> 修改计数器，迭代器创建时记住一个快照 <code>expectedModCount</code>，每次 <code>next()</code> 都检查两者是否相等，<code>list.remove</code> 只加了 modCount 没同步 expectedModCount，一检查对不上，立刻抛 CME——这是** fail-fast（快速失败）机制**，故意让你早点炸，而不是让数据悄悄错乱。名字带 Concurrent，但和并发没必然关系，单线程遍历时删也一样炸（有趣的是删倒数第二个元素有时不炸，那是 <code>next()</code> 检查时机漏过去了，纯属侥幸，别赌）。</p>
+<p>正确姿势三选一：<code>iterator.remove()</code>、<code>removeIf(predicate)</code>（内部就是前者，最推荐）、或者 <code>CopyOnWriteArrayList</code>（并发场景专用，读多写少才划算）。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：遍历中删除元素只认三招——迭代器的 <code>remove()</code>、<code>removeIf()</code>、并发容器。其余姿势（增强 for 里 remove、forEach 里 remove、stream 里动源集合）都是 CME 预定席。</p>
+</blockquote>
+<h2>八、equals 与 hashCode：去重世界的契约</h2>
+<p>前面 Set、Map 都靠 <code>hashCode</code> + <code>equals</code> 认人，现在正式立规矩。Java 官方约定的核心条款：</p>
+<ol>
+<li><strong>相等对象必须有相等的 hashCode</strong>（硬性要求）；</li>
+<li>equals 满足自反、对称、传递、一致，且 <code>x.equals(null)</code> 返回 false；</li>
+<li>反过来<strong>不要求</strong>：hashCode 相等的对象不一定 equals（哈希碰撞，正常现象）。</li>
+</ol>
+<p>为什么&quot;重写 equals 必须重写 hashCode&quot;？上爆破现场：</p>
+<pre><code class="language-java">class Student {
+    private String id;
+    Student(String id) { this.id = id; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Student)) return false;
+        return id.equals(((Student) o).id);   // 按 id 判等，逻辑合理
+    }
+    // 故意不重写 hashCode！
+}
+
+Set&lt;Student&gt; set = new HashSet&lt;&gt;();
+set.add(new Student(&quot;S001&quot;));
+set.contains(new Student(&quot;S001&quot;));  // false！明明&quot;相等&quot;，却说不包含
+set.add(new Student(&quot;S001&quot;));       // 成功塞入！Set 竟然出现俩&quot;S001&quot;
+</code></pre>
+<p>原因：两个 Student 的 equals 说相等，但 Object 继承来的 hashCode 是基于对象内存地址的，几乎必然不同。HashSet 先看 hashCode 定桶——两个对象 hash 不同，进了<strong>不同的桶</strong>，<code>equals</code> 根本没机会被调用，直接判定&quot;不是同一个人&quot;。于是去重失效、contains 失灵，整套哈希体系对你这个类形同虚设。</p>
+<p>修复也很简单，现代写法一行工具搞定：</p>
+<pre><code class="language-java">@Override
+public int hashCode() { return Objects.hash(id); }   // JDK 7+ 的 Objects.hash
+
+// 或者直接让 IDE / Record 完成全部工作：
+record Student(String id) {}   // JDK 16+：equals/hashCode/toString 全自动
+</code></pre>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：某学员把 <code>Student</code> 存进 <code>HashMap&lt;Student, Score&gt;</code> 后，顺手 <code>student.setName(&quot;新名字&quot;)</code> 改了参与 hashCode 计算的字段，之后再 <code>map.get(student)</code> 永远返回 null——hash 变了，进错桶了。教训：<strong>参与 equals/hashCode 的字段应当不可变</strong>，或者对象放进哈希容器后绝不动这些字段。这也是 String 被设计成不可变的深层原因之一，上一篇的伏笔在这接上了。</p>
+</blockquote>
+<h2>九、选型决策树：三秒做决定</h2>
+<p>学了这么多容器，实战中最重要的是&quot;掏哪个&quot;。我画了张决策树，照着走：</p>
+<div class="mermaid">flowchart TD
+    A[要存什么?] -->|键值对| B{需要排序/范围查找?}
+    A -->|单个元素| C{需要去重?}
+    B -->|是| D[TreeMap]
+    B -->|否| E{需要保序或做LRU?}
+    E -->|是| F[LinkedHashMap]
+    E -->|否| G[HashMap 默认首选]
+    C -->|是| H{需要排序?}
+    H -->|是| I[TreeSet]
+    H -->|否| J{需要保持插入序?}
+    J -->|是| K[LinkedHashSet]
+    J -->|否| L[HashSet]
+    C -->|否| M{FIFO排队或LIFO压栈?}
+    M -->|是| N[ArrayDeque 当队列或栈用]
+    M -->|按优先级出队| O[PriorityQueue]
+    M -->|否| P[ArrayList 默认首选]
+    Q[多线程共享? 都换成 ConcurrentHashMap / CopyOnWriteArrayList / BlockingQueue]
+    G -.-> Q
+    P -.-> Q
+    N -.-> Q
+</div>
+<p>口诀版：<strong>键值排序 TreeMap，去重排序 TreeSet，保序 Linked 前缀，其余无脑 Hash；单列排队 ArrayDeque，默认兜底 ArrayList；有线程安全问题，并发包里找替换。</strong></p>
+<h2>本篇小结</h2>
+<ul>
+<li>数组七宗罪：定容、无增删 API、无 size、无键值对、无算法、不安全、API 贫瘠，集合框架逐条反杀；</li>
+<li>Map 与 Collection 是两个独立体系，Map 不继承 Collection；</li>
+<li>ArrayList 几乎全面胜过 LinkedList：&quot;链表增删快&quot;漏了 O(n) 定位成本，加上缓存不友好，日常无脑选 ArrayList；</li>
+<li>Set 去重靠 hashCode 定桶 + equals 精判；LinkedHashSet 保序，TreeSet 排序；</li>
+<li>Stack 已过时，用 ArrayDeque 替代（可当栈也可当队列）；优先级出队用 PriorityQueue；</li>
+<li>HashMap 无序、LinkedHashMap 保序可做 LRU、TreeMap 排序支持范围查询、Hashtable 是化石别用；</li>
+<li>遍历中删除只认 iterator.remove()、removeIf()、并发容器三招，其他姿势等着吃 CME；</li>
+<li>重写 equals 必须重写 hashCode，且参与判等的字段放进哈希容器后不要动。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li><strong>概念题</strong>：为什么说&quot;LinkedList 增删快&quot;是误导性说法？请从&quot;定位成本 + 操作成本&quot;的完整视角解释，并说明 ArrayList 为何常常反超。</li>
+<li><strong>分析题</strong>：HashSet 如何判断两个元素&quot;重复&quot;？如果只重写 <code>equals</code> 不重写 <code>hashCode</code>，把对象放入 HashSet 会发生什么？请描述内部执行路径。</li>
+<li><strong>辨析题</strong>：<code>ArrayDeque</code> 相比 <code>Stack</code> 有哪些优势？为什么说 Stack 的设计是&quot;防不住呆&quot;的？</li>
+<li><strong>编程题</strong>：实现一个简易 LRU 缓存类 <code>LruCache&lt;K, V&gt;</code>，支持 <code>put</code>/<code>get</code>/<code>size</code> 上限淘汰最久未访问的条目。要求用 <code>LinkedHashMap(accessOrder=true)</code> 实现，并尝试再手写一个&quot;HashMap + 双向链表&quot;版本对比。</li>
+<li><strong>编程题（附加）</strong>：给定一个 List<String>，用三种安全方式删除其中所有长度小于 3 的字符串（迭代器、removeIf、Stream 过滤生成新集合），并思考哪种在什么场景下最合适。</li>
+</ol>
+<p>下一篇预告：<strong>《集合框架（下）：HashMap 源码炖着吃》</strong>——选型地图有了，该下后厨看后勺了。ArrayList 的懒加载、HashMap 的扰动函数、树化阈值为什么偏偏是 8，咱们拿着源码小火慢炖，一篇给你炖烂糊。</p>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/01-java-basics/06-string-deep-dive.html"><span>← 上一篇</span><b>String 全解析：最熟悉的陌生人</b></a><a class="pn" href="/01-java-basics/08-collections-part2.html"><span>下一篇 →</span><b>集合框架（下）：HashMap 源码炖着吃</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

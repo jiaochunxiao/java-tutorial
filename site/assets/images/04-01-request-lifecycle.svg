@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 460" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#DC2626"/>
+    </marker>
+  </defs>
+  <rect width="860" height="460" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">一次 HTTP 请求的分层穿行（含异常"抄近道"返回）</text>
+
+  <!-- client -->
+  <rect x="60" y="66" width="200" height="48" rx="10" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+  <text x="160" y="90" text-anchor="middle" font-size="13" font-weight="700" fill="#6D28D9">前端 / Postman / curl</text>
+  <text x="160" y="108" text-anchor="middle" font-size="11" fill="#6D28D9">POST /api/books</text>
+  <line x1="160" y1="114" x2="160" y2="146" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="210" y="136" font-size="11" fill="#475569">JSON 请求体（DTO）</text>
+
+  <!-- Controller -->
+  <rect x="60" y="150" width="600" height="58" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="80" y="176" font-size="14" font-weight="700" fill="#1D4ED8">Controller 接口层</text>
+  <text x="80" y="196" font-size="11" fill="#475569">@Valid 校验参数 → 调 Service → 包装 Result 返回（禁止写业务逻辑）</text>
+  <rect x="470" y="160" width="174" height="38" rx="8" fill="#FFFFFF" stroke="#93C5FD"/>
+  <text x="557" y="184" text-anchor="middle" font-size="11" fill="#1E40AF">校验失败？→ 400</text>
+  <line x1="160" y1="208" x2="160" y2="236" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- Service -->
+  <rect x="60" y="240" width="600" height="58" rx="10" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+  <text x="80" y="266" font-size="14" font-weight="700" fill="#047857">Service 业务层</text>
+  <text x="80" y="286" font-size="11" fill="#475569">业务规则 + 事务边界；ISBN 重复？→ throw new BizException(40901)</text>
+  <rect x="470" y="250" width="174" height="38" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+  <text x="557" y="274" text-anchor="middle" font-size="11" fill="#047852">业务异常从这里抛</text>
+  <line x1="160" y1="298" x2="160" y2="326" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- Repository -->
+  <rect x="60" y="330" width="600" height="58" rx="10" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+  <text x="80" y="356" font-size="14" font-weight="700" fill="#B45309">Repository 数据层</text>
+  <text x="80" y="376" font-size="11" fill="#475569">MyBatis-Plus 只管存取（不懂业务）：SELECT / INSERT / 逻辑删除</text>
+  <rect x="470" y="340" width="174" height="38" rx="8" fill="#FFFFFF" stroke="#FCD34D"/>
+  <text x="557" y="364" text-anchor="middle" font-size="11" fill="#92400E">SQL / 连接池在这层</text>
+
+  <!-- response path -->
+  <path d="M 300 388 L 300 420 L 520 420" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#arr)"/>
+  <rect x="524" y="406" width="300" height="28" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="674" y="425" text-anchor="middle" font-size="11" fill="#047852">原路向上返回：Result.ok(data) / 201 Created</text>
+
+  <!-- exception bypass -->
+  <path d="M 660 388 Q 760 388 760 300 L 760 179 Q 760 168 746 168" fill="none" stroke="#DC2626" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrR)"/>
+  <rect x="680" y="60" width="170" height="64" rx="10" fill="#FEE2E2" stroke="#FCA5A5"/>
+  <text x="765" y="82" text-anchor="middle" font-size="12" font-weight="700" fill="#B91C1C">异常不抄原路！</text>
+  <text x="765" y="102" text-anchor="middle" font-size="10.5" fill="#991B1B">@RestControllerAdvice</text>
+  <text x="765" y="118" text-anchor="middle" font-size="10.5" fill="#991B1B">全局兜底 → 统一 Result</text>
+  <text x="430" y="456" text-anchor="middle" font-size="12" fill="#64748B">分层依赖铁律：只能向下依赖（Controller→Service→Repository），异常统一交给全局处理器转格式。</text>
+</svg>

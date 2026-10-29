@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spring Boot 自动配置：@SpringBootApplication 拆解 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item active" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / Spring Boot 自动配置：@SpringBootApplication 拆解</div>
+  <article>
+<h1>Spring Boot 自动配置：@SpringBootApplication 拆解</h1>
+<p>Spring Boot 的口号是&quot;约定优于配置&quot;（Convention over Configuration）。但很多同学用了两年 Spring Boot，仍然把它当&quot;魔法&quot;：加一个 <code>spring-boot-starter-data-redis</code> 依赖，RedisTemplate 就能注入了；引入 web starter，Tomcat 就起来了——<strong>凭什么？</strong></p>
+<p>今天这篇把 <code>@SpringBootApplication</code> 这个注解拆开揉碎，讲清楚自动配置（Auto-Configuration）的完整链条，最后<strong>手写一个自定义 Starter</strong>。写完你会发现：Spring Boot 没有魔法，只有&quot;配置的搬运 + 条件的判断&quot;，而这一切的基础，就是咱们前两篇学的 IoC 容器和条件装配。</p>
+<hr>
+<h2>一、先忆苦思甜：Spring 的&quot;配置地狱&quot;时代</h2>
+<p>用原始 Spring MVC 搭一个 Hello World web 项目，你需要：web.xml（DispatcherServlet 配置）、applicationContext.xml（组件扫描、数据源、事务管理器）、spring-mvc.xml（注解驱动、视图解析器）……三个 XML 两百行起步。而且这些配置<strong>每个项目长得都差不多</strong>——千篇一律的东西，凭什么让人类手写？</p>
+<p>更要命的是依赖管理：Spring 5.2.x 配 Hibernate 哪个版本？Jackson 和 Spring 版本兼不兼容？版本冲突的 <code>NoSuchMethodError</code> 能调一天。</p>
+<p>Spring Boot 对这两件事的回答：</p>
+<table>
+<thead>
+<tr>
+<th>痛点</th>
+<th>解法</th>
+<th>对应特性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>依赖版本管理</td>
+<td>官方帮你把兼容的版本搭配好，一揽子引入</td>
+<td><strong>Starter 起步依赖</strong></td>
+</tr>
+<tr>
+<td>千篇一律的配置</td>
+<td>按你引入的依赖，自动注册所需的 Bean</td>
+<td><strong>自动配置</strong></td>
+</tr>
+<tr>
+<td>部署麻烦（装 Tomcat、打包 war）</td>
+<td>服务器内置进 jar</td>
+<td><strong>内嵌容器</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>二、@SpringBootApplication：一个注解三个分身</h2>
+<p>每个 Spring Boot 项目的 main 类上都顶着这个注解，它其实是三个注解的<strong>组合注解</strong>：</p>
+<pre><code class="language-java">@SpringBootConfiguration      // ① 本质是 @Configuration：声明&quot;本类是配置类&quot;
+@EnableAutoConfiguration      // ② 核心中的核心：开启自动配置
+@ComponentScan(excludeFilters = { ... })   // ③ 组件扫描：扫本类所在包及子包
+public @interface SpringBootApplication { ... }
+</code></pre>
+<h3>2.1 @SpringBootConfiguration = @Configuration</h3>
+<p>它就是 <code>@Configuration</code> 的&quot;马甲&quot;（多一层语义标识）。回忆 IoC 篇：@Configuration 类是容器的配置源头，@Bean 方法会注册进容器。main 类自己就是一个配置类——这就是为什么你直接在 main 类里写 @Bean 也能生效。</p>
+<h3>2.2 @ComponentScan：主类为什么要放根包？</h3>
+<p>扫描范围默认是 <strong>main 类所在的包及其子包</strong>。这解释了一个新手经典事故：把 <code>Application.java</code> 放在 <code>com.demo</code> 包，Service 放在 <code>com.util</code> 包（不是子包）→ 扫不到 → 启动报 <code>NoSuchBeanDefinitionException</code>。<strong>约定：main 类永远放根包。</strong></p>
+<h3>2.3 @EnableAutoConfiguration：自动配置的入口</h3>
+<pre><code class="language-java">@AutoConfigurationPackage       // 把 main 类所在包注册进去，供后续扫描（如 JPA 的实体扫描）
+@Import(AutoConfigurationImportSelector.class)   // 关键：导入&quot;配置选择器&quot;
+public @interface EnableAutoConfiguration { ... }
+</code></pre>
+<p><code>@Import</code> 导入的 <code>AutoConfigurationImportSelector</code> 才是真正干活的：它读取一份&quot;候选自动配置类清单&quot;，筛选后批量注册进容器。</p>
+<hr>
+<h2>三、自动配置的加载机制：一份清单的前世今生</h2>
+<p><img src="/assets/images/03-04-autoconfig-funnel.svg" alt="140+ 候选配置类经三道条件漏斗，流出的才真正生效"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：140+ 候选配置类经三道条件漏斗，流出的才真正生效</p>
+</blockquote>
+<p>先把整条链路画成图，后面逐段拆解：</p>
+<div class="mermaid">flowchart LR
+    A["@EnableAutoConfiguration"] -->|"@Import 引入"| B["AutoConfigurationImportSelector"]
+    B -->|"读取清单文件"| C["META-INF/spring/<br/>...AutoConfiguration.imports<br/>（140+ 候选配置类）"]
+    C -->|"逐个过筛"| D["条件注解 @ConditionalOnXxx<br/>classpath / 容器 / 配置"]
+    D -->|"满足"| E["注册 BeanDefinition<br/>@ConditionalOnMissingBean<br/>用户配置优先让位"]
+    D -->|"不满足"| F["跳过，等于没加载"]
+    E --> G["application.yml<br/>@ConfigurationProperties 绑定参数"]
+    style F fill:#ffcdd2
+    style E fill:#e8f5e9
+</div>
+<h3>3.1 清单从哪来</h3>
+<p>Spring Boot 官方把 140+ 个自动配置类（<code>XxxAutoConfiguration</code>）提前写好，每个类对应一个技术组件（Redis、MyBatis、MVC、数据源……），<strong>以&quot;清单文件&quot;的形式登记在每个 jar 包里</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>清单文件位置</th>
+<th>机制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Boot 2.7 之前</td>
+<td>各 jar 的 <code>META-INF/spring.factories</code> 的 <code>EnableAutoConfiguration</code> 键</td>
+<td>SpringFactoriesLoader 加载</td>
+</tr>
+<tr>
+<td>Boot 2.7 / 3.x</td>
+<td>各 jar 的 <code>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</code>（每行一个全类名）</td>
+<td>新的 ImportCandidates 加载</td>
+</tr>
+</tbody></table>
+<pre><code class="language-properties"># META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports（示意）
+org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
+</code></pre>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>注意版本坑</strong>：自己写 Starter 或面试时，2.7 前后这个差异是高频考点。Boot 3 彻底移除了对 spring.factories 中自动配置的支持（spring.factories 还活着，但只用于别的扩展点如 Listener）。</p>
+</blockquote>
+<h3>3.2 加载≠生效：条件注解把门</h3>
+<p>140+ 个配置类如果全量生效，你的没有数据库的项目启动就崩了。秘诀是<strong>每个自动配置类头上都挂着条件注解（@Conditional 系）</strong>——条件不满足，这个配置类直接跳过，等于没加载：</p>
+<table>
+<thead>
+<tr>
+<th>注解</th>
+<th>条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>@ConditionalOnClass</td>
+<td>classpath 里有指定类（引了依赖才有它）</td>
+</tr>
+<tr>
+<td>@ConditionalOnMissingBean</td>
+<td>容器里<strong>没有</strong>指定 Bean（用户没自己配）</td>
+</tr>
+<tr>
+<td>@ConditionalOnBean</td>
+<td>容器里有指定 Bean</td>
+</tr>
+<tr>
+<td>@ConditionalOnProperty</td>
+<td>配置文件里有指定属性（matchIfMissing 控制缺省行为）</td>
+</tr>
+<tr>
+<td>@ConditionalOnWebApplication</td>
+<td>是 Web 应用（有 Servlet）</td>
+</tr>
+<tr>
+<td>@ConditionalOnClass + @AutoConfiguration</td>
+<td>Boot 3 风格的组合声明</td>
+</tr>
+</tbody></table>
+<h3>3.3 走读一个真实例子：RedisAutoConfiguration（简化版源码）</h3>
+<pre><code class="language-java">@AutoConfiguration                                     // Boot 3 写法（2.x 是 @Configuration + 清单注册）
+@ConditionalOnClass(RedisOperations.class)            // ① 类路径有 Redis 相关类（说明你引了 redis 依赖）
+@EnableConfigurationProperties(RedisProperties.class) // ② 绑定 spring.redis.* 配置
+public class RedisAutoConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean(name = &quot;redisTemplate&quot;) // ③ 容器没有 redisTemplate 才创建——用户配置优先！
+    public RedisTemplate&lt;Object, Object&gt; redisTemplate(
+            RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate&lt;Object, Object&gt; template = new RedisTemplate&lt;&gt;();
+        template.setConnectionFactory(redisConnectionFactory);
+        return template;
+    }
+    // ... stringRedisTemplate 同理
+}
+</code></pre>
+<p>三步套路清晰可见：<strong>classpath 有这个类（说明你用了这技术）→ 绑定专属配置类 → 容器没有就注册默认 Bean</strong>。@ConditionalOnMissingBean 是&quot;谦让机制&quot;：<strong>只要你自己定义了同类型 Bean，自动配置就让位</strong>。这就是&quot;约定优于配置&quot;的另一面——&quot;配置可覆盖约定&quot;。</p>
+<h3>3.4 配置绑定：@ConfigurationProperties</h3>
+<p>自动配置类的参数从哪来？从 application.yml，通过属性绑定类：</p>
+<pre><code class="language-java">@ConfigurationProperties(prefix = &quot;spring.redis&quot;)     // 绑定 spring.redis.* 前缀
+public class RedisProperties {
+    private String host = &quot;localhost&quot;;                // 默认值：不配置也有兜底
+    private int port = 6379;
+    private String password;
+    private int database = 0;
+    // getter/setter
+}
+
+# application.yml（松散绑定：驼峰/中划线/下划线都认）
+spring:
+  redis:
+    host: 192.168.1.100
+    port: 6380
+    password: secret123
+</code></pre>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：自动配置链条一句话总结——<strong>@EnableAutoConfiguration 触发加载清单文件里所有候选配置类 → 条件注解筛选（classpath 有什么、你配了什么、容器缺什么）→ 满足条件的注册 Bean → 参数从 application.yml 经 @ConfigurationProperties 绑定</strong>。所谓&quot;自动&quot;，是&quot;提前写好 + 运行时按条件挑&quot;。</p>
+</blockquote>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：一个真实翻车现场——同事给项目加了 <code>spring-boot-starter-data-redis</code> 依赖&quot;只是想用它的工具类&quot;，结果 RedisAutoConfiguration 条件满足，启动时容器尝试连接 localhost:6379 的 Redis。测试环境没装 Redis，应用启动直接报 <code>Unable to connect to Redis</code>。<strong>依赖不是随便加的</strong>：starter 一进 classpath，自动配置就可能&quot;认领&quot;它。同理，明明配了数据源却连不上、明明没写 DataSource 的 Bean 却有连接池——先想想是不是哪个依赖&quot;惹&quot;来的自动配置（<code>debug: true</code> 看报告）。</p>
+</blockquote>
+<h3>3.5 调试神器：自动配置报告</h3>
+<p>想知道&quot;为什么我的配置没生效&quot;？开箱即用的诊断开关：</p>
+<pre><code class="language-yaml"># application.yml 加一行，启动时打印条件评估报告
+debug: true
+</code></pre>
+<p>启动日志会出现两段：<strong>Positive matches</strong>（生效的配置及原因）和 <strong>Negative matches</strong>（没生效的及原因）。排查&quot;Bean 咋没注进来&quot;的第一工具。</p>
+<hr>
+<h2>四、Starter：自动配置的&quot;快递包装&quot;</h2>
+<p>理解了自动配置，Starter 就没什么神秘的了——<strong>Starter = 依赖打包（jar 只做依赖聚合）+ 自动配置类</strong>。</p>
+<p>以 <code>spring-boot-starter-data-redis</code> 为例，它是个几乎&quot;空&quot;的 jar：pom 里声明了 spring-data-redis、lettuce 等依赖；真正干活的是 <code>spring-boot-autoconfigure</code> jar 里的 RedisAutoConfiguration。<strong>&quot;引依赖即生效&quot; = Maven 传递依赖把 jar 带进来（classpath 有类了）+ 清单文件把配置类登记了（条件满足）。</strong></p>
+<p>命名规范：官方 <code>spring-boot-starter-xxx</code>，第三方 <code>xxx-spring-boot-starter</code>（如 mybatis-spring-boot-starter）。</p>
+<hr>
+<h2>五、实战：手写 sms-spring-boot-starter</h2>
+<p>目标：别的项目引入我们的 starter + 在 yml 里配几个参数，就获得一个可直接注入的 <code>SmsClient</code>。全流程 4 个文件：</p>
+<h3>5.1 工程结构</h3>
+<pre><code>sms-spring-boot-starter/
+├── pom.xml                                 # 依赖 spring-boot-autoconfigure
+└── src/main/java/com/demo/sms/
+    ├── SmsClient.java                      # 核心功能类（发给谁、内容、渠道）
+    ├── SmsProperties.java                  # 配置绑定类
+    └── SmsAutoConfiguration.java           # 自动配置类
+└── src/main/resources/META-INF/spring/
+    └── org.springframework.boot.autoconfigure.AutoConfiguration.imports   # 清单
+</code></pre>
+<h3>5.2 核心代码</h3>
+<pre><code class="language-java">// ① 配置绑定：用户在 yml 里怎么配
+@ConfigurationProperties(prefix = &quot;sms&quot;)            // 对应 sms.access-key=xxx
+public class SmsProperties {
+    private String accessKey;                       // 云服务商 AK
+    private String secretKey;
+    private String signName = &quot;DemoApp&quot;;            // 默认签名
+    private boolean enabled = false;                // 总开关
+    // getter/setter 省略不得省——绑定靠它们
+}
+
+// ② 核心功能：一个普通的类，什么都不知道，只认构造参数（纯业务组件）
+public class SmsClient {
+    private final SmsProperties properties;
+
+    public SmsClient(SmsProperties properties) { this.properties = properties; }
+
+    public void send(String phone, String content) {
+        if (!properties.isEnabled()) {
+            System.out.println(&quot;[SMS MOCK] 发送至 &quot; + phone + &quot;：&quot; + content);   // 演示用，生产别这么打日志
+            return;
+        }
+        // 真实实现：调云服务 API（省略 HTTP 细节）
+        System.out.println(&quot;[SMS] 通过 &quot; + properties.getSignName() + &quot; 发送：&quot; + content);
+    }
+}
+
+// ③ 自动配置：把上面俩组装起来（容器里的&quot;装配说明书&quot;）
+@AutoConfiguration
+@ConditionalOnClass(SmsClient.class)                        // classpath 有 SmsClient（本包被引入）
+@ConditionalOnProperty(prefix = &quot;sms&quot;, name = &quot;enabled&quot;,    // sms.enabled 不存在也装配（havingValue 匹配缺省）
+        havingValue = &quot;true&quot;, matchIfMissing = true)
+@EnableConfigurationProperties(SmsProperties.class)         // 注册配置绑定
+public class SmsAutoConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean                               // 用户自己定义了 SmsClient 就让位
+    public SmsClient smsClient(SmsProperties properties) {
+        return new SmsClient(properties);
+    }
+}
+</code></pre>
+<pre><code class="language-properties"># ④ 清单文件 META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+com.demo.sms.SmsAutoConfiguration
+</code></pre>
+<h3>5.3 使用方体验</h3>
+<pre><code class="language-xml">&lt;!-- 业务项目 pom.xml --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.demo&lt;/groupId&gt;
+    &lt;artifactId&gt;sms-spring-boot-starter&lt;/artifactId&gt;
+    &lt;version&gt;1.0.0&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+<pre><code class="language-yaml">sms:
+  access-key: AK123
+  secret-key: SK456
+  sign-name: 购物App
+  enabled: true
+</code></pre>
+<pre><code class="language-java">@Service
+public class RegisterService {
+    private final SmsClient smsClient;                 // 直接注入，开箱即用
+    public RegisterService(SmsClient smsClient) { this.smsClient = smsClient; }
+
+    public void register(String phone) {
+        // ...注册逻辑
+        smsClient.send(phone, &quot;验证码 6666&quot;);
+    }
+}
+</code></pre>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：写 Starter 的三个职业习惯：① 核心功能类与自动配置分离（自动配置只做&quot;装配&quot;，不含业务），方便非 Spring 环境复用；② 一律加 @ConditionalOnMissingBean，给使用者留覆盖余地；③ 提供 <code>additional-spring-configuration-metadata.json</code>，让 IDE 能提示你自己的配置项（meta/ 目录下）——这是&quot;官方感&quot;和&quot;业余感&quot;的分水岭。</p>
+</blockquote>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>Spring Boot 三大支柱：Starter 依赖打包、自动配置、内嵌容器；解决的是&quot;配置地狱 + 依赖地狱 + 部署麻烦&quot;；</li>
+<li>@SpringBootApplication = @SpringBootConfiguration（配置类）+ @ComponentScan（扫主类包及子包，主类必须放根包）+ @EnableAutoConfiguration（开启自动配置）；</li>
+<li>自动配置链条：@Import(AutoConfigurationImportSelector) → 读清单文件（2.7 前 spring.factories / 之后 AutoConfiguration.imports）→ 条件注解筛选 → 注册 Bean；</li>
+<li>条件注解是&quot;智能&quot;的来源：@ConditionalOnClass（引了依赖才生效）、@ConditionalOnMissingBean（用户配置优先）、@ConditionalOnProperty（开关可控）；</li>
+<li>配置参数经 @ConfigurationProperties 绑定，支持默认值与松散命名；</li>
+<li>debug: true 打印正/负匹配报告，是排查&quot;配置没生效&quot;的第一工具；</li>
+<li>手写 Starter 四件套：功能类 + Properties + AutoConfiguration + 清单文件。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）@SpringBootApplication 里三个注解各干什么？为什么 main 类必须放根包？</li>
+<li>（概念）引入 starter-data-redis 后 RedisTemplate 能注入，用&quot;依赖→清单→条件→Bean&quot;四步复述完整链条。</li>
+<li>（概念）@ConditionalOnMissingBean 体现了什么设计哲学？如果去掉它会有什么问题？</li>
+<li>（动手）在任意 Spring Boot 项目开启 <code>debug: true</code>，观察 Negative matches 里随便一个配置类，解释它没生效的原因。</li>
+<li>（动手·进阶）照第五节动手写一个 <code>email-spring-boot-starter</code>（EmailClient + EmailProperties + AutoConfiguration + imports 清单），在另一个项目引入并验证：① 正常发送；② 自己定义一个 EmailClient Bean 验证自动配置让位；③ sms.enabled=false 时验证 Bean 不注册。</li>
+</ol>
+<blockquote>
+<p>下一篇预告：《Spring Boot 启动流程：从 main 到 Tomcat 就绪》——<code>SpringApplication.run()</code> 这一行代码背后藏着一次&quot;火箭发射&quot;：十步检查单、事件广播、容器刷新、内嵌 Tomcat 点火。全程走读一遍，从此启动报错你不再两眼一抹黑。</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/03-spring-boot/03-spring-aop.html"><span>← 上一篇</span><b>Spring AOP：动态代理的魔法</b></a><a class="pn" href="/03-spring-boot/05-boot-startup.html"><span>下一篇 →</span><b>Spring Boot 启动流程：从 main 到 Tomcat 就绪</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

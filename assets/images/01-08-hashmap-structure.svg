@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 440" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#DC2626"/>
+    </marker>
+  </defs>
+  <rect width="860" height="440" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">HashMap 内部结构（JDK 8）：数组 + 链表 + 红黑树</text>
+  <text x="430" y="60" text-anchor="middle" font-size="12" fill="#64748B">定位公式：index = (n - 1) &amp; hash —— 容量 n 是 2 的幂，位运算等价于取模</text>
+
+  <!-- bucket array -->
+  <g>
+    <rect x="80" y="96" width="90" height="40" rx="6" fill="#FFFFFF" stroke="#CBD5E1"/><text x="125" y="121" text-anchor="middle" font-size="12" fill="#94A3B8">bucket[0]</text>
+    <rect x="80" y="142" width="90" height="40" rx="6" fill="#FFFFFF" stroke="#CBD5E1"/><text x="125" y="167" text-anchor="middle" font-size="12" fill="#94A3B8">bucket[1]</text>
+    <rect x="80" y="188" width="90" height="40" rx="6" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/><text x="125" y="213" text-anchor="middle" font-size="12" font-weight="700" fill="#92400E">bucket[2] ★</text>
+    <rect x="80" y="234" width="90" height="40" rx="6" fill="#FFFFFF" stroke="#CBD5E1"/><text x="125" y="259" text-anchor="middle" font-size="12" fill="#94A3B8">bucket[3]</text>
+    <rect x="80" y="280" width="90" height="40" rx="6" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/><text x="125" y="305" text-anchor="middle" font-size="12" font-weight="700" fill="#B91C1C">bucket[5] ★</text>
+    <rect x="80" y="326" width="90" height="40" rx="6" fill="#FFFFFF" stroke="#CBD5E1"/><text x="125" y="351" text-anchor="middle" font-size="12" fill="#94A3B8">... 共 16 个</text>
+  </g>
+  <text x="125" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="#1E293B">Node[] table</text>
+
+  <!-- linked list chain on bucket[2] -->
+  <g text-anchor="middle">
+    <rect x="230" y="192" width="130" height="34" rx="7" fill="#FFFFFF" stroke="#FCD34D"/>
+    <text x="295" y="214" font-size="12" fill="#92400E">K1 → K2</text>
+    <line x1="360" y1="209" x2="392" y2="209" stroke="#475569" stroke-width="1.6" marker-end="url(#arr)"/>
+    <rect x="396" y="192" width="130" height="34" rx="7" fill="#FFFFFF" stroke="#FCD34D"/>
+    <text x="461" y="214" font-size="12" fill="#92400E">K2 → K3</text>
+    <line x1="526" y1="209" x2="558" y2="209" stroke="#475569" stroke-width="1.6" marker-end="url(#arr)"/>
+    <rect x="562" y="192" width="130" height="34" rx="7" fill="#FFFFFF" stroke="#FCD34D"/>
+    <text x="627" y="214" font-size="12" fill="#92400E">K3 → null</text>
+  </g>
+  <text x="440" y="180" text-anchor="middle" font-size="11" fill="#92400E">哈希冲突：链表尾插（JDK 8 改尾插防死循环）</text>
+  <text x="708" y="206" font-size="11" fill="#B91C1C">链长 ≥ 8 且表长 ≥ 64</text>
+  <text x="708" y="222" font-size="11" fill="#64748B">才会树化</text>
+
+  <!-- red black tree on bucket[5] -->
+  <g>
+    <line x1="262" y1="316" x2="238" y2="348" stroke="#B91C1C" stroke-width="1.8"/>
+    <line x1="262" y1="316" x2="286" y2="348" stroke="#1E293B" stroke-width="1.8"/>
+    <line x1="238" y1="348" x2="222" y2="378" stroke="#1E293B" stroke-width="1.8"/>
+    <line x1="238" y1="348" x2="256" y2="378" stroke="#B91C1C" stroke-width="1.8"/>
+    <circle cx="262" cy="312" r="13" fill="#DC2626"/><text x="262" y="316" text-anchor="middle" font-size="9" fill="#FFF">K9</text>
+    <circle cx="238" cy="348" r="13" fill="#1E293B"/><text x="238" y="352" text-anchor="middle" font-size="9" fill="#FFF">K4</text>
+    <circle cx="286" cy="348" r="13" fill="#B91C1C"/><text x="286" y="352" text-anchor="middle" font-size="9" fill="#FFF">K7</text>
+    <circle cx="222" cy="378" r="13" fill="#B91C1C"/><text x="222" y="382" text-anchor="middle" font-size="9" fill="#FFF">K3</text>
+    <circle cx="256" cy="378" r="13" fill="#1E293B"/><text x="256" y="382" text-anchor="middle" font-size="9" fill="#FFF">K6</text>
+  </g>
+  <text x="330" y="330" font-size="11" fill="#B91C1C">树化成红黑树：查询从 O(n) → O(log n)</text>
+  <text x="330" y="346" font-size="11" fill="#64748B">节点减到 6 退化回链表（避免频繁互转）</text>
+
+  <!-- bottom flow -->
+  <rect x="80" y="398" width="760" height="34" rx="8" fill="#EFF6FF" stroke="#93C5FD"/>
+  <text x="96" y="420" font-size="12" fill="#1E40AF">put 流程：算 hash → 定位桶 → 桶空直接放 / 冲突则链表尾插或进树 → size 超过 12(16×0.75) 触发 2 倍扩容重排</text>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 380" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="860" height="380" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">启动流程时间轴：造火箭 → 点火发射</text>
+
+  <!-- phase groups -->
+  <rect x="46" y="70" width="240" height="230" rx="12" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="166" y="96" text-anchor="middle" font-size="14" font-weight="700" fill="#1D4ED8">构造阶段 · new SpringApplication</text>
+  <g font-size="12" fill="#1E3A8A">
+    <text x="66" y="126">① 推断应用类型</text>
+    <text x="80" y="144" font-size="11" fill="#475569">SERVLET / REACTIVE / NONE</text>
+    <text x="66" y="172">② 加载 ApplicationContextInitializer</text>
+    <text x="66" y="200">③ 加载 ApplicationListener</text>
+    <text x="80" y="218" font-size="11" fill="#475569">②③ 都来自 spring.factories</text>
+    <text x="66" y="248" font-size="11" fill="#B45309">监听器先入场，才能听到后面</text>
+    <text x="80" y="266" font-size="11" fill="#B45309">整个发射过程的"广播"</text>
+    <text x="166" y="292" text-anchor="middle" font-size="11" fill="#64748B">（此时容器还没影儿）</text>
+  </g>
+
+  <rect x="310" y="70" width="504" height="230" rx="12" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+  <text x="562" y="96" text-anchor="middle" font-size="14" font-weight="700" fill="#047857">run() 阶段 · 十步发射检查单</text>
+  <g font-size="12" fill="#065F46">
+    <text x="330" y="126">④ RunListeners.starting 广播   ⑤ 准备 Environment（配置全就位）</text>
+    <text x="330" y="154">⑥ 打 Banner   ⑦ 创建 ApplicationContext（按类型选实现）</text>
+    <text x="330" y="182">⑧ prepareContext：主类注册为配置类</text>
+    <text x="330" y="214" font-weight="700" fill="#B45309">⑨ refreshContext ★核心：</text>
+    <text x="344" y="234" font-size="11" fill="#92400E">解析 BeanDefinition（图纸）→ 注册 BeanPostProcessor（关卡）</text>
+    <text x="344" y="252" font-size="11" fill="#92400E">onRefresh 启动内嵌 Tomcat → 批量实例化单例（施工）</text>
+    <text x="330" y="282">⑩ 回调 Runner（缓存预热等）→ 广播 ready → 发射成功</text>
+  </g>
+
+  <!-- rocket -->
+  <g transform="translate(96,318)">
+    <path d="M0,44 Q0,10 14,0 Q28,10 28,44 Z" fill="#F87171"/>
+    <rect x="4" y="44" width="20" height="10" fill="#FCA5A5"/>
+    <path d="M0,54 L-8,66 L4,60 Z M28,54 L36,66 L24,60 Z" fill="#F87171"/>
+    <circle cx="14" cy="26" r="5" fill="#FFFFFF" opacity="0.85"/>
+    <path d="M8,66 L14,92 L20,66 Z" fill="#FDBA74"/>
+  </g>
+  <text x="470" y="340" text-anchor="middle" font-size="13" fill="#475569">卡在哪步看哪步：报 ClassNotFound 看 ⑨ 依赖；端口占用在 Tomcat 启动；</text>
+  <text x="470" y="362" text-anchor="middle" font-size="13" fill="#475569">NoSuchBeanDefinition 在单例实例化（debug: true 看条件报告）。</text>
+</svg>

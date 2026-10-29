@@ -1,0 +1,13 @@
+{
+  "name": "java-tutorial",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Java 从零到专家 · 36 篇博客教程系列（含 SVG 图解与静态站点）",
+  "scripts": {
+    "build": "node build-site.js",
+    "serve": "npm run build && cd site && python3 -m http.server 8080"
+  },
+  "dependencies": {
+    "marked": "^12.0.0"
+  }
+}

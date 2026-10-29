@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spring IoC：控制反转的前世今生 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item active" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / Spring IoC：控制反转的前世今生</div>
+  <article>
+<h1>Spring IoC：控制反转的前世今生</h1>
+<p>从这篇开始，咱们进入 Spring Boot 原理篇。开篇先回答一个扎心的问题：<strong>为什么 Spring 能统治 Java 企业开发二十年？</strong></p>
+<p>不是因为注解好用，也不是因为文档全。是因为它从根本上解决了一个软件工程的核心痛点——<strong>对象之间的组装（依赖管理）问题</strong>。IoC 容器就这一件事干到了极致。今天咱们从&quot;没有 Spring 的黑暗时代&quot;讲起，一步步推导出 IoC 的诞生，最后亲手写一个迷你 IoC 容器——写完你会发现：<strong>框架不是魔法，是工程智慧的结晶。</strong></p>
+<hr>
+<h2>一、黑暗时代：new 出来的灾难</h2>
+<h3>1.1 一层层 new 的&quot;套娃地狱&quot;</h3>
+<p>假设开发一个订单服务：下单要扣库存、发通知，通知依赖短信通道，短信通道依赖配置中心。没有框架的写法：</p>
+<pre><code class="language-java">public class OrderService {
+    public void createOrder(Order order) {
+        // 依赖全靠自己 new，层层组装
+        ConfigLoader configLoader = new ConfigLoader(&quot;/etc/app.properties&quot;);
+        SmsChannel smsChannel = new AliyunSmsChannel(configLoader);
+        NotificationService notificationService = new NotificationService(smsChannel);
+
+        StockDao stockDao = new StockDao(new MysqlDataSource(&quot;jdbc:mysql://...&quot;, &quot;root&quot;, &quot;***&quot;));
+        StockService stockService = new StockService(stockDao);
+
+        // ……终于能干正事了
+        stockService.deduct(order);
+        notificationService.notify(order);
+    }
+}
+</code></pre>
+<p>这段代码有三大罪状：</p>
+<ol>
+<li><strong>职责错位</strong>：OrderService 本该只关心业务，却被迫关心&quot;对象怎么造&quot;——像让 CEO 自己装修工位、接网线；</li>
+<li><strong>牵一发动全身</strong>：哪天短信通道从阿里云换成腾讯云，或者 StockDao 构造参数变了，所有 <code>new</code> 它的地方全要改；</li>
+<li><strong>无法替换与测试</strong>：依赖是焊死的，想给 OrderService 写单元测试？对不起，它会在测试环境真连数据库、真发短信。</li>
+</ol>
+<h3>1.2 工厂模式：中间商救场</h3>
+<p>有同学说：简单，上工厂！</p>
+<pre><code class="language-java">public class BeanFactory {
+    public static NotificationService getNotificationService() {
+        return new NotificationService(new AliyunSmsChannel(new ConfigLoader(&quot;...&quot;)));
+    }
+}
+</code></pre>
+<p>好了一点，但每个依赖类型都得写一个工厂方法，依赖关系变了还是要改工厂代码——<strong>工厂只是把&quot;new 的地狱&quot;集中到了一处，并没有让依赖关系&quot;可配置、可自动&quot;。</strong> 而且 OrderService 自己的依赖，还是得它自己去工厂拿（主动拉取）。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：问题的本质是<strong>控制权</strong>——对象的生命周期和依赖装配，控制权散落在每个业务代码手里。要根治，就得把这个控制权<strong>收走</strong>，交给一个统一的&quot;大管家&quot;。这个思想，就叫控制反转。</p>
+</blockquote>
+<hr>
+<h2>二、IoC：控制反转到底反转了什么</h2>
+<p><img src="/assets/images/03-01-ioc-before-after.svg" alt="IoC 前后对比：自己拉关系 new vs 中央统一配送"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：IoC 前后对比：自己拉关系 new vs 中央统一配送</p>
+</blockquote>
+<p><strong>IoC（Inversion of Control，控制反转）</strong>：对象的创建、装配、生命周期管理，从程序员手中转交给容器。业务代码只声明&quot;我需要什么&quot;，不再操心&quot;它从哪来&quot;。</p>
+<pre><code class="language-java">@Service
+public class OrderService {
+    private final StockService stockService;        // 只声明依赖
+    private final NotificationService notificationService;
+
+    public OrderService(StockService stockService, NotificationService notificationService) {
+        this.stockService = stockService;           // 容器负责把现成的&quot;成品&quot;递进来
+        this.notificationService = notificationService;
+    }
+
+    public void createOrder(Order order) {
+        stockService.deduct(order);                 // 只管用，谁造的？容器造的
+        notificationService.notify(order);
+    }
+}
+</code></pre>
+<p>注意这个&quot;反转&quot;的视角：<strong>以前是 OrderService 主动 new 依赖（拉），现在是容器主动把依赖送上门（推）</strong>。送上门这个动作，就叫<strong>依赖注入（Dependency Injection，DI）</strong>。</p>
+<p>IoC 与 DI 的关系：IoC 是思想（控制权反转），DI 是实现该思想的主要手段（容器把依赖塞给你）。此外还有&quot;依赖查找&quot;（主动从容器 JNDI/ApplicationContext.getBean 取）等次要手段。面试时一句话：&quot;<strong>IoC 是原则，DI 是手段</strong>。&quot;</p>
+<div class="mermaid">flowchart LR
+    subgraph 没有IoC["没有 IoC（主动拉）"]
+        A["OrderService"] -->|"自己 new / 自己找"| B["StockService"]
+        A -->|"自己 new"| C["NotificationService"]
+    end
+    subgraph 有IoC["有 IoC（被动接收）"]
+        D["IoC 容器"] -->|"创建并注入"| E["OrderService"]
+        D -->|"创建并注入"| F["StockService"]
+        D -->|"创建并注入"| G["NotificationService"]
+    end
+    没有IoC ~->|"控制权上交容器"| 有IoC
+    style D fill:#e1f5fe
+</div>
+<hr>
+<h2>三、容器两大家族：BeanFactory 与 ApplicationContext</h2>
+<p>IoC 容器在 Spring 里有两个接口体系：</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>BeanFactory</th>
+<th>ApplicationContext</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定位</td>
+<td>最底层容器，提供基础 DI 能力</td>
+<td>企业级容器，BeanFactory 的超集</td>
+</tr>
+<tr>
+<td>Bean 加载</td>
+<td><strong>懒加载</strong>：getBean 时才创建</td>
+<td><strong>预加载</strong>：容器启动时创建所有单例（默认）</td>
+</tr>
+<tr>
+<td>附加能力</td>
+<td>无</td>
+<td>国际化、事件发布、资源加载、AOP 集成、环境 Profile</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>资源极度受限（早期 Applet）</td>
+<td>99.9% 的应用场景</td>
+</tr>
+</tbody></table>
+<p><strong>ApplicationContext 是日常开发的唯一选择。</strong> Spring Boot 里 <code>SpringApplication.run()</code> 返回的就是一个 <code>ConfigurableApplicationContext</code>（具体是 AnnotationConfigServletWebServerApplicationContext 这类实现）。</p>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：&quot;启动慢但访问快（预创建）&quot; vs &quot;启动快但首次访问卡（懒加载）&quot;——Spring 选了前者，因为问题在启动期暴露好过在高峰期暴露。生产事故最喜欢&quot;第一次调用才初始化&quot;的坑。懒加载可通过 <code>@Lazy</code> 精确控制。</p>
+</blockquote>
+<h2>四、BeanDefinition：Bean 的&quot;图纸&quot;</h2>
+<p>容器装配 Bean 分两步走，就像盖房子&quot;先画图纸再施工&quot;：</p>
+<ol>
+<li><strong>图纸阶段</strong>：解析配置（注解/XML/JavaConfig），把每个 Bean 的元信息登记成 <strong>BeanDefinition</strong>——它记录了 Bean 的 class、scope（单例/原型）、是否懒加载、依赖哪些 Bean、初始化方法名等；</li>
+<li><strong>施工阶段</strong>：容器按图纸反射实例化、填充属性、初始化，最终成品放进<strong>单例池（singletonObjects，本质一个 ConcurrentHashMap）</strong>。</li>
+</ol>
+<div class="mermaid">flowchart LR
+    A["@ComponentScan 扫描<br/>@Component / @Bean / XML"] -->|"解析注册"| B["BeanDefinitionMap<br/>（图纸库：name → BeanDefinition）"]
+    B -->|"refresh() 触发"| C["反射实例化 + 属性注入 + 初始化"]
+    C --> D["singletonObjects<br/>（成品库：单例池）"]
+    D -->|"getBean / @Autowired"| E["业务代码拿到 Bean"]
+    style B fill:#fff9c4
+    style D fill:#e8f5e9
+</div>
+<p>理解了&quot;图纸 → 施工 → 成品库&quot;三阶段，下一篇的 Bean 生命周期和三级缓存（都是围绕施工阶段的细节）就顺理成章了。</p>
+<hr>
+<h2>五、注解驱动：现代 Spring 的注册与注入</h2>
+<h3>5.1 Bean 的注册方式</h3>
+<pre><code class="language-java">// ① 类路径扫描：@Component 及其语义化派生注解（最常用）
+@Component        // 通用组件
+@Service          // 业务层（语义化：让读代码的人知道这是干嘛的）
+@Repository       // 数据层（额外功能：自动翻译数据库异常）
+@Controller       // Web 层
+public class OrderService { ... }
+// 注意：派生注解本质都是 @Component，扫描规则相同；@Service 不是&quot;加了功能&quot;，是&quot;加了语义&quot;
+
+// ② @Configuration + @Bean：第三方类没法改源码加注解，用这种方式
+@Configuration
+public class AppConfig {
+    @Bean                                        // 方法返回值注册为 Bean，方法名即 Bean 名
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder.connectTimeout(Duration.ofSeconds(2)).build();
+    }
+}
+
+// ③ @Import：批量导入（自动配置的核心，下下篇细讲）
+// ④ @Conditional 系条件装配（同上）
+</code></pre>
+<h3>5.2 依赖注入：三种姿势与一个选择困难</h3>
+<pre><code class="language-java">// 姿势① 字段注入：最省事，最受诟病
+@Service
+public class OrderService {
+    @Autowired
+    private StockService stockService;      // 离开容器没法测试，没法用 final
+}
+
+// 姿势② Setter 注入：适合可选依赖
+@Autowired
+public void setStockService(StockService stockService) { this.stockService = stockService; }
+
+// 姿势③ 构造器注入（官方推荐）：★
+@Service
+public class OrderService {
+    private final StockService stockService;    // 可以 final：不可变，天然线程安全
+
+    public OrderService(StockService stockService) {   // 单构造器时 @Autowired 可省略
+        this.stockService = stockService;
+    }
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th align="center">字段注入</th>
+<th align="center">Setter 注入</th>
+<th align="center">构造器注入</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>支持 final</td>
+<td align="center">❌</td>
+<td align="center">❌</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td>依赖齐全性校验</td>
+<td align="center">❌（可能 null）</td>
+<td align="center">❌</td>
+<td align="center">✅（缺依赖容器直接起不来）</td>
+</tr>
+<tr>
+<td>脱离容器可用（如单测 new 对象）</td>
+<td align="center">❌</td>
+<td align="center">部分</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td>循环依赖</td>
+<td align="center">照样可能</td>
+<td align="center">照样可能</td>
+<td align="center">直接暴露问题（启动报错，逼你改设计）</td>
+</tr>
+<tr>
+<td>IDEA 警告</td>
+<td align="center">⚠️ 黄牌</td>
+<td align="center">无</td>
+<td align="center">无</td>
+</tr>
+</tbody></table>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：<strong>构造器注入是唯一官方推荐</strong>。它的哲学是&quot;依赖不全就不许出生&quot;——问题在启动期暴露，而不是上线后某个深夜抛 NPE。字段注入看似优雅，实则是把&quot;必需依赖&quot;伪装成&quot;可有可无&quot;。Spring Boot 4.3 起，单构造器连 @Autowired 都不用写。</p>
+</blockquote>
+<h3>5.3 @Autowired vs @Resource vs @Inject</h3>
+<table>
+<thead>
+<tr>
+<th>注解</th>
+<th>来源</th>
+<th>匹配策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>@Autowired</td>
+<td>Spring 自带</td>
+<td><strong>先按类型</strong>，多个候选再按名字/@Qualifier</td>
+</tr>
+<tr>
+<td>@Resource</td>
+<td>JSR-250（JDK/Java EE）</td>
+<td><strong>先按名字</strong>，找不到再按类型</td>
+</tr>
+<tr>
+<td>@Inject</td>
+<td>JSR-330</td>
+<td>同 @Autowired（需引依赖）</td>
+</tr>
+</tbody></table>
+<p>多实现冲突的三板斧：<code>@Primary</code>（标注默认实现）&gt; <code>@Qualifier(&quot;beanName&quot;)</code>（点名要谁）&gt; <code>@Resource(name=&quot;...&quot;)</code>。</p>
+<pre><code class="language-java">public interface PayChannel { void pay(Order order); }
+
+@Component @Primary                       // 多实现时的默认项
+public class AlipayChannel implements PayChannel { ... }
+
+@Component(&quot;wechatChannel&quot;)
+public class WechatChannel implements PayChannel { ... }
+
+@Service
+public class PayService {
+    private final PayChannel defaultChannel;       // 注入 @Primary 的 AlipayChannel
+    private final PayChannel wechat;
+
+    public PayService(PayChannel defaultChannel,
+                      @Qualifier(&quot;wechatChannel&quot;) PayChannel wechat) {
+        this.defaultChannel = defaultChannel;      // 构造器 + Qualifier 组合拳
+        this.wechat = wechat;
+    }
+}
+</code></pre>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：同类型多个 Bean 且没标 @Primary/@Qualifier 时，容器启动直接报 <code>NoUniqueBeanDefinitionException</code>；还有一个隐藏玩法——若字段/参数名恰好等于某个 Bean 名（如 <code>wechatChannel</code>），@Autowired 会按名字兜底匹配成功。于是出现&quot;改个参数名，程序就启动失败&quot;的灵异事件。解法：永远显式声明 @Qualifier，别赌名字匹配。</p>
+</blockquote>
+<hr>
+<h2>六、手写迷你 IoC：给框架&quot;祛魅&quot;</h2>
+<p>最后，用 60 行代码实现一个仅支持构造器注入的迷你容器。写完你会发现 Spring 的 IoC 核心就这点事（剩下的千行代码都在处理各种边界与扩展）：</p>
+<pre><code class="language-java">public class MiniIocContainer {
+    private final Map&lt;Class&lt;?&gt;, Object&gt; singletons = new ConcurrentHashMap&lt;&gt;();   // 单例池
+    private final List&lt;Class&lt;?&gt;&gt; beanClasses = new ArrayList&lt;&gt;();                // 注册的图纸
+
+    /** 注册 Bean 类型（真实 Spring 是靠 @ComponentScan 扫描，这里手动注册等价） */
+    public void register(Class&lt;?&gt;... classes) {
+        beanClasses.addAll(Arrays.asList(classes));
+    }
+
+    /** 启动：把所有单例创建出来（真实 Spring 的 finishBeanFactoryInitialization） */
+    public void refresh() {
+        beanClasses.forEach(this::getBean);
+    }
+
+    /** 获取 Bean：不存在则创建（递归解析构造器依赖） */
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public &lt;T&gt; T getBean(Class&lt;T&gt; clazz) {
+        Object bean = singletons.get(clazz);
+        if (bean != null) return (T) bean;                        // 成品库里有，直接给
+
+        try {
+            Constructor&lt;?&gt; ctor = clazz.getDeclaredConstructors()[0];   // 取构造器（简化：取第一个）
+            Object[] args = Arrays.stream(ctor.getParameterTypes())     // 逐个解析参数依赖
+                    .map(this::getBean)                                 // 递归：依赖的依赖也要造
+                    .toArray();
+            bean = ctor.newInstance(args);                         // 反射实例化 + 构造器注入一步到位
+            singletons.put(clazz, bean);                           // 放入单例池
+            return (T) bean;
+        } catch (Exception e) {
+            throw new RuntimeException(&quot;创建 Bean 失败：&quot; + clazz.getName(), e);
+        }
+    }
+}
+
+// 使用：OrderService → StockService → StockDao 三层依赖，一行 new 都不用写
+MiniIocContainer ioc = new MiniIocContainer();
+ioc.register(StockDao.class, StockService.class, OrderService.class);
+ioc.refresh();
+OrderService orderService = ioc.getBean(OrderService.class);
+orderService.createOrder(new Order(&quot;1001&quot;));
+</code></pre>
+<p>递归 <code>getBean</code> 解析依赖，就是 Spring &quot;依赖注入&quot;的骨架。当然，真实的 Spring 还要处理：字段注入、BeanPostProcessor 扩展点、循环依赖（三级缓存）、生命周期回调、代理增强（AOP）、作用域……这些就是后面几篇的主角。</p>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>没有 IoC 的世界：依赖层层手动 new，职责错位、牵一发动全身、没法测试；</li>
+<li>IoC 反转的是&quot;对象创建与装配的控制权&quot;：业务代码从主动拉（new）变成被动收（注入）；DI 是 IoC 的落地手段；</li>
+<li>ApplicationContext（预加载、企业级能力）是日常唯一选择，BeanFactory 是其底层基座；</li>
+<li>容器装配分两步：解析成 BeanDefinition（图纸）→ 反射实例化+注入（施工）→ 单例池（成品库）；</li>
+<li>Bean 注册首选类路径扫描（@Component 家族），第三方类用 @Bean；</li>
+<li>注入首选<strong>构造器注入</strong>（final、必依赖校验、可测试）；多实现用 @Primary/@Qualifier 显式消歧；</li>
+<li>60 行迷你 IoC 容器 = 递归 getBean 解析构造器依赖，框架核心不过如此。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）IoC 和 DI 是什么关系？&quot;控制反转&quot;具体反转了什么？用自己的话说一遍。</li>
+<li>（概念）为什么 Spring 官方和 IDE 都&quot;嫌弃&quot;字段注入？构造器注入在可测试性上的优势具体体现在哪？</li>
+<li>（概念）@Autowired 找到多个候选 Bean 时的处理顺序是什么？</li>
+<li>（动手）把本文&quot;黑暗时代&quot;的 OrderService（三层依赖）改写成 Spring 注解版：@Service + 构造器注入，写一个 main 用 AnnotationConfigApplicationContext 启动并调用 createOrder。</li>
+<li>（动手·进阶）给 MiniIocContainer 增加&quot;字段注入&quot;支持（扫描 @Inject 注解字段并反射 set）；再试试用它构造 OrderService ↔ StockService 循环依赖，观察会发生什么（无限递归栈溢出）——这就是 Spring 需要三级缓存的原因，为下一篇埋好伏笔。</li>
+</ol>
+<blockquote>
+<p>下一篇预告：《Bean 生命周期与循环依赖》——从实例化到销毁，Bean 的一生要经历哪些关卡？A、B 互相依赖的&quot;先有鸡还是先有蛋&quot;问题，Spring 的三级缓存是怎么解的？这是 Spring 面试的天花板题，咱们下篇拆穿它。</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/02-java-advanced/10-design-patterns.html"><span>← 上一篇</span><b>设计模式：高频模式实战</b></a><a class="pn" href="/03-spring-boot/02-bean-lifecycle.html"><span>下一篇 →</span><b>Bean 生命周期与循环依赖</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

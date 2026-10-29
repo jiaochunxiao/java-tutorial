@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 440" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#DC2626"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#059669"/>
+    </marker>
+  </defs>
+  <rect width="860" height="440" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">JMM 草稿纸模型：volatile 就是"写完广播 + 让副本作废"</text>
+
+  <!-- thread A -->
+  <rect x="60" y="70" width="230" height="230" rx="12" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="175" y="98" text-anchor="middle" font-size="14" font-weight="700" fill="#1D4ED8">线程 A（写方）</text>
+  <rect x="84" y="116" width="182" height="66" rx="8" fill="#FFFFFF" stroke="#93C5FD"/>
+  <text x="175" y="140" text-anchor="middle" font-size="12" fill="#1E293B">工作内存（草稿纸）</text>
+  <text x="175" y="162" text-anchor="middle" font-size="13" font-family="monospace" fill="#1E40AF">running 的副本</text>
+  <rect x="84" y="196" width="182" height="76" rx="8" fill="#FFF7ED" stroke="#FDBA74"/>
+  <text x="175" y="220" text-anchor="middle" font-size="12" fill="#9A3412">写 volatile：assign 改副本</text>
+  <text x="175" y="240" text-anchor="middle" font-size="12" fill="#9A3412">→ store+write 立刻刷回主存</text>
+  <text x="175" y="260" text-anchor="middle" font-size="12" font-weight="700" fill="#C2410C">＋广播让 B 的副本作废</text>
+
+  <!-- thread B -->
+  <rect x="570" y="70" width="230" height="230" rx="12" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+  <text x="685" y="98" text-anchor="middle" font-size="14" font-weight="700" fill="#047857">线程 B（读方）</text>
+  <rect x="594" y="116" width="182" height="66" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+  <text x="685" y="140" text-anchor="middle" font-size="12" fill="#1E293B">工作内存（草稿纸）</text>
+  <text x="685" y="162" text-anchor="middle" font-size="13" font-family="monospace" fill="#065F46">running 的副本 ✗ 作废</text>
+  <rect x="594" y="196" width="182" height="76" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="685" y="220" text-anchor="middle" font-size="12" fill="#047852">读 volatile：副本失效</text>
+  <text x="685" y="240" text-anchor="middle" font-size="12" fill="#047852">→ 强制 read+load 回主存</text>
+  <text x="685" y="260" text-anchor="middle" font-size="12" font-weight="700" fill="#047857">拿到最新值</text>
+
+  <!-- main memory -->
+  <rect x="330" y="120" width="200" height="130" rx="12" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+  <text x="430" y="150" text-anchor="middle" font-size="14" font-weight="700" fill="#6D28D9">主内存 Main Memory</text>
+  <rect x="352" y="168" width="156" height="46" rx="8" fill="#FFFFFF" stroke="#C4B5FD"/>
+  <text x="430" y="188" text-anchor="middle" font-size="13" font-family="monospace" fill="#4C1D95">running = false</text>
+  <text x="430" y="206" text-anchor="middle" font-size="11" fill="#6D28D9">唯一权威版本</text>
+
+  <!-- arrows -->
+  <line x1="266" y1="172" x2="324" y2="172" stroke="#DC2626" stroke-width="2.4" marker-end="url(#arrR)"/>
+  <text x="295" y="160" text-anchor="middle" font-size="10" fill="#DC2626">write ★</text>
+  <line x1="324" y1="200" x2="266" y2="200" stroke="#475569" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+  <text x="295" y="220" text-anchor="middle" font-size="10" fill="#475569">read（读旧值）</text>
+  <line x1="536" y1="172" x2="594" y2="172" stroke="#475569" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+  <text x="565" y="160" text-anchor="middle" font-size="10" fill="#475569">旧副本</text>
+  <line x1="594" y1="206" x2="536" y2="206" stroke="#059669" stroke-width="2.4" marker-end="url(#arrG)"/>
+  <text x="565" y="226" text-anchor="middle" font-size="10" fill="#047852">强制重读 ★</text>
+
+  <!-- bottom compare -->
+  <rect x="60" y="322" width="360" height="86" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="76" y="346" font-size="13" font-weight="700" fill="#B91C1C">普通变量：没有广播</text>
+  <text x="76" y="368" font-size="12" fill="#475569">B 一直用自己草稿纸上的旧值 true，</text>
+  <text x="76" y="388" font-size="12" fill="#475569">主存改成 false 它也不知道 → 死循环</text>
+  <rect x="440" y="322" width="360" height="86" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="456" y="346" font-size="13" font-weight="700" fill="#047857">volatile：保证可见 + 禁止重排</text>
+  <text x="456" y="368" font-size="12" fill="#475569">写立刻刷主存、读强制回主存（MESI/内存屏障）</text>
+  <text x="456" y="388" font-size="12" fill="#B45309">但不保证原子性：i++ 照样会丢更新，要用 AtomicInteger</text>
+</svg>

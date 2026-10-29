@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 380" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#059669"/>
+    </marker>
+  </defs>
+  <rect width="860" height="380" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">继承像"父亲只有一位"，接口像"USB 插槽可以插一堆"</text>
+
+  <!-- left: extends -->
+  <rect x="60" y="76" width="340" height="240" rx="12" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="230" y="104" text-anchor="middle" font-size="14" font-weight="700" fill="#1D4ED8">extends：单继承（is-a 血缘）</text>
+  <rect x="150" y="122" width="160" height="40" rx="8" fill="#FFFFFF" stroke="#93C5FD"/>
+  <text x="230" y="147" text-anchor="middle" font-size="13" fill="#1E293B">class Animal</text>
+  <line x1="230" y1="210" x2="230" y2="166" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="244" y="192" font-size="11" fill="#475569">extends</text>
+  <rect x="130" y="212" width="200" height="44" rx="8" fill="#FFFFFF" stroke="#93C5FD"/>
+  <text x="230" y="239" text-anchor="middle" font-size="13" fill="#1E293B">class Dog extends Animal</text>
+  <text x="230" y="288" text-anchor="middle" font-size="11" fill="#475569">⚠️ 只能有一个直接父类（防"钻石问题"）</text>
+
+  <!-- right: implements -->
+  <rect x="460" y="76" width="340" height="240" rx="12" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+  <text x="630" y="104" text-anchor="middle" font-size="14" font-weight="700" fill="#047857">implements：多实现（can-do 能力）</text>
+  <g text-anchor="middle">
+    <rect x="484" y="120" width="140" height="34" rx="7" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="554" y="142" font-size="12" fill="#065F46">interface Flyable</text>
+    <rect x="656" y="120" width="140" height="34" rx="7" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="726" y="142" font-size="12" fill="#065F46">interface Swimmable</text>
+    <rect x="484" y="166" width="140" height="34" rx="7" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="554" y="188" font-size="12" fill="#065F46">interface Serializable</text>
+    <rect x="656" y="166" width="140" height="34" rx="7" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="726" y="188" font-size="12" fill="#065F46">interface Comparable</text>
+  </g>
+  <g stroke="#059669" stroke-width="1.6" marker-end="url(#arrG)">
+    <line x1="554" y1="230" x2="554" y2="204"/>
+    <line x1="726" y1="230" x2="726" y2="204"/>
+    <line x1="588" y1="238" x2="540" y2="204" stroke-dasharray="0"/>
+    <line x1="700" y1="238" x2="748" y2="204"/>
+  </g>
+  <rect x="530" y="230" width="200" height="44" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+  <text x="630" y="257" text-anchor="middle" font-size="13" fill="#1E293B">class Duck implements 上面四个</text>
+  <text x="630" y="296" text-anchor="middle" font-size="12" fill="#475569">✅ 能力随便叠加：只承诺"能做什么"</text>
+
+  <rect x="60" y="326" width="740" height="40" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="76" y="351" font-size="13" fill="#475569">选型口诀：说"它是什么"用抽象类（模板+状态），说"它会什么"用接口（能力契约）。常见组合：抽象类搭骨架+接口定能力。</text>
+</svg>

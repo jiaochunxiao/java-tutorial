@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>从零搭建一个 RESTful API 服务 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item active" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 从零搭建一个 RESTful API 服务</div>
+  <article>
+<h1>从零搭建一个 RESTful API 服务</h1>
+<p>从这篇开始进入应用实践篇。前三个阶段你攒了一身内力：语法、并发、JVM、Spring 原理——现在到了&quot;打出来&quot;的时候。</p>
+<p>实践篇的贯穿案例是<strong>图书管理小系统</strong>：本篇先用内存存储把 Web 层的地基打好（分层架构、统一响应、异常处理、参数校验、接口文档），下一篇落库 MySQL，再下一篇加 Redis 缓存。一个项目三步演进，就像真实工作中的迭代节奏。</p>
+<p>有同学问：&quot;增删改查谁不会啊？&quot;——会写 CRUD 和会<strong>搭一个可维护的工程</strong>是两回事。今天着重的就是后者：别人接手你的项目时，是夸&quot;结构真清楚&quot;还是骂&quot;这写的什么玩意儿&quot;。</p>
+<hr>
+<h2>一、项目初始化与依赖选择</h2>
+<p>打开 <a href="https://start.spring.io">start.spring.io</a>（或 IDEA 的 Spring Initializr）：</p>
+<ul>
+<li>项目：Maven，Java 17，Spring Boot 3.2.x（不想追新用 2.7.x 也行，本篇内容两者基本一致，仅 <code>javax.*</code> 与 <code>jakarta.*</code> 包名差异）；</li>
+<li>依赖勾选：<strong>Spring Web</strong>（MVC + 内嵌 Tomcat）、<strong>Validation</strong>（参数校验）、<strong>Lombok</strong>（少写样板代码）。</li>
+</ul>
+<p>生成的 pom 核心依赖：</p>
+<pre><code class="language-xml">&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+        &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;       &lt;!-- MVC + Jackson + Tomcat --&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+        &lt;artifactId&gt;spring-boot-starter-validation&lt;/artifactId&gt; &lt;!-- @Valid 参数校验 --&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+        &lt;artifactId&gt;lombok&lt;/artifactId&gt;
+        &lt;optional&gt;true&lt;/optional&lt;/optional&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;
+</code></pre>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：spring-boot-starter-web 已经传递依赖了 Jackson（JSON 序列化）、内嵌 Tomcat、Spring MVC——&quot;引一个依赖，Web 三件套全到&quot;，这就是原理篇讲的 Starter 机制在为你服务。</p>
+</blockquote>
+<hr>
+<h2>二、分层架构：包结构的&quot;交通规则&quot;</h2>
+<p><img src="/assets/images/04-01-request-lifecycle.svg" alt="一次请求的分层穿行，异常走&quot;抄近道&quot;统一处理"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：一次请求的分层穿行，异常走&quot;抄近道&quot;统一处理</p>
+</blockquote>
+<div class="mermaid">flowchart TD
+    A["Controller 接口层<br/>接收请求/参数校验/返回响应<br/>不写业务"] --> B["Service 业务层<br/>业务逻辑/事务边界<br/>不写 SQL"]
+    B --> C["Repository 数据层<br/>数据存取<br/>不懂业务"]
+    D["DTO / VO<br/>传输对象（入参/出参）"] -.被 A 使用.- A
+    E["domain/entity<br/>业务实体"] -.被 B、C 使用.- B
+    A --> B --> C
+    C --> F["存储<br/>（本篇：内存 Map / 下一篇：MySQL）"]
+</div>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>包名</th>
+<th>职责</th>
+<th>禁止事项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Controller</td>
+<td><code>controller</code></td>
+<td>收参数、调 Service、回结果</td>
+<td>❌ 写业务逻辑、❌ 直接调 DAO</td>
+</tr>
+<tr>
+<td>Service</td>
+<td><code>service</code></td>
+<td>业务规则、事务控制</td>
+<td>❌ 拼 SQL、❌ 处理 HTTP 细节</td>
+</tr>
+<tr>
+<td>Repository</td>
+<td><code>repository</code></td>
+<td>数据读写</td>
+<td>❌ 做业务判断</td>
+</tr>
+<tr>
+<td>DTO/VO</td>
+<td><code>dto</code> / <code>vo</code></td>
+<td>出入参模型</td>
+<td>与 Entity 分离（后述）</td>
+</tr>
+</tbody></table>
+<p><strong>依赖方向铁律：只能向下依赖（Controller→Service→Repository），禁止反向</strong>。为什么这么较真？因为分层的本质是&quot;变化隔离&quot;：换数据库只动 Repository，改业务规则只动 Service，加接口只动 Controller——每层的变化不传染。</p>
+<pre><code>com.demo.library
+├── LibraryApplication.java        # 主类（根包！原理篇讲过的扫描规则）
+├── controller/                    # BookController
+├── service/                       # BookService（接口）+ impl/BookServiceImpl
+├── repository/                    # BookRepository
+├── domain/                        # Book 实体
+├── dto/                           # BookCreateRequest / BookUpdateRequest
+├── vo/                            # BookVO（返回给前端的视图对象）
+├── common/                        # Result、BizException、GlobalExceptionHandler
+└── config/                        # 配置类（OpenAPI 等）
+</code></pre>
+<hr>
+<h2>三、统一响应体：给前端一个稳定的&quot;信封&quot;</h2>
+<p>裸返回数据是工程大忌：前端没法统一处理错误，接口格式随业务放飞。标准做法是统一响应体：</p>
+<pre><code class="language-java">@Data
+public class Result&lt;T&gt; {
+    private int code;          // 业务码：0 成功，非 0 失败（也可用字符串 &quot;OK&quot;/&quot;BIZ_ERROR&quot;）
+    private String message;    // 人类可读信息
+    private T data;            // 业务数据
+
+    public static &lt;T&gt; Result&lt;T&gt; ok(T data) { return build(0, &quot;success&quot;, data); }
+    public static &lt;T&gt; Result&lt;T&gt; fail(int code, String message) { return build(code, message, null); }
+    private static &lt;T&gt; Result&lt;T&gt; build(int code, String message, T data) {
+        Result&lt;T&gt; r = new Result&lt;&gt;();
+        r.setCode(code); r.setMessage(message); r.setData(data);
+        return r;
+    }
+}
+</code></pre>
+<p><strong>一个必答题：HTTP 状态码 200 + 业务错误码（code != 0），还是直接返回 4xx/5xx？</strong> 两种流派：</p>
+<ul>
+<li><strong>信封流派</strong>（国内主流）：HTTP 一律 200，成败看 code。优点：前端统一拦一个地方；网关/监控不会被业务错误干扰。缺点：不符合 HTTP 语义，REST 原教旨主义者会皱眉；</li>
+<li><strong>REST 流派</strong>：4xx/5xx 表达客户端/服务端错误。语义纯正，但前端要同时处理 HTTP 层和业务层两套错误。</li>
+</ul>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：没有对错，只有团队约定。<strong>关键是一致</strong>——最差的是一半接口 200+code、一半接口直接 500，前端同学会哭的。本系列采用折中：业务错误用 200+code，参数错误返回 400，未捕获异常返回 500。</p>
+</blockquote>
+<hr>
+<h2>四、全局异常处理：错误也要优雅</h2>
+<p>业务代码只管抛异常，格式统一交给&quot;全局接盘侠&quot; <code>@RestControllerAdvice</code>：</p>
+<pre><code class="language-java">// 业务异常：业务规则不满足（如书不存在、ISBN 重复）
+@Getter
+public class BizException extends RuntimeException {      // 继承 RuntimeException：不强制调用方 catch
+    private final int code;
+    public BizException(int code, String message) {
+        super(message);
+        this.code = code;
+    }
+}
+
+@RestControllerAdvice                                   // 全局拦截所有 Controller 的异常
+@Slf4j
+public class GlobalExceptionHandler {
+
+    /** 业务异常：预期内的失败，正常返回业务码 */
+    @ExceptionHandler(BizException.class)
+    public Result&lt;Void&gt; handleBiz(BizException e) {
+        log.warn(&quot;业务异常：{}&quot;, e.getMessage());
+        return Result.fail(e.getCode(), e.getMessage());
+    }
+
+    /** 参数校验异常：@Valid 失败时抛出，提取可读信息 */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)             // 参数错用 400
+    public Result&lt;Void&gt; handleValid(MethodArgumentNotValidException e) {
+        String msg = e.getBindingResult().getFieldErrors().stream()
+                .map(fe -&gt; fe.getField() + &quot;：&quot; + fe.getDefaultMessage())
+                .collect(Collectors.joining(&quot;；&quot;));
+        return Result.fail(400, msg);
+    }
+
+    /** 兜底：没料到的异常，500 + 记完整堆栈（日志记细节，响应给概要——别把堆栈泄给前端） */
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Result&lt;Void&gt; handleUnknown(Exception e) {
+        log.error(&quot;系统异常&quot;, e);
+        return Result.fail(500, &quot;系统繁忙，请稍后重试&quot;);
+    }
+}
+</code></pre>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：兜底异常把 <code>e.getMessage()</code> 直接返回给前端——某天异常信息里带了 SQL 片段和表结构，被安全扫描当成接口泄密。<strong>内部细节进日志，外部只给友好提示</strong>，这是纪律。</p>
+</blockquote>
+<hr>
+<h2>五、参数校验：把脏数据挡在门外</h2>
+<p>校验逻辑写在 Controller 里 if-else 会把人写疯。JSR-380（Bean Validation）注解一行搞定：</p>
+<pre><code class="language-java">@Data
+public class BookCreateRequest {
+    @NotBlank(message = &quot;书名不能为空&quot;)                    // 字符串非空且非空白
+    @Size(max = 100, message = &quot;书名最长 100 字&quot;)
+    private String title;
+
+    @NotBlank
+    private String author;
+
+    @NotNull(message = &quot;价格必填&quot;)
+    @DecimalMin(value = &quot;0.0&quot;, inclusive = false, message = &quot;价格必须大于 0&quot;)
+    private BigDecimal price;                            // 金额用 BigDecimal（基础篇的债这里还）
+
+    @Pattern(regexp = &quot;97[89]\\d{10}(\\d{3})?&quot;, message = &quot;ISBN 格式不正确&quot;)   // ISBN-13/10
+    private String isbn;
+}
+</code></pre>
+<p>Controller 上加 @Valid 触发校验：</p>
+<pre><code class="language-java">@PostMapping(&quot;/api/books&quot;)
+public Result&lt;BookVO&gt; create(@Valid @RequestBody BookCreateRequest req) { ... }
+</code></pre>
+<p>常用校验注解速查：</p>
+<table>
+<thead>
+<tr>
+<th>注解</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>@NotNull / @NotEmpty / @NotBlank</td>
+<td>非 null / 集合非空 / 字符串非空白</td>
+</tr>
+<tr>
+<td>@Size(min=, max=)</td>
+<td>长度（字符串/集合）</td>
+</tr>
+<tr>
+<td>@Min / @Max / @Range</td>
+<td>数值范围</td>
+</tr>
+<tr>
+<td>@Email / @Pattern(regexp=)</td>
+<td>格式校验</td>
+</tr>
+<tr>
+<td>@Past / @Future</td>
+<td>时间在过去/未来</td>
+</tr>
+</tbody></table>
+<p><strong>@Valid vs @Validated</strong>：@Valid 是 JSR 标准（可标在嵌套对象上递归校验），@Validated 是 Spring 扩展（支持<strong>分组校验</strong>和标在类上校验方法参数）。分组校验实战——新增时 id 必须为空，更新时 id 必须有：</p>
+<pre><code class="language-java">public interface Create {}
+public interface Update {}
+
+@Data
+public class BookRequest {
+    @Null(groups = Create.class, message = &quot;新增不能指定 id&quot;)
+    @NotNull(groups = Update.class, message = &quot;更新必须带 id&quot;)
+    private Long id;
+    // ... 其余字段默认属于 Default 组
+}
+
+@PostMapping(&quot;/api/books&quot;)
+public Result&lt;BookVO&gt; create(@Validated(BookRequest.Create.class) @RequestBody BookRequest req) {}
+</code></pre>
+<hr>
+<h2>六、Controller 层：RESTful 完整 CRUD</h2>
+<p>RESTful 风格核心：<strong>用 HTTP 动词表达动作，用 URL 表达资源</strong>（资源是名词，复数）：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>方法 + URL</th>
+<th align="center">成功状态码</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>新增</td>
+<td>POST /api/books</td>
+<td align="center">201</td>
+</tr>
+<tr>
+<td>查询单个</td>
+<td>GET /api/books/{id}</td>
+<td align="center">200</td>
+</tr>
+<tr>
+<td>分页查询</td>
+<td>GET /api/books?page=1&amp;size=10</td>
+<td align="center">200</td>
+</tr>
+<tr>
+<td>全量更新</td>
+<td>PUT /api/books/{id}</td>
+<td align="center">200</td>
+</tr>
+<tr>
+<td>删除</td>
+<td>DELETE /api/books/{id}</td>
+<td align="center">204</td>
+</tr>
+<tr>
+<td>业务动作（不好用动词资源的）</td>
+<td>POST /api/books/{id}/borrow</td>
+<td align="center">200</td>
+</tr>
+</tbody></table>
+<pre><code class="language-java">@RestController
+@RequestMapping(&quot;/api/books&quot;)
+@RequiredArgsConstructor
+@Tag(name = &quot;图书管理&quot;)                                 // springdoc 注解
+public class BookController {
+
+    private final BookService bookService;
+
+    @Operation(summary = &quot;新增图书&quot;)
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)                 // 201
+    public Result&lt;BookVO&gt; create(@Valid @RequestBody BookCreateRequest req) {
+        return Result.ok(bookService.create(req));
+    }
+
+    @Operation(summary = &quot;查询图书详情&quot;)
+    @GetMapping(&quot;/{id}&quot;)
+    public Result&lt;BookVO&gt; detail(@PathVariable Long id) {
+        return Result.ok(bookService.getById(id));
+    }
+
+    @Operation(summary = &quot;分页查询&quot;)
+    @GetMapping
+    public Result&lt;PageVO&lt;BookVO&gt;&gt; list(@RequestParam(defaultValue = &quot;1&quot;) int page,
+                                       @RequestParam(defaultValue = &quot;10&quot;) int size) {
+        return Result.ok(bookService.page(page, size));
+    }
+
+    @Operation(summary = &quot;更新图书&quot;)
+    @PutMapping(&quot;/{id}&quot;)
+    public Result&lt;BookVO&gt; update(@PathVariable Long id,
+                                 @Valid @RequestBody BookUpdateRequest req) {
+        return Result.ok(bookService.update(id, req));
+    }
+
+    @Operation(summary = &quot;删除图书&quot;)
+    @DeleteMapping(&quot;/{id}&quot;)
+    @ResponseStatus(HttpStatus.NO_CONTENT)              // 204 无响应体
+    public void delete(@PathVariable Long id) {
+        bookService.delete(id);
+    }
+}
+</code></pre>
+<h3>为什么 DTO 和 Entity 必须分离？</h3>
+<p>新手的 BookController 直接返回 Book 实体，三大隐患：</p>
+<ol>
+<li><strong>字段泄露</strong>：实体里的成本价、软删标记全暴露给前端；</li>
+<li><strong>懒加载序列化爆炸</strong>（下一篇接 JPA 时）：<code>jackson</code> 序列化关联对象触发意外 SQL，甚至死循环；</li>
+<li><strong>耦合</strong>：表结构一动，接口契约跟着动——前端和 DBA 一起骂你。</li>
+</ol>
+<p>正确姿势：<strong>入参用 Request DTO，出参用 VO，Entity 只在 Service/Repository 层活动</strong>，边界处做转换（字段多时引 MapStruct，手写也行）：</p>
+<pre><code class="language-java">@UtilityClass
+public class BookConverter {
+    public BookVO toVO(Book book) {
+        return BookVO.builder()
+                .id(book.getId()).title(book.getTitle())
+                .author(book.getAuthor()).price(book.getPrice())
+                .build();
+    }
+}
+</code></pre>
+<hr>
+<h2>七、Service 与内存 Repository</h2>
+<p>本篇先内存存储（ConcurrentHashMap），专注 Web 层；下一篇平滑替换成 MySQL：</p>
+<pre><code class="language-java">@Service
+public class BookServiceImpl implements BookService {
+    private final BookRepository repository;
+
+    public BookServiceImpl(BookRepository repository) { this.repository = repository; }
+
+    @Override
+    public BookVO create(BookCreateRequest req) {
+        if (repository.existsByIsbn(req.getIsbn())) {
+            throw new BizException(40901, &quot;ISBN 已存在：&quot; + req.getIsbn());   // 业务异常交给全局处理
+        }
+        Book book = new Book();
+        book.setTitle(req.getTitle());
+        book.setAuthor(req.getAuthor());
+        book.setPrice(req.getPrice());
+        book.setIsbn(req.getIsbn());
+        return BookConverter.toVO(repository.save(book));
+    }
+
+    @Override
+    public BookVO getById(Long id) {
+        Book book = repository.findById(id)
+                .orElseThrow(() -&gt; new BizException(40404, &quot;图书不存在：&quot; + id));
+        return BookConverter.toVO(book);
+    }
+    // update / delete / page 同理，略
+}
+
+@Repository
+public class BookRepository {
+    private static final Map&lt;Long, Book&gt; STORE = new ConcurrentHashMap&lt;&gt;();
+    private static final AtomicLong ID_GEN = new AtomicLong();
+
+    public Book save(Book book) {
+        if (book.getId() == null) book.setId(ID_GEN.incrementAndGet());
+        STORE.put(book.getId(), book);
+        return book;
+    }
+    public Optional&lt;Book&gt; findById(Long id) { return Optional.ofNullable(STORE.get(id)); }
+    public boolean existsByIsbn(String isbn) {
+        return STORE.values().stream().anyMatch(b -&gt; b.getIsbn().equals(isbn));
+    }
+    // delete / page 略
+}
+</code></pre>
+<hr>
+<h2>八、接口文档：springdoc-openapi 一分钟接入</h2>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springdoc&lt;/groupId&gt;
+    &lt;artifactId&gt;springdoc-openapi-starter-webmvc-ui&lt;/artifactId&gt;
+    &lt;version&gt;2.3.0&lt;/version&gt;   &lt;!-- Boot 2.x 用 springdoc-openapi-ui --&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p>启动后访问 <code>http://localhost:8080/swagger-ui.html</code>：所有接口自动列出，@Operation/@Tag 注解补充说明，还能在线调试。<strong>前后端协作从&quot;看代码猜接口&quot;变成&quot;对着文档联调&quot;</strong>。</p>
+<p>跨域（联调时前端 5173 端口访问后端 8080）一把梭：</p>
+<pre><code class="language-java">@Configuration
+public class WebConfig implements WebMvcConfigurer {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping(&quot;/api/**&quot;)
+                .allowedOriginPatterns(&quot;http://localhost:5173&quot;)   // 生产环境收紧到具体域名
+                .allowedMethods(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;DELETE&quot;)
+                .maxAge(3600);
+    }
+}
+</code></pre>
+<hr>
+<h2>九、验收：一组可直接执行的 curl</h2>
+<pre><code class="language-bash"># 新增（201）
+curl -i -X POST http://localhost:8080/api/books \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#39;{&quot;title&quot;:&quot;深入理解Java虚拟机&quot;,&quot;author&quot;:&quot;周志明&quot;,&quot;price&quot;:129.00,&quot;isbn&quot;:&quot;9787111641247&quot;}&#39;
+
+# 参数校验失败（400 + 具体字段提示）
+curl -i -X POST http://localhost:8080/api/books \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#39;{&quot;title&quot;:&quot;&quot;,&quot;price&quot;:-1}&#39;
+
+# 查询（200）
+curl http://localhost:8080/api/books/1
+
+# 查询不存在（200 + 业务码 40404）
+curl http://localhost:8080/api/books/999
+
+# 删除（204）
+curl -i -X DELETE http://localhost:8080/api/books/1
+</code></pre>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>分层架构是&quot;变化隔离&quot;：Controller/Service/Repository 各司其职，依赖只能向下；</li>
+<li>统一响应体 + 全局异常处理是工程地基：错误处理集中、日志记细节、响应给概要；</li>
+<li>参数校验用 JSR-380 注解 + @Valid；分组校验区分新增/更新场景；</li>
+<li>RESTful：动词表达动作、URL 表达资源；状态码 201/204/400 与业务码流派要团队一致；</li>
+<li>DTO/VO 与 Entity 分离，防字段泄露、防序列化炸弹、解耦表结构与接口契约；</li>
+<li>springdoc 自动生成在线文档，联调效率翻倍。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）为什么 Controller 不写业务、Service 不写 SQL？各举一个&quot;违反后如何恶化&quot;的例子。</li>
+<li>（概念）@Valid 和 @Validated 的区别？分组校验解决什么问题？</li>
+<li>（动手）完成本篇完整项目，跑通全部 curl 命令，观察每个接口的状态码与响应体。</li>
+<li>（动手）增加&quot;借书&quot;接口 POST /api/books/{id}/borrow：校验库存&gt;0、扣减库存、记录借阅时间；库存不足抛 BizException。</li>
+<li>（动手·进阶）给借阅记录加&quot;逾期未还&quot;查询接口 GET /api/borrows/overdue（超过 30 天未还），补全对应的 Service、内存 Repository 与单元测试（下一章测试篇会用到）。</li>
+</ol>
+<blockquote>
+<p>下一篇预告：《数据库实战：MySQL 与 MyBatis-Plus》——内存 Map 换成真数据库：建表规范、CRUD 三种姿势、分页插件、字段自动填充，还有程序员必杀技&quot;explain 慢 SQL 分析&quot;和深分页优化。</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/03-spring-boot/06-transaction.html"><span>← 上一篇</span><b>事务与数据访问：@Transactional 的秘密</b></a><a class="pn" href="/04-practice/02-database.html"><span>下一篇 →</span><b>数据库实战：MySQL 与 MyBatis-Plus</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

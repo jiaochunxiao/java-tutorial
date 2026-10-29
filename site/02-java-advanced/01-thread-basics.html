@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多线程（一）：万物皆可 Thread · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item active" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 多线程（一）：万物皆可 Thread</div>
+  <article>
+<h1>多线程（一）：万物皆可 Thread</h1>
+<p>先讲个真事。早年间我在一家公司做报表导出，一张 Excel 要导 5 万行数据，代码写完一跑——用户界面上那个小圈圈转了 40 秒。我盯着 CPU 监控一看，好家伙：<strong>服务器 16 个核，15 个在睡觉，就 1 个核累得满头大汗</strong>。后来改成 8 个线程分片导出，5 秒搞定。</p>
+<p>这个故事想说明一件事：<strong>并发（Concurrency）不是面试官发明的酷刑，而是把硬件榨出油的现实手段。</strong> 从这篇开始，咱们正式进入 Java 进阶篇的第一座大山——多线程。它是初级工程师和中级工程师的分水岭，也是面试修罗场的常驻嘉宾。</p>
+<p>别慌，山要一座座爬。今天这篇是热身：搞懂线程是什么、怎么创建、什么状态、以及&quot;线程安全&quot;这四个字到底在说什么。</p>
+<hr>
+<h2>一、为什么需要多线程？</h2>
+<p>理由千千万，归根结底就两条：</p>
+<ol>
+<li><strong>提速</strong>：现代 CPU 都是多核的。单线程程序就像只有一个服务员的餐厅，CPU 的其他核心全在嗑瓜子。多线程能把任务拆给多个核同时干；</li>
+<li><strong>避免浪费</strong>：程序经常在&quot;等&quot;——等数据库返回、等网络响应、等磁盘读写。等待时线程会阻塞（Block），CPU 就闲了。多线程可以让 A 线程等待时，B 线程顶上，<strong>让 CPU 别闲着</strong>。</li>
+</ol>
+<p>打个比方：烧水泡茶。单线程的做法是——烧水（干等 10 分钟）→ 洗茶壶 → 洗茶杯 → 泡茶。多线程的做法是——点火烧上水（水壶自己干它的），同时去洗壶洗杯，水开了直接泡。<strong>时间被&quot;等待&quot;摊薄了</strong>，这就是并发最朴素的价值。</p>
+<h3>进程 vs 线程：先分清两位主角</h3>
+<p><img src="/assets/images/02-01-process-thread.svg" alt="进程=厂房、线程=工人：共享堆与私有栈的边界"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：进程=厂房、线程=工人：共享堆与私有栈的边界</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>进程（Process）</th>
+<th>线程（Thread）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>本质</td>
+<td>操作系统<strong>资源分配</strong>的基本单位</td>
+<td>CPU <strong>调度执行</strong>的基本单位</td>
+</tr>
+<tr>
+<td>内存</td>
+<td>拥有独立的内存空间</td>
+<td>共享所属进程的内存（堆、方法区）</td>
+</tr>
+<tr>
+<td>通信</td>
+<td>需要 IPC（管道/消息队列等），成本高</td>
+<td>直接读写共享变量，简单但危险</td>
+</tr>
+<tr>
+<td>崩溃影响</td>
+<td>一个进程挂了，别的进程一般没事</td>
+<td>一个线程崩了（如 OOM），整个进程陪葬</td>
+</tr>
+<tr>
+<td>类比</td>
+<td>一栋厂房</td>
+<td>厂房里的一个工人</td>
+</tr>
+</tbody></table>
+<p>一句话：<strong>进程是房子，线程是住户。多个住户共享房子里的客厅（堆内存），但每人有自己的卧室（栈内存）。</strong> Java 程序天生就是多线程的——哪怕你一行多线程代码都没写，JVM 启动时就有一堆线程在跑（main 线程、GC 线程、JIT 编译线程……）。</p>
+<hr>
+<h2>二、创建线程的三种姿势</h2>
+<h3>2.1 姿势一：继承 Thread</h3>
+<pre><code class="language-java">public class MyThread extends Thread {
+    @Override
+    public void run() {                       // 重写 run：线程要干的活写在这里
+        System.out.println(Thread.currentThread().getName() + &quot; 正在干活&quot;);
+    }
+}
+
+MyThread t = new MyThread();
+t.start();                                    // 注意：是 start，不是 run！
+</code></pre>
+<p>简单直接，但缺点明显：Java 单继承，你的类继承了 Thread 就不能再继承别的类了。<strong>不推荐。</strong></p>
+<h3>2.2 姿势二：实现 Runnable（推荐）</h3>
+<pre><code class="language-java">public class MyTask implements Runnable {
+    @Override
+    public void run() {
+        System.out.println(Thread.currentThread().getName() + &quot; 正在干活&quot;);
+    }
+}
+
+Thread t = new Thread(new MyTask(), &quot;worker-1&quot;);
+t.start();
+</code></pre>
+<p>或者用 Lambda 更清爽（Runnable 是函数式接口）：</p>
+<pre><code class="language-java">Thread t = new Thread(() -&gt; System.out.println(&quot;干活&quot;), &quot;worker-1&quot;);
+t.start();
+</code></pre>
+<p>推荐它的理由：<strong>任务（Runnable）和执行者（Thread）解耦</strong>——同一个任务可以交给不同的线程执行，也可以扔给线程池复用。</p>
+<h3>2.3 姿势三：实现 Callable + FutureTask（带返回值）</h3>
+<p>Runnable 的 <code>run()</code> 是 void，干完活拿不到结果。想拿返回值、想感知异常，用 <code>Callable</code>：</p>
+<pre><code class="language-java">// Callable&lt;V&gt;：V 是返回值类型，call() 可以抛受检异常
+Callable&lt;Integer&gt; task = () -&gt; {
+    Thread.sleep(1000);                       // 模拟耗时计算
+    return 42;
+};
+
+FutureTask&lt;Integer&gt; futureTask = new FutureTask&lt;&gt;(task);
+new Thread(futureTask, &quot;calculator&quot;).start();
+
+Integer result = futureTask.get();            // 阻塞等待结果（最多等 1 秒）
+System.out.println(&quot;计算结果：&quot; + result);
+</code></pre>
+<h3>三种姿势对比</h3>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>返回值</th>
+<th>异常</th>
+<th>继承限制</th>
+<th>推荐度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>继承 Thread</td>
+<td>无</td>
+<td>run 只能抛运行时异常</td>
+<td>占用唯一继承名额</td>
+<td>⭐⭐</td>
+</tr>
+<tr>
+<td>实现 Runnable</td>
+<td>无</td>
+<td>同上</td>
+<td>无</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td>实现 Callable</td>
+<td>有（Future.get）</td>
+<td>call 可抛受检异常</td>
+<td>无</td>
+<td>⭐⭐⭐⭐⭐（需要结果时）</td>
+</tr>
+</tbody></table>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：实际开发里几乎不会手动 new Thread，而是把 Runnable/Callable 交给<strong>线程池</strong>（第三篇细讲）。但无论哪种方式，最终执行任务的载体都是 Thread——所以这三种写法是理解一切并发工具的地基。</p>
+</blockquote>
+<h3>2.4 start() vs run()：天壤之别</h3>
+<p>新手必踩的第一坑：</p>
+<pre><code class="language-java">Thread t = new Thread(() -&gt; System.out.println(&quot;干活&quot;), &quot;worker-1&quot;);
+t.run();   // ❌ 这只是普通方法调用！在当前线程（main）里同步执行，根本没有新线程
+t.start(); // ✅ 向 JVM 申请启动新线程，由新线程去执行 run()
+</code></pre>
+<p><code>start()</code> 做的事是：请求 JVM 创建新线程、新线程做好准备工作后再调用 run()。<strong>一个 Thread 对象只能 start 一次</strong>，第二次 start 会抛 <code>IllegalThreadStateException</code>。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：曾有同学排查&quot;多线程没生效&quot;排查了一下午，最后发现调的是 run()。控制台打印的线程名都是 main，代码却在&quot;并发&quot;，性能毫无变化——因为压根就是单线程串行跑。<strong>判断线程有没有真开起来，看 <code>Thread.currentThread().getName()</code> 的输出，别靠感觉。</strong></p>
+</blockquote>
+<hr>
+<h2>三、Thread 常用 API 速览</h2>
+<pre><code class="language-java">Thread t = new Thread(() -&gt; {...}, &quot;worker-1&quot;);
+
+t.getName();                  // 获取线程名，排查问题时非常有用
+t.setName(&quot;worker-2&quot;);        // 改名
+t.setPriority(Thread.NORM_PRIORITY);  // 优先级 1~10，只是&quot;建议&quot;，别依赖
+t.setDaemon(true);            // 设为守护线程，必须在线程 start 之前设置
+t.join();                     // 等待 t 执行结束（当前线程阻塞）
+t.interrupt();                // 中断 t（协作式，不是强杀）
+Thread.sleep(1000);           // 当前线程睡 1 秒（静态方法，睡的是&quot;当前&quot;线程）
+Thread.yield();               // 当前线程让出 CPU（建议，不保证）
+</code></pre>
+<p>几个容易考的细节：</p>
+<ul>
+<li><strong><code>interrupt()</code> 是&quot;拍肩膀&quot;不是&quot;枪毙&quot;</strong>：它只是设置线程的中断标志位。如果线程正在 sleep/wait/join，会被&quot;叫醒&quot;并抛出 <code>InterruptedException</code>。<strong>终止线程的正确姿势是&quot;请求 + 响应&quot;</strong>：</li>
+</ul>
+<pre><code class="language-java">Thread worker = new Thread(() -&gt; {
+    while (!Thread.currentThread().isInterrupted()) {   // 每轮检查中断标志
+        System.out.println(&quot;干活中...&quot;);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            // sleep 被中断会清除标志位并抛异常，这里重新设置，让循环条件生效
+            Thread.currentThread().interrupt();
+            System.out.println(&quot;收到中断信号，收拾东西下班&quot;);
+        }
+    }
+});
+worker.start();
+Thread.sleep(2000);
+worker.interrupt();   // 主线程&quot;拍肩膀&quot;：兄弟，该下班了
+</code></pre>
+<ul>
+<li><strong>守护线程（Daemon）</strong>：为其他线程服务的线程（典型如 GC 线程）。<strong>当所有用户线程结束，守护线程会随 JVM 一起消亡</strong>——所以千万别把要写数据的任务放守护线程里，写到一半 JVM 撤了，数据就废了。</li>
+</ul>
+<hr>
+<h2>四、线程生命周期：六种状态</h2>
+<div class="mermaid">stateDiagram-v2
+    [*] --> NEW : new Thread()
+    NEW --> RUNNABLE : start()
+    RUNNABLE --> BLOCKED : 等待 synchronized 锁
+    BLOCKED --> RUNNABLE : 拿到锁
+    RUNNABLE --> WAITING : wait() / join() / LockSupport.park()
+    WAITING --> RUNNABLE : notify() / notifyAll() / unpark()
+    RUNNABLE --> TIMED_WAITING : sleep(ms) / wait(ms) / join(ms)
+    TIMED_WAITING --> RUNNABLE : 超时或被唤醒
+    RUNNABLE --> TERMINATED : run() 执行完毕
+    [*] --> TERMINATED
+</div>
+<p>对应 <code>Thread.State</code> 枚举的六种状态：</p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>含义</th>
+<th>进入方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NEW</td>
+<td>创建了但没 start</td>
+<td><code>new Thread()</code></td>
+</tr>
+<tr>
+<td>RUNNABLE</td>
+<td>可运行（就绪/运行中，Java 把俩合在一起了）</td>
+<td><code>start()</code></td>
+</tr>
+<tr>
+<td>BLOCKED</td>
+<td>等待拿 synchronized 锁</td>
+<td>进入 synchronized 块但锁被占</td>
+</tr>
+<tr>
+<td>WAITING</td>
+<td>无限期等待，等人唤醒</td>
+<td><code>wait()</code> / <code>join()</code> / <code>LockSupport.park()</code></td>
+</tr>
+<tr>
+<td>TIMED_WAITING</td>
+<td>限时等待</td>
+<td><code>sleep(ms)</code> / <code>wait(ms)</code> / <code>join(ms)</code></td>
+</tr>
+<tr>
+<td>TERMINATED</td>
+<td>运行结束</td>
+<td>run() 结束（正常或异常）</td>
+</tr>
+</tbody></table>
+<p>注意两个易错点：<strong><code>Thread.sleep()</code> 不释放锁</strong>（抱着锁睡觉，别人干瞪眼）；<strong><code>wait()</code> 会释放锁</strong>（必须写在 synchronized 块里，且由锁对象调用）。</p>
+<h3>wait/notify vs sleep 对比（高频面试题）</h3>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>wait()/notify()</th>
+<th>Thread.sleep()</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>所属</td>
+<td>Object 的方法</td>
+<td>Thread 的静态方法</td>
+</tr>
+<tr>
+<td>释放锁</td>
+<td><strong>释放</strong></td>
+<td><strong>不释放</strong></td>
+</tr>
+<tr>
+<td>前提</td>
+<td>必须在 synchronized 内，由锁对象调用</td>
+<td>无要求</td>
+</tr>
+<tr>
+<td>唤醒</td>
+<td>notify/notifyAll/超时</td>
+<td>时间到</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>五、线程安全初体验：经典卖票事故</h2>
+<p>多线程的&quot;爽&quot;到此为止，接下来看看它的&quot;毒&quot;。多个线程共享变量时，<strong>读-改-写</strong>不是原子的，事故就来了：</p>
+<pre><code class="language-java">public class TicketSeller implements Runnable {
+    private int tickets = 100;                       // 所有线程共享的变量
+
+    @Override
+    public void run() {
+        while (true) {
+            if (tickets &lt;= 0) break;
+            try { Thread.sleep(10); }                // 放大问题：模拟出票耗时
+            catch (InterruptedException e) { return; }
+
+            System.out.println(Thread.currentThread().getName()
+                    + &quot; 卖出第 &quot; + tickets-- + &quot; 张票&quot;);   // 卖票 + 减一
+        }
+    }
+}
+
+public static void main(String[] args) {
+    TicketSeller seller = new TicketSeller();        // 一个卖票员，四个窗口
+    new Thread(seller, &quot;窗口1&quot;).start();
+    new Thread(seller, &quot;窗口2&quot;).start();
+    new Thread(seller, &quot;窗口3&quot;).start();
+    new Thread(seller, &quot;窗口4&quot;).start();
+}
+</code></pre>
+<p>跑几轮你就会看到灵异事件：<strong>同一张票卖给了两个窗口，甚至卖出&quot;第 0 张票&quot;、&quot;第 -1 张票&quot;</strong>。</p>
+<p>原因：<code>tickets--</code> 这行代码在字节码层面是三步——读取 tickets、减 1、写回内存。窗口 1 刚读完 100 还没写回，窗口 2 也读到了 100，俩窗口都把&quot;100 号票&quot;卖出去了。这就是<strong>竞态条件（Race Condition）</strong>。</p>
+<h3>解药：synchronized 初见</h3>
+<p>最直接的解法是给代码块上锁——同一时刻只允许一个线程进入：</p>
+<pre><code class="language-java">public class TicketSeller implements Runnable {
+    private int tickets = 100;
+    private final Object lock = new Object();        // 专门的锁对象
+
+    @Override
+    public void run() {
+        while (true) {
+            synchronized (lock) {                    // 拿到锁才能进，其他人阻塞排队
+                if (tickets &lt;= 0) break;
+                System.out.println(Thread.currentThread().getName()
+                        + &quot; 卖出第 &quot; + tickets-- + &quot; 张票&quot;);
+            }
+            // 锁外面的耗时代码不占锁，其他线程还能干活（锁粒度要小）
+        }
+    }
+}
+</code></pre>
+<p>synchronized 有三种用法：<strong>同步代码块</strong>（锁指定对象，推荐）、<strong>同步方法</strong>（非静态锁 this，静态锁 Class 对象）、<strong>静态同步方法</strong>。细节原理（monitor、锁升级）咱们下一篇细讲，今天记住一句话：</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：多个线程读写同一个共享可变变量时，就可能发生竞态条件。解决思路无非两条路：<strong>互斥访问</strong>（synchronized/Lock，排队来）或 <strong>避免共享</strong>（ThreadLocal/不可变对象/无锁 CAS）。</p>
+</blockquote>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：判断&quot;要不要考虑线程安全&quot;，灵魂三问——①有没有多个线程？②它们是否共享同一个变量？③有线程要&quot;写&quot;吗？三问全&quot;是&quot;才需要处理。别一上来就无脑加锁，锁是性能杀手，加错了还容易死锁。</p>
+</blockquote>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>多线程的两大价值：榨干多核 CPU、让 CPU 在等待时不闲着；</li>
+<li>进程是资源分配单位，线程是调度执行单位；线程共享进程的堆，拥有独立栈；</li>
+<li>创建线程推荐实现 Runnable/Callable（解耦、可进线程池），start() 才会真正开新线程，run() 只是普通方法调用；</li>
+<li>interrupt 是协作式中断：&quot;设置标志 + 线程自查&quot;，不强杀；守护线程随 JVM 消亡，别放关键任务；</li>
+<li>六种线程状态要能画出来；sleep 不放锁，wait 放锁；</li>
+<li>共享变量的&quot;读-改-写&quot;不是原子的，会产生竞态条件；synchronized 互斥是第一解药。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）为什么调用 start() 之后再调用一次会抛异常，而一个 Runnable 可以交给多个 Thread 使用？</li>
+<li>（概念）守护线程和用户线程的区别是什么？什么场景用守护线程？</li>
+<li>（概念）sleep 和 wait 有哪三个本质区别？</li>
+<li>（动手）起 3 个线程分别打印 &quot;A&quot;、&quot;B&quot;、&quot;C&quot; 各 10 次，观察输出的乱序；再用 join() 让它们严格按 A→B→C 顺序执行。</li>
+<li>（动手·进阶）复现本文的卖票事故，故意放大 sleep 时间观察负数票；分别用&quot;同步代码块&quot;和&quot;同步方法&quot;修复它，并思考：如果把 <code>while(true)</code> 整个包进 synchronized，性能会有什么变化？为什么？</li>
+</ol>
+<blockquote>
+<p>下一篇预告：《多线程（二）：JMM、volatile 与锁升级》——为什么你的线程&quot;看不见&quot;另一个线程修改的变量？volatile 到底有没有用？synchronized 的锁竟然会&quot;膨胀&quot;？咱们潜入 Java 内存模型的水底看看。</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/01-java-basics/10-generics-reflection.html"><span>← 上一篇</span><b>泛型与反射：类型的编译期与运行时</b></a><a class="pn" href="/02-java-advanced/02-jmm-volatile.html"><span>下一篇 →</span><b>多线程（二）：JMM、volatile 与锁升级</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

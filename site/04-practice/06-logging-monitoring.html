@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日志、监控与上线部署 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item active" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 日志、监控与上线部署</div>
+  <article>
+<h1>日志、监控与上线部署</h1>
+<p>实践篇最后一篇，讲三件事：<strong>日志</strong>（出了事能查）、<strong>监控</strong>（出事之前能知道）、<strong>部署</strong>（把服务真正送到线上）。合起来解决一个终极问题——</p>
+<p>凌晨两点，告警电话：订单服务不可用。你睡眼惺忪打开电脑，然后发现：日志东一块西一块没有统一格式、接口调用链路在十几个服务里断成碎片、服务器 CPU 90% 但不知道哪个接口炸了、要发个修复版本还得手动传 jar 包重启……这一夜，你就是盲人摸象。</p>
+<p><strong>没有可观测性（Observability）的服务就是盲盒。</strong> 这篇把盲盒换成透明鱼缸。</p>
+<hr>
+<h2>一、日志：把&quot;案发现场&quot;留下</h2>
+<h3>1.1 logback 生产级配置</h3>
+<p>Spring Boot 默认就是 Logback（spring-boot-starter-web 传递依赖了 logback）。自定义 <code>logback-spring.xml</code>：</p>
+<pre><code class="language-xml">&lt;configuration&gt;
+    &lt;property name=&quot;LOG_PATTERN&quot;
+              value=&quot;%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId}] %-5level %logger{36} - %msg%n&quot;/&gt;
+    &lt;!-- [%X{traceId}]：从 MDC 取 traceId，串起一次请求的所有日志（下节讲） --&gt;
+
+    &lt;!-- 控制台：开发环境用 --&gt;
+    &lt;appender name=&quot;CONSOLE&quot; class=&quot;ch.qos.logback.core.ConsoleAppender&quot;&gt;
+        &lt;encoder&gt;&lt;pattern&gt;${LOG_PATTERN}&lt;/pattern&gt;&lt;/encoder&gt;
+    &lt;/appender&gt;
+
+    &lt;!-- 滚动文件：生产主力。按天+按大小滚动，保留 30 天，总大小封顶防磁盘爆满 --&gt;
+    &lt;appender name=&quot;FILE&quot; class=&quot;ch.qos.logback.core.rolling.RollingFileAppender&quot;&gt;
+        &lt;file&gt;logs/app.log&lt;/file&gt;
+        &lt;rollingPolicy class=&quot;ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy&quot;&gt;
+            &lt;fileNamePattern&gt;logs/app.%d{yyyy-MM-dd}.%i.log.gz&lt;/fileNamePattern&gt;  &lt;!-- 历史日志自动 gzip --&gt;
+            &lt;maxFileSize&gt;100MB&lt;/maxFileSize&gt;
+            &lt;maxHistory&gt;30&lt;/maxHistory&gt;
+            &lt;totalSizeCap&gt;10GB&lt;/totalSizeCap&gt;
+        &lt;/rollingPolicy&gt;
+        &lt;encoder&gt;&lt;pattern&gt;${LOG_PATTERN}&lt;/pattern&gt;&lt;/encoder&gt;
+    &lt;/appender&gt;
+
+    &lt;!-- 异步 Appender：日志写入不阻塞业务线程（高并发必开） --&gt;
+    &lt;appender name=&quot;ASYNC&quot; class=&quot;ch.qos.logback.classic.AsyncAppender&quot;&gt;
+        &lt;appender-ref ref=&quot;FILE&quot;/&gt;
+        &lt;queueSize&gt;1024&lt;/queueSize&gt;
+        &lt;discardingThreshold&gt;0&lt;/discardingThreshold&gt;   &lt;!-- 0=队列满也不丢任何级别日志 --&gt;
+    &lt;/appender&gt;
+
+    &lt;springProfile name=&quot;dev&quot;&gt;
+        &lt;root level=&quot;INFO&quot;&gt;&lt;appender-ref ref=&quot;CONSOLE&quot;/&gt;&lt;/root&gt;
+    &lt;/springProfile&gt;
+    &lt;springProfile name=&quot;prod&quot;&gt;
+        &lt;root level=&quot;INFO&quot;&gt;&lt;appender-ref ref=&quot;ASYNC&quot;/&gt;&lt;/root&gt;
+        &lt;logger name=&quot;com.demo.library.mapper&quot; level=&quot;DEBUG&quot;/&gt;   &lt;!-- 单独调某个包级别 --&gt;
+    &lt;/springProfile&gt;
+&lt;/configuration&gt;
+</code></pre>
+<h3>1.2 日志规范：不是写的，是守的</h3>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>什么时候用</th>
+<th>反例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ERROR</td>
+<td><strong>需要人处理</strong>的故障（数据异常、依赖不可用）</td>
+<td>拿 ERROR 打调试信息，告警狼来了</td>
+</tr>
+<tr>
+<td>WARN</td>
+<td>可自动恢复/需关注（重试成功、降级触发、慢查询）</td>
+<td>该 WARN 的用 ERROR，值班同学崩溃</td>
+</tr>
+<tr>
+<td>INFO</td>
+<td>关键业务节点（订单创建、状态流转、启动关闭）</td>
+<td>一个请求打 20 条 INFO，淹没重点</td>
+</tr>
+<tr>
+<td>DEBUG</td>
+<td>调试细节（参数、中间状态），生产默认关</td>
+<td>生产开着 DEBUG 还不改级别</td>
+</tr>
+</tbody></table>
+<p>五条铁律（每条都值一个生产事故）：</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：日志的终极检验标准——<strong>出事当晚，只靠日志能不能还原现场</strong>：谁（userId/traceId）、什么时候、在哪个环节、什么输入、什么结果、为什么失败。达不到这个标准的日志，打得再多也是浪费磁盘。</p>
+</blockquote>
+<pre><code class="language-java">// ① 占位符，不要字符串拼接（拼接是无条件执行的，白白浪费 CPU）
+log.info(&quot;订单创建成功，orderId={}，amount={}&quot;, orderId, amount);
+
+// ② 异常必须作为最后一个参数传入（打印完整堆栈），msg 里别拼 e.getMessage()
+log.error(&quot;扣库存失败，orderId={}&quot;, orderId, e);       // ✅
+log.error(&quot;扣库存失败：&quot; + e.getMessage());             // ❌ 丢堆栈
+
+// ③ 敏感信息脱敏：密码/身份证/手机号，永远不进日志
+log.info(&quot;用户注册，phone={}&quot;, mask(phone));            // 138****5678
+
+// ④ 分支必须留痕：else 路径静默 = 排查时的黑洞
+if (couponUsable) { ... } else { log.warn(&quot;优惠券不可用，userId={}，couponId={}&quot;, ...); }
+
+// ⑤ warn/error 要能&quot;讲清楚一件事&quot;：谁(userId)、什么(orderId)、为什么、怎么办
+</code></pre>
+<h3>1.3 TraceID：日志的&quot;串珠线&quot;</h3>
+<p>一次请求跨 5 个服务，怎么把散落各处的日志串起来？<strong>TraceID + MDC（Mapped Diagnostic Context）</strong>：入口生成全局唯一 ID，放进 MDC（底层 ThreadLocal），日志格式里 <code>%X{traceId}</code> 自动带出，跨服务时通过 HTTP 头传递：</p>
+<pre><code class="language-java">@Component
+public class TraceIdFilter extends OncePerRequestFilter {
+    private static final String TRACE_HEADER = &quot;X-Trace-Id&quot;;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse resp,
+                                    FilterChain chain) throws ServletException, IOException {
+        String traceId = Optional.ofNullable(req.getHeader(TRACE_HEADER))     // 上游传了就接力
+                .orElse(UUID.randomUUID().toString().replace(&quot;-&quot;, &quot;&quot;));       // 没传就生成
+        MDC.put(&quot;traceId&quot;, traceId);                       // 放进 MDC → 日志自动携带
+        resp.setHeader(TRACE_HEADER, traceId);             // 响应头也带上（前端报障时能提供）
+        try {
+            chain.doFilter(req, resp);
+        } finally {
+            MDC.remove(&quot;traceId&quot;);                         // 线程池复用线程，必须清理！（ThreadLocal 篇的债）
+        }
+    }
+}
+</code></pre>
+<p>所有日志自动带上了 <code>a3f2c81b...</code>，<code>grep traceId</code> 一把捞出全链路。<strong>生产日志必须带 traceId，没有商量。</strong>（注意：跨服务传递时，调用下游要把 traceId 放进请求头；线程池异步时要用 TaskDecorator 复制 MDC。）</p>
+<h3>1.4 集中式日志：ELK 一瞥</h3>
+<p>单机日志 grep 效率太低，标准解法 <strong>ELK</strong>：</p>
+<div class="mermaid">flowchart LR
+    A["应用<br/>日志文件"] -->|"Filebeat 采集"| B["Logstash<br/>解析/过滤"]
+    B -->|"写入"| C["Elasticsearch<br/>存储+索引"]
+    C -->|"查询/图表"| D["Kibana<br/>搜索面板"]
+    style C fill:#ffe0b2
+</div>
+<p>轻量替代：日志直接输出 JSON（logstash-logback-encoder），Filebeat 直发 Elasticsearch，省掉 Logstash。</p>
+<hr>
+<h2>二、监控：出事之前先知道</h2>
+<p><img src="/assets/images/04-06-observability-flow.svg" alt="故障侦探接力：告警→Metrics 定层→Tracing 定环→Logging 定行"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：故障侦探接力：告警→Metrics 定层→Tracing 定环→Logging 定行</p>
+</blockquote>
+<h3>2.1 可观测性三支柱</h3>
+<table>
+<thead>
+<tr>
+<th>支柱</th>
+<th>回答的问题</th>
+<th>本篇工具</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Metrics 指标</td>
+<td>系统现在健康吗？（数值随时间变化）</td>
+<td>Actuator + Micrometer + Prometheus + Grafana</td>
+</tr>
+<tr>
+<td>Logging 日志</td>
+<td>发生了什么？（离散事件）</td>
+<td>Logback + ELK</td>
+</tr>
+<tr>
+<td>Tracing 链路</td>
+<td>一次请求慢在哪一环？</td>
+<td>SkyWalking（高手篇实战）</td>
+</tr>
+</tbody></table>
+<h3>2.2 Actuator：开箱即用的体检中心</h3>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;
+&lt;/dependency&gt;
+</code></pre>
+<pre><code class="language-yaml">management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus   # 暴露哪些端点（默认只有 health）
+  endpoint:
+    health:
+      show-details: when-authorized              # 健康详情：别对匿名用户全裸
+</code></pre>
+<p>常用端点：<code>/actuator/health</code>（健康检查，K8s 探针用它：UP/DOWN）、<code>/actuator/metrics</code>（指标列表，<code>/actuator/metrics/jvm.memory.used</code> 看单项）、<code>/actuator/prometheus</code>（Prometheus 抓取格式）。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：Actuator 的 env、heapdump 等端点暴露<strong>配置明文和堆内敏感数据</strong>。曾发生过生产环境把 <code>include: *</code> 全暴露 + 无鉴权，被扫描器扫到 heapdump 拿到数据库密码。原则：<strong>只暴露必要端点、接入网关统一鉴权、生产环境 management 端口独立（如 9090）且只对内网开放。</strong></p>
+</blockquote>
+<h3>2.3 Micrometer + Prometheus + Grafana</h3>
+<p>Micrometer 是指标&quot;门面&quot;（类比 SLF4 至于日志），四大计量器：</p>
+<table>
+<thead>
+<tr>
+<th>计量器</th>
+<th>语义</th>
+<th>场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Counter</td>
+<td>只增不减</td>
+<td>请求数、错误数</td>
+</tr>
+<tr>
+<td>Gauge</td>
+<td>瞬时值</td>
+<td>当前队列长度、活跃连接数</td>
+</tr>
+<tr>
+<td>Timer</td>
+<td>耗时分布</td>
+<td>接口 RT（次数+总耗时）</td>
+</tr>
+<tr>
+<td>DistributionSummary</td>
+<td>值分布</td>
+<td>请求体大小</td>
+</tr>
+</tbody></table>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;io.micrometer&lt;/groupId&gt;
+    &lt;artifactId&gt;micrometer-registry-prometheus&lt;/artifactId&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p>自定义业务指标（订单创建量）：</p>
+<pre><code class="language-java">@Service
+@RequiredArgsConstructor
+public class OrderMetrics {
+    private final Counter orderCreateCounter;
+    private final Timer orderCreateTimer;
+
+    public OrderMetrics(MeterRegistry registry) {
+        this.orderCreateCounter = Counter.builder(&quot;biz_order_create_total&quot;)
+                .description(&quot;订单创建总数&quot;).tag(&quot;result&quot;, &quot;success&quot;)
+                .register(registry);
+        this.orderCreateTimer = Timer.builder(&quot;biz_order_create_duration&quot;)
+                .description(&quot;下单耗时&quot;).register(registry);
+    }
+
+    public void recordCreate(long costMs) {
+        orderCreateCounter.increment();
+        orderCreateTimer.record(Duration.ofMillis(costMs));
+    }
+}
+</code></pre>
+<p>Prometheus 配置抓取：</p>
+<pre><code class="language-yaml"># prometheus.yml
+scrape_configs:
+  - job_name: &#39;library-app&#39;
+    metrics_path: &#39;/actuator/prometheus&#39;
+    static_configs:
+      - targets: [&#39;host.docker.internal:8080&#39;]
+</code></pre>
+<pre><code class="language-bash">docker run -d -p 9090:9090 -v $PWD/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+docker run -d -p 3000:3000 grafana/grafana      # 打开 3000，加 Prometheus 数据源，导入面板 ID 4701（JVM 四件套）
+</code></pre>
+<p>Grafana 看什么（JVM 面板 + 自定义业务面板的关键指标）：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>指标</th>
+<th>告警思路</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>流量</td>
+<td>QPS、订单创建速率</td>
+<td>突降 50% 告警（可能上游挂了）</td>
+</tr>
+<tr>
+<td>错误</td>
+<td>5xx 比例、异常日志速率</td>
+<td>&gt; 1% 持续 5 分钟告警</td>
+</tr>
+<tr>
+<td>延迟</td>
+<td>RT P95/P99</td>
+<td>P99 &gt; 1s 持续 5 分钟告警</td>
+</tr>
+<tr>
+<td>饱和度</td>
+<td>JVM 堆使用率、GC 频率、线程数、连接池活跃数</td>
+<td>堆 &gt; 85%、Full GC 出现即告警</td>
+</tr>
+</tbody></table>
+<p><strong>告警哲学</strong>：告警必须&quot;看到就要行动&quot;。天天狼来了的告警会被静音，真正致命的那条也一起被埋葬。</p>
+<hr>
+<h2>三、部署：把服务送上线</h2>
+<h3>3.1 打包与 profile</h3>
+<pre><code class="language-bash">mvn clean package -DskipTests=false    # CI 里跑完测试再打包
+java -jar library-app.jar --spring.profiles.active=prod
+# 外置配置优先级高于 jar 内：config/application.yml 或同目录 application.yml 可覆盖打包配置（运维改配置不用重新打包）
+</code></pre>
+<h3>3.2 Docker 化</h3>
+<pre><code class="language-dockerfile"># 多阶段构建：构建层和运行层分离，最终镜像不带 Maven 和源码
+FROM maven:3.9-eclipse-temurin-17 AS builder
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline           # 先拉依赖（利用 Docker 层缓存：pom 不变就跳过）
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+FROM eclipse-temurin:17-jre-alpine      # 运行层只要 JRE（~200MB vs JDK ~600MB）
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
+
+# 容器里跑 Java 的关键参数：尊重容器内存限制（老 JVM 默认看宿主机内存，容器限 1G 它按 16G 算堆，直接 OOMKilled）
+ENV JAVA_OPTS=&quot;-XX:MaxRAMPercentage=75.0 -XX:+UseG1GC&quot;
+EXPOSE 8080
+ENTRYPOINT [&quot;sh&quot;, &quot;-c&quot;, &quot;java $JAVA_OPTS -jar app.jar&quot;]
+</code></pre>
+<h3>3.3 docker-compose 一键拉起全家桶</h3>
+<pre><code class="language-yaml">version: &quot;3.8&quot;
+services:
+  app:
+    build: .
+    ports: [&quot;8080:8080&quot;]
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/library
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on: [mysql, redis]
+  mysql:
+    image: mysql:8.0
+    environment: { MYSQL_ROOT_PASSWORD: root123, MYSQL_DATABASE: library }
+    ports: [&quot;3306:3306&quot;]
+    volumes: [&quot;mysql-data:/var/lib/mysql&quot;]
+  redis:
+    image: redis:7
+    ports: [&quot;6379:6379&quot;]
+  prometheus:
+    image: prom/prometheus
+    ports: [&quot;9090:9090&quot;]
+    volumes: [&quot;./prometheus.yml:/etc/prometheus/prometheus.yml&quot;]
+  grafana:
+    image: grafana/grafana
+    ports: [&quot;3000:3000&quot;]
+volumes:
+  mysql-data:
+</code></pre>
+<p><code>docker compose up -d</code> 一条命令：应用 + MySQL + Redis + 监控全家桶全部就绪——本地演示、测试环境、新同事入职环境，全都这一招。</p>
+<h3>3.4 优雅停机</h3>
+<p>直接 kill 进程 = 正在处理的请求被腰斩。三件套：</p>
+<pre><code class="language-yaml">server:
+  shutdown: graceful          # 收到 SIGTERM 后：停止接新请求，等存量请求处理完（默认上限 30s）
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+</code></pre>
+<p>配合 K8s 的 preStop 钩子（sleep 几秒等负载均衡摘流量）+ ThreadPoolTaskExecutor 的 waitForTasksToCompleteOnShutdown，滚动更新不丢请求。</p>
+<hr>
+<h2>四、上线检查清单（贴工位上）</h2>
+<ul>
+<li><input disabled="" type="checkbox"> 日志：格式统一带 traceId、ERROR 有告警、敏感信息已脱敏</li>
+<li><input disabled="" type="checkbox"> 监控：QPS/RT/错误率/堆/GC 五类指标上 Grafana，告警规则生效过演练</li>
+<li><input disabled="" type="checkbox"> 健康检查：/actuator/health 配入负载均衡/K8s 探针</li>
+<li><input disabled="" type="checkbox"> 配置：密码环境变量注入、生产 profile 独立、Actuator 端点最小化</li>
+<li><input disabled="" type="checkbox"> 容量：压测过、连接池/线程池参数有依据（性能篇细讲）</li>
+<li><input disabled="" type="checkbox"> 停机：graceful shutdown 开启、发布策略（滚动/灰度）确认</li>
+<li><input disabled="" type="checkbox"> 回滚：上一版本镜像/jar 可一键回滚，回滚演练过</li>
+</ul>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：这份清单不是&quot;上线前一天看的&quot;，是<strong>开发过程中每天对照的</strong>。等到上线日才发现没 traceId、没监控，补的成本是平时的十倍——而且那晚你根本没有十倍时间。</p>
+</blockquote>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>日志三件套：logback 滚动+异步配置、五条规范（占位符/堆栈/脱敏/分支留痕/信息完整）、TraceID+MDC 串联全链路（finally 必须 remove）；</li>
+<li>ELK 解决日志集中检索：Filebeat → Logstash → ES → Kibana；</li>
+<li>可观测性三支柱：Metrics（健康数值）、Logging（事件）、Tracing（链路）；</li>
+<li>Actuator 暴露健康与指标，但必须最小化+鉴权（env/heapdump 是泄密重灾区）；</li>
+<li>Micrometer 四计量器 + Prometheus 抓取 + Grafana 面板（JVM 4701），告警要&quot;看到即行动&quot;；</li>
+<li>Docker 多阶段构建瘦身镜像，MaxRAMPercentage 适配容器内存限制；compose 一键全家桶；优雅停机三件套防发布丢请求。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）为什么日志用 <code>log.info(&quot;x={}&quot;, x)</code> 而不是 <code>log.info(&quot;x=&quot; + x)</code>？两者在 DEBUG 级别关闭时的开销差异在哪？</li>
+<li>（概念）MDC 的底层是什么？线程池场景下 traceId 为什么会&quot;串号&quot;？怎么解决？</li>
+<li>（动手）给图书系统接 TraceIdFilter，验证一次请求的所有日志（Controller/Service/全局异常）都带同一 traceId；</li>
+<li>（动手）接入 Actuator + Prometheus + Grafana（compose 拉起），导入 4701 面板，用压测工具打图书查询接口，观察 QPS/RT/堆内存/GC 曲线变化；</li>
+<li>（动手·进阶）完成 Dockerfile 多阶段构建 + compose 全家桶部署；然后演练优雅停机：压测进行中执行 <code>docker restart</code>，统计被腰斩的请求数（对比开关 graceful 前后）；最后按第四节清单给你的项目打分，写出三项最需要补齐的行动项。</li>
+</ol>
+<blockquote>
+<p>实践篇收官！接下来是最后的<strong>高手进阶篇</strong>：微服务拆分、分布式疑难杂症、性能优化方法论，以及——写给每一位学习者的《从码农到专家：Java 工程师成长指南》。最后一程，冲刺山顶。</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/04-practice/05-testing.html"><span>← 上一篇</span><b>测试与质量守护</b></a><a class="pn" href="/05-architecture/01-microservices.html"><span>下一篇 →</span><b>微服务拆分与 Spring Cloud 实战</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

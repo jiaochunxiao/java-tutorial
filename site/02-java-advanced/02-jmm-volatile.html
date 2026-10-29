@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多线程（二）：JMM、volatile 与锁升级 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item active" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 多线程（二）：JMM、volatile 与锁升级</div>
+  <article>
+<h1>多线程（二）：JMM、volatile 与锁升级</h1>
+<p>先看一段&quot;灵异代码&quot;：</p>
+<pre><code class="language-java">public class GhostDemo {
+    static boolean running = true;                 // 一个普普通通的开关
+
+    public static void main(String[] args) throws Exception {
+        Thread worker = new Thread(() -&gt; {
+            while (running) {                       // 主线程改了 running，它却&quot;看不见&quot;
+                // 空转
+            }
+            System.out.println(&quot;worker 结束&quot;);
+        });
+        worker.start();
+        Thread.sleep(1000);
+        running = false;                            // 主线程：把开关关了
+        System.out.println(&quot;main 已把 running 置为 false&quot;);
+        // 大概率的现象：main 打印完，worker 还在疯狂空转，程序不退出！
+    }
+}
+</code></pre>
+<p>main 线程明明把 <code>running</code> 改成了 false，worker 线程就像瞎了一样死循环。这不是 bug，这是<strong>特性</strong>——JMM（Java 内存模型）的&quot;剧本&quot;就是如此。今天这篇，咱们就把这个&quot;灵异事件&quot;的原理彻底搞明白，顺便拿下三个面试高频：<strong>volatile、锁升级、CAS</strong>。</p>
+<hr>
+<h2>一、JMM：主内存与工作内存的&quot;草稿纸模型&quot;</h2>
+<p><img src="/assets/images/02-02-jmm-volatile.svg" alt="主内存/工作内存草稿纸模型与 volatile 的&quot;写后广播&quot;"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：主内存/工作内存草稿纸模型与 volatile 的&quot;写后广播&quot;</p>
+</blockquote>
+<p>现代 CPU 的速度和内存的速度差着几个数量级，为了填补这个鸿沟，CPU 和内存之间架了好几层<strong>缓存（Cache）</strong>。每个 CPU 核心都有自己的高速缓存，于是问题来了：</p>
+<div class="mermaid">flowchart TB
+    subgraph 线程A
+        WA["工作内存<br/>（A 核心的缓存+寄存器）<br/>running 的副本"]
+    end
+    subgraph 线程B
+        WB["工作内存<br/>（B 核心的缓存+寄存器）<br/>running 的副本"]
+    end
+    MM["主内存（Main Memory）<br/>running = true"]
+    WA <-->|"read/load/use<br/>assign/store/write"| MM
+    WB <-->|"read/load/use<br/>assign/store/write"| MM
+    WA x-.->|"无法直接通信！"| WB
+</div>
+<p>Java 内存模型（Java Memory Model，JMM）把这个硬件现实抽象成了两条规则：</p>
+<ol>
+<li>所有共享变量都存在<strong>主内存</strong>；</li>
+<li>每个线程有自己的<strong>工作内存</strong>（可理解为 CPU 缓存 + 寄存器的抽象），线程对变量的操作必须在工作内存进行：先从主内存拷贝副本 → 改副本 → 刷回主内存。<strong>线程 A 和线程 B 不能直接访问对方的工作内存。</strong></li>
+</ol>
+<p>回到开头的灵异事件：worker 线程把 <code>running</code> 读进自己的工作内存后，JIT 编译器发现循环里没人动它，干脆一直用工作内存里的副本（true），再也不去主内存看一眼。main 改的是自己的副本再刷回主内存，worker 压根不知道。这就是<strong>可见性问题（Visibility）</strong>。</p>
+<h3>并发 bug 的三大来源</h3>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>含义</th>
+<th>通俗版</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>原子性（Atomicity）</td>
+<td>操作不可分割，中途不能被打扰</td>
+<td><code>i++</code> 实际是&quot;读-加-写&quot;三步，两线程同时 i++ 会丢一次</td>
+</tr>
+<tr>
+<td>可见性（Visibility）</td>
+<td>一个线程的修改，另一个线程能立刻看到</td>
+<td>你改了会议室白板，我在小黑屋看的是旧照片</td>
+</tr>
+<tr>
+<td>有序性（Ordering）</td>
+<td>代码执行顺序符合预期</td>
+<td>CPU/编译器会指令重排，单线程结果不变，多线程可能翻天</td>
+</tr>
+</tbody></table>
+<p>三者由谁保证，一张表说清：</p>
+<table>
+<thead>
+<tr>
+<th>目标</th>
+<th>手段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>原子性</td>
+<td>synchronized、Lock、CAS（AtomicXxx）、long/double 外的基本类型读写天然原子</td>
+</tr>
+<tr>
+<td>可见性</td>
+<td>volatile、synchronized、final（正确发布）、Lock</td>
+</tr>
+<tr>
+<td>有序性</td>
+<td>volatile、synchronized、Lock</td>
+</tr>
+</tbody></table>
+<h3>happens-before：判断可见性的&quot;法律条文&quot;</h3>
+<p>JMM 不要求你背下所有底层细节，它给了一套用户视角的规则——<strong>happens-before（hb）</strong>：如果操作 A happens-before 操作 B，那么 A 的结果对 B 可见。常用的几条：</p>
+<ol>
+<li><strong>程序顺序规则</strong>：单线程内，前面的操作 hb 后面的操作（看着是顺序执行的效果）；</li>
+<li><strong>监视器锁规则</strong>：解锁 hb 后续对同一把锁的加锁；</li>
+<li><strong>volatile 规则</strong>：对 volatile 变量的写 hb 后续对它的读；</li>
+<li><strong>线程启动规则</strong>：<code>Thread.start()</code> hb 该线程内的所有操作（所以启动前设置的变量，子线程一定看得见）；</li>
+<li><strong>传递性</strong>：A hb B，B hb C，则 A hb C。</li>
+</ol>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：happens-before 不是&quot;时间上先发生&quot;，而是&quot;结果上保证可见&quot;。有了这五条规则，你不用研究 CPU 缓存协议也能推理多线程代码的正确性——这是 JLS（Java 语言规范）跟程序员签的合同。</p>
+</blockquote>
+<hr>
+<h2>二、volatile：轻量级的&quot;广播电台&quot;</h2>
+<p>给 <code>running</code> 加上 volatile，灵异事件立刻消失：</p>
+<pre><code class="language-java">static volatile boolean running = true;   // 加一个关键字
+</code></pre>
+<p>volatile 的语义：<strong>一个线程修改 volatile 变量后，新值立刻刷回主内存并让其他线程的副本失效；其他线程读取时必须去主内存拿最新值。</strong> 相当于每次写都拿着大喇叭广播：&quot;各位，值变了，都来重新抄！&quot;</p>
+<p>volatile 提供两个保证：</p>
+<ol>
+<li><strong>可见性</strong>：写立即对其他线程可见；</li>
+<li><strong>禁止指令重排</strong>：编译器和 CPU 不许把 volatile 前后的代码&quot;乱序&quot;到影响语义的程度（底层靠内存屏障 Memory Barrier 实现）。</li>
+</ol>
+<h3>volatile 不保证原子性（必考！）</h3>
+<pre><code class="language-java">public class VolatileNotAtomic {
+    static volatile int count = 0;
+
+    public static void main(String[] args) throws Exception {
+        Runnable task = () -&gt; {
+            for (int i = 0; i &lt; 10000; i++) {
+                count++;                        // volatile 也救不了它
+            }
+        };
+        Thread t1 = new Thread(task), t2 = new Thread(task);
+        t1.start(); t2.start();
+        t1.join(); t2.join();
+        System.out.println(count);              // 期望 20000，实际几乎必然小于 20000
+    }
+}
+</code></pre>
+<p>为什么？<code>count++</code> 是三步舞：读最新值（比如 5）→ 加 1 → 写回 6。两个线程可以同时读到 5，各自加出 6，写回两次 6——一次更新白白蒸发。volatile 只保证每次&quot;读&quot;都拿到最新值、每次&quot;写&quot;都立刻广播，但它管不住&quot;两步之间被人插队&quot;。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：volatile 的适用场景是<strong>一个线程写、多个线程读</strong>的状态标志位（如开关、配置热更新标记）。多人同时写一个 volatile 计数器，是新手最经典的误用。要原子自增，用 <code>AtomicInteger</code>（下面讲 CAS）或者锁。</p>
+</blockquote>
+<h3>volatile 的巅峰应用：DCL 双重检查锁单例</h3>
+<p>volatile 禁止重排的特性，在&quot;双重检查锁（Double-Checked Locking）单例&quot;里是<strong>保命的</strong>：</p>
+<pre><code class="language-java">public class Singleton {
+    private static volatile Singleton instance;    // 没有 volatile，这个单例就是半成品！
+
+    private Singleton() {}
+
+    public static Singleton getInstance() {
+        if (instance == null) {                    // 第一次检查：没锁，快速通过（已创建时零开销）
+            synchronized (Singleton.class) {
+                if (instance == null) {            // 第二次检查：拿到锁后再确认一次
+                    instance = new Singleton();
+                }
+            }
+        }
+        return instance;
+    }
+}
+</code></pre>
+<p>为什么必须 volatile？因为 <code>new Singleton()</code> 不是一步到位，它分三步：</p>
+<ol>
+<li>分配内存；</li>
+<li>调用构造器初始化对象；</li>
+<li>把内存地址赋给 instance。</li>
+</ol>
+<p>CPU 可能<strong>把 2 和 3 重排</strong>（先赋地址再初始化）。线程 A 执行到&quot;3 已完成、2 还没做&quot;的瞬间，线程 B 在第一次检查处看到 instance != null，兴冲冲拿走一个**&quot;半成品对象&quot;**——字段全是默认值，用它就是玄学 bug。volatile 禁止这个重排，杜绝半成品出厂。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：单例的完整答案链——饿汉（类加载即创建，简单粗暴）→ 懒汉（用时再创建，但要防并发）→ <strong>DCL（volatile + 双重检查，高性能懒加载）</strong> → 静态内部类（JVM 类加载机制天然保证线程安全，推荐）→ 枚举（《Effective Java》钦定，还能防反射攻击）。面试按这个演进讲，分数拉满。</p>
+</blockquote>
+<hr>
+<h2>三、synchronized 的真面目：monitor 与锁升级</h2>
+<p>上一篇我们把 synchronized 当黑盒用，现在拆开看。synchronized 的底层依赖每个对象自带的 <strong>monitor（监视器锁）</strong>，字节码层面表现为 <code>monitorenter</code> / <code>monitorexit</code> 指令。monitor 依赖操作系统的**互斥量（Mutex Lock）**实现——这意味着一个线程拿不到锁时，要被&quot;挂起 → 恢复&quot;，涉及用户态/内核态切换，<strong>成本很高</strong>（重量级锁的名字就这么来的）。</p>
+<p>JDK 6 的工程师为了优化，搞出了&quot;锁升级&quot;机制——锁的信息藏在<strong>对象头（Object Header）的 Mark Word</strong> 里，状态从乐观到悲观逐级退化：</p>
+<div class="mermaid">flowchart LR
+    A["无锁状态<br/>Normal"] -->|"线程 A 首次访问"| B["偏向锁<br/>Biased Lock<br/>Mark Word 记录线程 A 的 ID"]
+    B -->|"线程 B 也来竞争"| C["轻量级锁<br/>Lightweight Lock<br/>CAS 自旋抢锁<br/>（栈里 Lock Record + Mark Word 交换）"]
+    C -->|"自旋超过阈值<br/>或第三个线程来抢"| D["重量级锁<br/>Heavyweight Lock<br/>操作系统 mutex<br/>阻塞挂起，开销最大"]
+    style A fill:#e8f5e9
+    style B fill:#fff9c4
+    style C fill:#ffe0b2
+    style D fill:#ffcdd2
+</div>
+<table>
+<thead>
+<tr>
+<th>锁状态</th>
+<th>适用场景</th>
+<th>原理</th>
+<th>开销</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>偏向锁</td>
+<td>只有一个线程反复拿锁（实际多数锁属于这种情况）</td>
+<td>Mark Word 记下线程 ID，下次同一线程来了直接进，连 CAS 都省了</td>
+<td>最小</td>
+</tr>
+<tr>
+<td>轻量级锁</td>
+<td>少量线程交替拿锁，竞争不激烈且持锁时间短</td>
+<td>线程在自己的栈帧里建 Lock Record，CAS 把 Mark Word 指向它；抢不到就<strong>自旋</strong>（空转重试）等一会儿</td>
+<td>自旋耗 CPU，但不涉及内核切换</td>
+</tr>
+<tr>
+<td>重量级锁</td>
+<td>竞争激烈、持锁时间长</td>
+<td>自旋是浪费（CPU 空转不如让给别人），升级为 monitor，抢不到的线程挂起排队</td>
+<td>最大</td>
+</tr>
+</tbody></table>
+<p>几个要点：</p>
+<ul>
+<li>升级是<strong>单向的</strong>，不能降级（有批量重偏向、批量撤销等补丁机制，了解即可）；</li>
+<li>JDK 15 起<strong>默认废弃了偏向锁</strong>（默认轻量级起步）——因为维护成本高、收益在现代高并发场景变小。面试提一句这个演进，加分；</li>
+<li>自适应自旋：JVM 会根据上一次自旋是否成功，动态调整自旋次数，越用越聪明。</li>
+</ul>
+<hr>
+<h2>四、CAS：无锁编程的基石</h2>
+<p>synchronized 是&quot;悲观派&quot;：先假设人人跟我抢，进门先上锁。还有一派&quot;乐观派&quot;：先干活，提交时看看有没有人抢先——这就是 <strong>CAS（Compare And Swap，比较并交换）</strong>。</p>
+<p>CAS 是一条 CPU 级别的原子指令（x86 的 <code>cmpxchg</code>），语义是三件事一步完成：<strong>&quot;我认为变量 V 的值应该是 A，如果是，就把它改成 B；如果不是，说明有人抢先了，告诉我现在的值，我重试。&quot;</strong></p>
+<p>JDK 里由 <code>Unsafe</code> 类提供入口，<code>AtomicInteger</code> 就是靠它实现无锁原子自增：</p>
+<pre><code class="language-java">public class AtomicIntegerDemo {
+    static AtomicInteger count = new AtomicInteger(0);
+
+    public static void main(String[] args) throws Exception {
+        Runnable task = () -&gt; {
+            for (int i = 0; i &lt; 10000; i++) {
+                count.incrementAndGet();   // CAS 循环：拿旧值→+1→CAS 写回，失败就重试
+            }
+        };
+        Thread t1 = new Thread(task), t2 = new Thread(task);
+        t1.start(); t2.start();
+        t1.join(); t2.join();
+        System.out.println(count.get());   // 稳定输出 20000，volatile 版本做不到
+    }
+}
+</code></pre>
+<p>手写一个 CAS 风格的重试（感受思想）：</p>
+<pre><code class="language-java">public static int casAdd(AtomicInteger atomic) {
+    int oldVal, newVal;
+    do {
+        oldVal = atomic.get();         // 读旧值
+        newVal = oldVal + 1;           // 算新值
+    } while (!atomic.compareAndSet(oldVal, newVal));  // CAS 失败说明被人抢先，重读重试
+    return newVal;
+}
+</code></pre>
+<h3>CAS 的三大软肋</h3>
+<ol>
+<li><strong>ABA 问题</strong>：线程 1 读到 A，线程 2 把 A 改成 B 又改回 A。线程 1 CAS 时发现&quot;还是 A&quot;，成功写入——但它错过了&quot;A 曾经变过&quot;这个事实。数值版无关痛痒，<strong>引用版可能出大事</strong>（对象内部已被改得面目全非，指针却&quot;没变&quot;）。解法：带版本号——<code>AtomicStampedReference</code>（比较&quot;值+版本戳&quot;）；</li>
+<li><strong>自旋开销</strong>：竞争激烈时 CAS 一直失败一直重试，CPU 空转烧得发红。高写入竞争场景，<code>LongAdder</code>（分段累加，空间换时间）比 <code>AtomicLong</code> 更合适；</li>
+<li><strong>只能保证单个变量</strong>：CAS 一次只盯一个变量，多个变量要原子更新只能锁，或者把它们打包成一个对象用 <code>AtomicReference</code>。</li>
+</ol>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：J.U.C（java.util.concurrent）的半壁江山建立在 CAS + volatile 之上：AQS 的锁状态、并发容器的增删、原子类，全是这俩的组合。把 CAS 的思想和 ABA 记牢，后面读 AQS 源码会顺得像滑梯。</p>
+</blockquote>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>JMM 抽象了&quot;主内存 + 线程工作内存&quot;模型，线程间不能直接通信，可见性问题因此产生；</li>
+<li>并发三大问题（原子性/可见性/有序性）及各自保证手段，是并发知识的主干；</li>
+<li>happens-before 是判断可见性的规则合同，重点记：程序顺序、锁、volatile、start、传递性五条；</li>
+<li>volatile = 可见性 + 禁止重排，<strong>不保证原子性</strong>；典型场景是状态标志位和 DCL 单例；</li>
+<li>synchronized 底层是 monitor，JDK 6 后有锁升级：无锁→偏向→轻量级→重量级，单向不可逆；</li>
+<li>CAS 是乐观的 CPU 原子指令，AtomicInteger 无锁自增靠它；软肋是 ABA（用 AtomicStampedReference）、自旋开销、只能单变量。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）运行本文开头的 GhostDemo，观察 worker 停不下来的现象；给 running 加 volatile 后再次运行。尝试解释加 volatile 前后各发生了什么。</li>
+<li>（概念）为什么 DCL 单例去掉 volatile 在测试环境&quot;从来没出过错&quot;？这种 bug 为什么最可怕？</li>
+<li>（概念）偏向锁为什么在 JDK 15 被默认废弃？从&quot;维护成本 vs 收益&quot;角度谈谈你的理解。</li>
+<li>（动手）用 2 个线程各累加 100 万次：分别用 <code>volatile int</code>、<code>AtomicInteger</code>、<code>synchronized</code> 三种方式实现，对比最终值与耗时。</li>
+<li>（动手·进阶）写一个可运行的 ABA 演示：主线程用 <code>AtomicReference&lt;Integer&gt;</code> 从 100 改到 200 再改回 100，干扰线程在中间&quot;做了手脚&quot;；再用 <code>AtomicStampedReference</code> 修复，验证第二次 CAS 失败。</li>
+</ol>
+<blockquote>
+<p>下一篇预告：《多线程（三）：AQS、显式锁与线程池》—— synchronized 已经这么智能了，为什么还要有 ReentrantLock？传说中的 AQS 到底是个什么神仙设计？以及程序员必备的线程池，七大参数背后是一整套&quot;公司用工哲学&quot;。</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/02-java-advanced/01-thread-basics.html"><span>← 上一篇</span><b>多线程（一）：万物皆可 Thread</b></a><a class="pn" href="/02-java-advanced/03-aqs-threadpool.html"><span>下一篇 →</span><b>多线程（三）：AQS、显式锁与线程池</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

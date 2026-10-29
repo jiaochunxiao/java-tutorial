@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 420" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="860" height="420" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">JVM 排查工具箱：按"症状"取"工具"</text>
+  <text x="430" y="60" text-anchor="middle" font-size="12" fill="#64748B">命令行四板斧（jps/jstat/jmap/jstack）+ 两把进阶神器（MAT / Arthas）</text>
+
+  <!-- rows -->
+  <g font-size="13">
+    <!-- row 1 -->
+    <rect x="50" y="86" width="200" height="66" rx="10" fill="#FEE2E2" stroke="#FCA5A5" stroke-width="1.5"/>
+    <text x="66" y="112" font-weight="700" fill="#B91C1C">症状：CPU 100%</text>
+    <text x="66" y="134" font-size="11" fill="#991B1B">接口卡但日志没报错</text>
+    <line x1="254" y1="119" x2="286" y2="119" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="290" y="86" width="530" height="66" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="306" y="112" fill="#334155" font-weight="700">五步法：top 找进程 → top -Hp 找线程 → printf '%x' 转十六进制</text>
+    <text x="306" y="134" fill="#334155" font-weight="700">→ jstack | grep nid=0x.. 定位栈帧（Arthas：thread -n 1 一步到位）</text>
+
+    <!-- row 2 -->
+    <rect x="50" y="166" width="200" height="66" rx="10" fill="#FFF7ED" stroke="#FDBA74" stroke-width="1.5"/>
+    <text x="66" y="192" font-weight="700" fill="#9A3412">症状：堆 OOM</text>
+    <text x="66" y="214" font-size="11" fill="#9A3412">OutOfMemoryError: Java heap</text>
+    <line x1="254" y1="199" x2="286" y2="199" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="290" y="166" width="530" height="66" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="306" y="192" fill="#334155" font-weight="700">jmap -dump 留现场 → MAT 分析：Dominator Tree 找最大对象</text>
+    <text x="306" y="214" fill="#334155" font-weight="700">+ Leak Suspects 报告 → 定位"谁在无限膨胀"（典型：无界缓存）</text>
+
+    <!-- row 3 -->
+    <rect x="50" y="246" width="200" height="66" rx="10" fill="#EDE9FE" stroke="#C4B5FD" stroke-width="1.5"/>
+    <text x="66" y="272" font-weight="700" fill="#6D28D9">症状：GC 频繁</text>
+    <text x="66" y="294" font-size="11" fill="#5B21B6">接口周期性卡顿 / P99 抖动</text>
+    <line x1="254" y1="279" x2="286" y2="279" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="290" y="246" width="530" height="66" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="306" y="272" fill="#334155" font-weight="700">jstat -gcutil 看各代占比与 GC 次数 → 开 GC 日志丢 GCEasy 解读</text>
+    <text x="306" y="294" fill="#334155" font-weight="700">判断方向：Eden 太小？大对象提前晋升？还是内存泄漏？</text>
+
+    <!-- row 4 -->
+    <rect x="50" y="326" width="200" height="66" rx="10" fill="#D1FAE5" stroke="#6EE7B7" stroke-width="1.5"/>
+    <text x="66" y="352" font-weight="700" fill="#047857">症状：死锁 / 线程堆积</text>
+    <text x="66" y="374" font-size="11" fill="#047852">接口全 hang 住不响应</text>
+    <line x1="254" y1="359" x2="286" y2="359" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="290" y="326" width="530" height="66" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="306" y="352" fill="#334155" font-weight="700">jstack 输出底部直接提示 "Found one Java-level deadlock"</text>
+    <text x="306" y="374" fill="#334155" font-weight="700">看 BLOCKED 线程在等哪把锁；Arthas：thread --state BLOCKED 批量看</text>
+  </g>
+
+  <rect x="50" y="400" width="770" height="14" rx="7" fill="#EFF6FF"/>
+</svg>

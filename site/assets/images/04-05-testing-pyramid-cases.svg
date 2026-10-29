@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 440" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <rect width="860" height="440" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">测试金字塔 × 图书系统实例对照</text>
+  <text x="430" y="60" text-anchor="middle" font-size="12" fill="#64748B">比例参考：70% 单元 / 20% 集成 / 10% E2E——越往上越慢越脆，所以只给核心流程</text>
+
+  <!-- pyramid layers -->
+  <g text-anchor="middle">
+    <!-- E2E -->
+    <path d="M 330 84 L 530 84 L 500 140 L 360 140 Z" fill="#FEE2E2" stroke="#FCA5A5" stroke-width="2"/>
+    <text x="430" y="110" font-size="13" font-weight="700" fill="#B91C1C">端到端 E2E（~10%）</text>
+    <text x="430" y="130" font-size="11" fill="#991B1B">MockMvc 打真实接口</text>
+    <!-- integration -->
+    <path d="M 300 152 L 560 152 L 525 232 L 335 232 Z" fill="#FEF3C7" stroke="#FCD34D" stroke-width="2"/>
+    <text x="430" y="180" font-size="13" font-weight="700" fill="#B45309">集成测试（~20%）</text>
+    <text x="430" y="202" font-size="11" fill="#92400E">@SpringBootTest + Testcontainers</text>
+    <text x="430" y="220" font-size="11" fill="#92400E">@Transactional 自动回滚防污染</text>
+    <!-- unit -->
+    <path d="M 270 244 L 590 244 L 550 336 L 310 336 Z" fill="#D1FAE5" stroke="#6EE7B7" stroke-width="2"/>
+    <text x="430" y="274" font-size="13" font-weight="700" fill="#047857">单元测试（~70%）★主力</text>
+    <text x="430" y="298" font-size="11" fill="#047852">JUnit 5 + AssertJ + Mockito</text>
+    <text x="430" y="318" font-size="11" fill="#047852">毫秒级、无外部依赖、改完就跑</text>
+    <!-- base -->
+    <path d="M 240 348 L 620 348 L 575 400 L 285 400 Z" fill="#DBEAFE" stroke="#93C5FD" stroke-width="2"/>
+    <text x="430" y="378" font-size="12" fill="#1D4ED8">原则：测业务逻辑 / 边界 / bug 史</text>
+    <text x="430" y="396" font-size="11" fill="#475569">不测 getter、setter、框架自身</text>
+  </g>
+
+  <!-- concrete examples -->
+  <g font-size="11" fill="#334155">
+    <rect x="640" y="80" width="196" height="98" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="654" y="104" font-weight="700" fill="#B91C1C">实例：借书全流程</text>
+    <text x="654" y="126">POST /borrow → 400/200</text>
+    <text x="654" y="146">→ 库存变化 → 借阅记录</text>
+    <text x="654" y="166" font-size="10.5" fill="#64748B">一条路走到黑，只测主干</text>
+    <rect x="640" y="188" width="196" height="112" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="654" y="212" font-weight="700" fill="#B45309">实例：Repository 层</text>
+    <text x="654" y="234">真 MySQL 容器里验证</text>
+    <text x="654" y="254">逻辑删除 / 乐观锁扣库存</text>
+    <text x="654" y="274" font-size="10.5" fill="#64748B">别用 H2 糊弄：方言差异会</text>
+    <text x="654" y="290" font-size="10.5" fill="#64748B">"测试全绿、上线报错"</text>
+    <rect x="640" y="310" width="196" height="102" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="654" y="334" font-weight="700" fill="#047857">实例：Service 层</text>
+    <text x="654" y="356">Mock Mapper：正常 / 重名</text>
+    <text x="654" y="376">/ 库存不足 三条用例</text>
+    <text x="654" y="396" font-size="10.5" fill="#64748B">Mock 边界，断言行为</text>
+  </g>
+
+  <!-- left warning -->
+  <g font-size="11" fill="#334155">
+    <rect x="24" y="150" width="180" height="150" rx="10" fill="#FFF7ED" stroke="#FDBA74"/>
+    <text x="40" y="176" font-weight="700" fill="#9A3412">倒金字塔反模式</text>
+    <text x="40" y="200">大量 E2E、没有单测：</text>
+    <text x="40" y="222">全量跑 1 小时、失败</text>
+    <text x="40" y="242">定位半天 → 大家开始</text>
+    <text x="40" y="262" font-weight="700" fill="#B91C1C">选择性忽略测试邮件</text>
+    <text x="40" y="286" fill="#92400E">→ 测试名存实亡</text>
+  </g>
+</svg>

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 440" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="860" height="440" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">线程池 = 一家"用工制度"公司（七大参数的角色）</text>
+
+  <!-- submit desk -->
+  <rect x="46" y="150" width="120" height="90" rx="12" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="106" y="184" text-anchor="middle" font-size="13" font-weight="700" fill="#1D4ED8">任务提交处</text>
+  <text x="106" y="206" text-anchor="middle" font-size="11" fill="#475569">execute(task)</text>
+  <text x="106" y="224" text-anchor="middle" font-size="11" fill="#475569">源源不断的活儿</text>
+
+  <line x1="166" y1="180" x2="212" y2="180" stroke="#059669" stroke-width="2.5" marker-end="url(#arr)"/>
+  <text x="189" y="166" text-anchor="middle" font-size="11" font-weight="700" fill="#047857">①</text>
+  <line x1="166" y1="212" x2="300" y2="256" stroke="#D97706" stroke-width="2.5" marker-end="url(#arr)"/>
+  <text x="230" y="250" text-anchor="middle" font-size="11" font-weight="700" fill="#B45309">②</text>
+  <line x1="166" y1="230" x2="560" y2="180" stroke="#7C3AED" stroke-width="2.5" marker-end="url(#arr)"/>
+  <text x="360" y="172" text-anchor="middle" font-size="11" font-weight="700" fill="#6D28D9">③</text>
+  <line x1="166" y1="236" x2="660" y2="286" stroke="#DC2626" stroke-width="2.5" marker-end="url(#arr)"/>
+  <text x="410" y="282" text-anchor="middle" font-size="11" font-weight="700" fill="#B91C1C">④</text>
+
+  <!-- core workers -->
+  <rect x="216" y="66" width="290" height="100" rx="12" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+  <text x="361" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="#047857">① 正式员工工位（corePoolSize）</text>
+  <g text-anchor="middle">
+    <rect x="236" y="106" width="74" height="44" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/><text x="273" y="133" font-size="12" fill="#065F46">线程1</text>
+    <rect x="324" y="106" width="74" height="44" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/><text x="361" y="133" font-size="12" fill="#065F46">线程2</text>
+    <rect x="412" y="106" width="74" height="44" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/><text x="449" y="133" font-size="12" fill="#065F46">线程3</text>
+  </g>
+  <text x="361" y="176" text-anchor="middle" font-size="11" fill="#047857">有空位直接开工；长养着不裁（keepAliveTime 不适用）</text>
+
+  <!-- queue -->
+  <rect x="240" y="240" width="230" height="110" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+  <text x="355" y="266" text-anchor="middle" font-size="13" font-weight="700" fill="#B45309">② 任务队列（workQueue）</text>
+  <g text-anchor="middle" font-size="12" fill="#92400E">
+    <rect x="258" y="280" width="56" height="30" rx="6" fill="#FFFFFF" stroke="#FCD34D"/><text x="286" y="300">任务A</text>
+    <rect x="326" y="280" width="56" height="30" rx="6" fill="#FFFFFF" stroke="#FCD34D"/><text x="354" y="300">任务B</text>
+    <rect x="394" y="280" width="56" height="30" rx="6" fill="#FFFFFF" stroke="#FCD34D"/><text x="422" y="300">排队中</text>
+  </g>
+  <text x="355" y="336" text-anchor="middle" font-size="11" fill="#B45309">走廊排号；容量要有界！（无界 = OOM 温床）</text>
+
+  <!-- extra workers -->
+  <rect x="520" y="130" width="250" height="96" rx="12" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+  <text x="645" y="156" text-anchor="middle" font-size="13" font-weight="700" fill="#6D28D9">③ 外包工位（max - core 个）</text>
+  <g text-anchor="middle">
+    <rect x="540" y="168" width="92" height="44" rx="8" fill="#FFFFFF" stroke="#C4B5FD"/><text x="586" y="195" font-size="12" fill="#5B21B6">外包1</text>
+    <rect x="648" y="168" width="92" height="44" rx="8" fill="#FFFFFF" stroke="#C4B5FD"/><text x="694" y="195" font-size="12" fill="#5B21B6">外包2</text>
+  </g>
+  <text x="645" y="240" text-anchor="middle" font-size="11" fill="#6D28D9">队列满了才请；闲置 keepAliveTime 就辞退</text>
+
+  <!-- reject -->
+  <rect x="580" y="268" width="220" height="96" rx="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+  <text x="690" y="294" text-anchor="middle" font-size="13" font-weight="700" fill="#B91C1C">④ 拒绝策略（handler）</text>
+  <text x="690" y="318" text-anchor="middle" font-size="11" fill="#991B1B">队列满 + 线程满 = 装不下了</text>
+  <text x="690" y="338" text-anchor="middle" font-size="11" fill="#991B1B">Abort 抛异常 / CallerRuns 让客户自己干</text>
+  <text x="690" y="356" text-anchor="middle" font-size="11" fill="#991B1B">Discard 丢弃（谨慎！）</text>
+
+  <rect x="46" y="376" width="770" height="52" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="62" y="396" font-size="12" fill="#475569">反直觉考点：执行顺序是 ①核心线程 → ②入队 → ③非核心线程 → ④拒绝策略。队列没满，永远不会请外包——</text>
+  <text x="62" y="416" font-size="12" fill="#64748B">所以无界队列会让 maximumPoolSize 形同虚设。另两位幕后角色：threadFactory 发工牌（线程命名）；unit 是外包闲置计时单位。</text>
+</svg>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 380" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#DC2626"/>
+    </marker>
+  </defs>
+  <rect width="860" height="380" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">数组的内存布局：栈上存"钥匙"，堆上放"柜子"</text>
+
+  <!-- stack -->
+  <rect x="70" y="80" width="240" height="180" rx="12" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="190" y="108" text-anchor="middle" font-size="15" font-weight="700" fill="#1D4ED8">栈 · 线程私有（main 的栈帧）</text>
+  <rect x="100" y="130" width="180" height="44" rx="8" fill="#FFFFFF" stroke="#93C5FD"/>
+  <text x="112" y="157" font-size="14" fill="#1E293B">int[] arr</text>
+  <text x="252" y="157" text-anchor="end" font-size="13" fill="#DC2626" font-weight="700">@0x7f3a</text>
+  <text x="190" y="205" text-anchor="middle" font-size="12" fill="#475569">变量里只存堆对象的"地址"</text>
+  <text x="190" y="226" text-anchor="middle" font-size="12" fill="#475569">（引用，Reference）</text>
+
+  <!-- arrow -->
+  <line x1="316" y1="152" x2="392" y2="152" stroke="#475569" stroke-width="2.5" marker-end="url(#arr)"/>
+  <text x="354" y="140" text-anchor="middle" font-size="11" fill="#475569">指向</text>
+
+  <!-- heap -->
+  <rect x="400" y="80" width="390" height="180" rx="12" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+  <text x="595" y="108" text-anchor="middle" font-size="15" font-weight="700" fill="#047857">堆 · 线程共享（数组对象）</text>
+  <!-- index labels -->
+  <g font-size="12" fill="#065F46" text-anchor="middle">
+    <text x="446" y="134">[0]</text><text x="506" y="134">[1]</text><text x="566" y="134">[2]</text><text x="626" y="134">[3]</text><text x="686" y="134">[4]</text>
+  </g>
+  <g>
+    <rect x="420" y="142" width="52" height="44" rx="6" fill="#FFFFFF" stroke="#6EE7B7"/><text x="446" y="169" text-anchor="middle" font-size="15" fill="#1E293B">10</text>
+    <rect x="480" y="142" width="52" height="44" rx="6" fill="#FFFFFF" stroke="#6EE7B7"/><text x="506" y="169" text-anchor="middle" font-size="15" fill="#1E293B">20</text>
+    <rect x="540" y="142" width="52" height="44" rx="6" fill="#FFFFFF" stroke="#6EE7B7"/><text x="566" y="169" text-anchor="middle" font-size="15" fill="#1E293B">30</text>
+    <rect x="600" y="142" width="52" height="44" rx="6" fill="#FFFFFF" stroke="#6EE7B7"/><text x="626" y="169" text-anchor="middle" font-size="15" fill="#1E293B">40</text>
+    <rect x="660" y="142" width="52" height="44" rx="6" fill="#FFFFFF" stroke="#6EE7B7"/><text x="686" y="169" text-anchor="middle" font-size="15" fill="#1E293B">50</text>
+  </g>
+  <rect x="420" y="196" width="292" height="34" rx="6" fill="#FEF3C7" stroke="#FCD34D"/>
+  <text x="566" y="218" text-anchor="middle" font-size="12" fill="#92400E">对象头里藏着 length = 5（数组自带属性，不用自己记）</text>
+
+  <!-- out of bounds -->
+  <g>
+    <rect x="760" y="142" width="52" height="44" rx="6" fill="#FEE2E2" stroke="#FCA5A5" stroke-dasharray="4 3"/>
+    <text x="786" y="169" text-anchor="middle" font-size="14" fill="#B91C1C">[5]?</text>
+    <line x1="760" y1="164" x2="716" y2="164" stroke="#DC2626" stroke-width="2" marker-end="url(#arrR)"/>
+  </g>
+  <text x="786" y="206" text-anchor="middle" font-size="11" fill="#B91C1C">访问 [5]：</text>
+  <text x="786" y="222" text-anchor="middle" font-size="11" fill="#B91C1C">越界异常!</text>
+
+  <!-- bottom notes -->
+  <rect x="70" y="280" width="730" height="76" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="86" y="302" font-size="13" font-weight="700" fill="#1E293B">三个关键点：</text>
+  <text x="86" y="324" font-size="13" fill="#475569">① 数组对象在堆上连续存放，按下标随机访问是 O(1)；② arr2 = arr1 复制的是"钥匙"不是"柜子"，</text>
+  <text x="86" y="346" font-size="13" fill="#475569">改 arr2[0] 会影响 arr1；③ 二维数组 = 先放一个"钥匙柜"，每个格子再指向一个一维数组。</text>
+</svg>

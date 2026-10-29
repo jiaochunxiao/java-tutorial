@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>String 全解析：最熟悉的陌生人 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item active" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / String 全解析：最熟悉的陌生人</div>
+  <article>
+<h1>String 全解析：最熟悉的陌生人</h1>
+<p>各位同学，大家好！今天咱们聊一位老朋友——<code>String</code>。</p>
+<p>你有没有过这种同事：天天见，天天打招呼，脸熟得不行，可人家问你&quot;他老家哪儿的、属什么的、家里几口人&quot;，你瞬间哑火。<code>String</code> 就是 Java 界的这位同事。每个人写的第一行代码八成是 <code>System.out.println(&quot;Hello, World&quot;)</code>，跟 <code>String</code> 打交道的日子比跟对象（both meanings）都长。但要我说说 <code>String</code> 底下那点事儿——不可变？常量池？<code>intern()</code>？不少同学就开始眼神飘忽、顾左右而言他了。</p>
+<p>更要命的是，面试官特别爱拿 <code>String</code> 开刀。&quot;String 为什么不可变？&quot;<code>new String(&quot;abc&quot;)</code> 创建了几个对象？&quot;&quot;循环里用 <code>+</code> 拼接字符串为什么会被 Code Review 打回来？&quot;——这些问题看着家常，答起来全是坑。今天这一篇，咱们就把这位&quot;最熟悉的陌生人&quot;的老底掀个底朝天。看完这篇，下次面试聊到 <code>String</code>，你可以翘着二郎腿说：&quot;这题我熟，听我给你唠。&quot;</p>
+<h2>一、String 到底是什么：一个&quot;铁面无私&quot;的不可变对象</h2>
+<p>先看一眼 <code>String</code> 的定义（JDK 8 版本）：</p>
+<pre><code class="language-java">public final class String implements java.io.Serializable, Comparable&lt;String&gt;, CharSequence {
+    /** The value is used for character storage */
+    private final char value[];  // JDK 8：真正存字符的数组，final 修饰
+    /** Cache the hash code for the string */
+    private int hash; // Default to 0  // hash 值缓存，懒加载
+    // ...
+}
+</code></pre>
+<p>注意三个关键细节：</p>
+<ol>
+<li>类被 <code>final</code> 修饰——不许继承，谁也别想通过子类重写方法来&quot;篡改&quot;字符串；</li>
+<li>内部的 <code>value</code> 数组被 <code>private final</code> 修饰，且 JDK 8 之后<strong>没有任何公开方法会修改这个数组</strong>；</li>
+<li>所有看起来像&quot;修改&quot;的操作（<code>replace</code>、<code>substring</code>、<code>concat</code>、<code>toUpperCase</code>……），返回的全是<strong>新字符串对象</strong>，原串纹丝不动。</li>
+</ol>
+<p>这就是<strong>不可变性（immutability）</strong>：字符串一旦出生，内容终生不变。你以为的&quot;修改&quot;，其实是&quot;分身&quot;。</p>
+<pre><code class="language-java">String s = &quot;hello&quot;;
+s.toUpperCase();          // 产生新对象 &quot;HELLO&quot;，但没接收
+System.out.println(s);    // 还是 hello —— 分身已死，本体还在
+
+s = s.toUpperCase();      // 这才叫&quot;改&quot;：让引用 s 指向新对象 &quot;HELLO&quot;
+System.out.println(s);    // HELLO —— 旧对象 &quot;hello&quot; 没被改，只是被抛弃了
+</code></pre>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：<code>String</code> 的不可变 = 类 <code>final</code> + 字段 <code>private final</code> + 所有&quot;修改&quot;方法都返回新对象。<code>s = s.toUpperCase()</code> 改的不是字符串，是引用的指向。</p>
+</blockquote>
+<h3>为什么要把 String 设计成不可变？</h3>
+<p>这是面试高频题，也是真正体现设计功力的地方。我给你四个理由，每个都能讲出一个故事。</p>
+<p><strong>理由一：字符串常量池的前提。</strong> Java 为了省内存，搞了个字符串常量池（String Pool），相同字面量在池里只存一份。想想看，如果 <code>String</code> 可变，我把 <code>&quot;hello&quot;</code> 改成 <code>&quot;bye&quot;</code>，全程序所有引用 <code>&quot;hello&quot;</code> 的地方都被殃及——这叫&quot;一个字符串改，整个程序乱&quot;。不可变是常量池能够安全共享的基石。这个咱们下面细说。</p>
+<p><strong>理由二：线程安全的天然选手。</strong> 不可变对象天生线程安全，因为没人能改它，多个线程共享同一个 <code>String</code>，谁也不用加锁，谁也不会把谁的数据改坏。多线程篇咱们会展开讲&quot;不可变对象是并发编程的最爱&quot;，<code>String</code> 就是教科书案例。</p>
+<p><strong>理由三：HashCode 可以缓存。</strong> <code>String</code> 是 HashMap 最常见的 key。如果 <code>String</code> 可变，你拿它当 key 存进去，回头一改内容，hash 变了，再取的时候按新 hash 找，桶都找错了——数据&quot;人间蒸发&quot;。而不可变的 <code>String</code> 可以放心地把 hash 算一次存起来（就是源码里那个 <code>hash</code> 字段），下次直接用，性能白赚。你每次 <code>map.put(&quot;name&quot;, xxx)</code>，都在享受这个缓存红利。</p>
+<p><strong>理由四：安全性。</strong> 文件路径、网络连接地址、类名、数据库 SQL……这些全靠 <code>String</code> 传递。假如可变，黑客可以在安全校验<strong>之后</strong>、实际使用<strong>之前</strong>的空档偷偷改掉字符串内容，这叫&quot;检查时检查、使用时掉包&quot;（TOCTOU 漏洞）。不可变从根上堵死了这条路。</p>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：面试答&quot;为什么不可变&quot;，把&quot;常量池共享的前提、天生线程安全、hashCode 缓存、安全性&quot;四点说出来，再补一句&quot;不可变是这些特性成立的前提条件&quot;，层次感立刻就有了。背结论不如讲逻辑。</p>
+</blockquote>
+<h3>内部存储演进：JDK 9 的 compact strings</h3>
+<p>JDK 8 之前，<code>String</code> 内部是 <code>char[]</code>，一个 <code>char</code> 占 2 个字节（Java 的 char 是 UTF-16 编码）。但统计发现，绝大多数字符串内容是英文、数字这类 Latin-1 字符，一个字节就够，用 <code>char[]</code> 存等于一半内存白瞎了。</p>
+<p>于是 JDK 9 搞了个大动作——<strong>紧凑字符串（Compact Strings）</strong>：</p>
+<pre><code class="language-java">// JDK 9+ 的 String 内部（示意）
+private final byte[] value;  // 存数据的数组，可能是 Latin-1（1 字节/字符）也可能是 UTF-16（2 字节/字符）
+private final byte coder;    // 编码标记：LATIN1(0) 或 UTF16(1)
+</code></pre>
+<p>纯英文字符串用 1 字节一个字符存（省一半内存），包含中文等字符时自动升级为 UTF-16。据官方统计，这一改动平均给堆内存省了约三分之一到一半的字符串开销。对咱们使用者来说完全无感，API 没变——这就是&quot;闷声干大事&quot;的典范。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：有学员在 JDK 8 上用反射拿到了 <code>String.value</code> 字段的类型是 <code>char[]</code>，换到 JDK 17 再跑，直接 <code>ClassCastException</code>——因为字段已经变成 <code>byte[]</code> 了。教训：任何依赖 JDK 内部实现的代码，升级 JDK 时都是雷区。反射撬开别人家抽屉，别人搬家你就抓瞎。</p>
+</blockquote>
+<h2>二、字符串常量池：字面量与 new String 的爱恨情仇</h2>
+<p><img src="/assets/images/01-06-string-pool.svg" alt="常量池与堆对象：s1==s2 为 true、s1==s3 为 false 的原因"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：常量池与堆对象：s1==s2 为 true、s1==s3 为 false 的原因</p>
+</blockquote>
+<p>常量池（String Pool / String Table）是堆里的一块特殊区域（JDK 7 之后从方法区挪到了堆），专门存放字符串字面量，核心使命就一个字：<strong>省</strong>。</p>
+<pre><code class="language-java">String a = &quot;hello&quot;;         // 字面量：JVM 先去常量池找 &quot;hello&quot;，有就直接引用，没有就创建并放进池子
+String b = &quot;hello&quot;;         // 又来一个 &quot;hello&quot;？池里有，直接复用
+System.out.println(a == b); // true —— a 和 b 是同一个对象，指向常量池里同一个 &quot;hello&quot;
+
+String c = new String(&quot;hello&quot;); // new：在堆里（池外）强行 new 一个新对象
+System.out.println(a == c);     // false —— c 是堆里的新对象，跟池里的不是一个
+System.out.println(a.equals(c));// true —— 内容一样，equals 比的是内容
+</code></pre>
+<p>一张图看懂它们住在哪儿（JDK 7+）：</p>
+<div class="mermaid">flowchart TB
+    subgraph Heap["堆（Heap）"]
+        subgraph Pool["字符串常量池（String Table）"]
+            P1["\"hello\""]
+        end
+        O1["new String 对象<br/>value -> 指向池中 char/byte 序列"]
+    end
+    A["引用 a"] --> P1
+    B["引用 b"] --> P1
+    C["引用 c"] --> O1
+    O1 -. "内部 value 数组内容复制自 \"hello\"" .-> P1
+</div>
+<p>所以经典面试题&quot;<code>new String(&quot;abc&quot;)</code> 创建了几个对象&quot;的严谨答案是：<strong>最多两个</strong>。如果 <code>&quot;abc&quot;</code> 不在池中，先在池里创建一个，再在堆里 new 一个，共 2 个；如果池里已有 <code>&quot;abc&quot;</code>，只在堆里 new 1 个。（在栈上还创建了一个引用变量 c，但引用不是对象。）</p>
+<h3>intern()：手动把字符串塞进池子</h3>
+<p><code>intern()</code> 是个很有意思的方法：调用时先看池里有没有相等（equals）的字符串，有就返回池里的那个；没有就把这个对象（JDK 7 起，堆中对象直接登记引用）放进池并返回。</p>
+<pre><code class="language-java">String s1 = new String(&quot;hello&quot;);   // 堆里新对象
+String s2 = s1.intern();           // 池里已有 &quot;hello&quot;（字面量编译期已入池），返回池中对象
+System.out.println(s1 == s2);      // false
+
+String s3 = new StringBuilder(&quot;ja&quot;).append(&quot;va_&quot;).toString();
+// 假设 &quot;java_&quot; 不是程序里已有的字面量（注意 &quot;java&quot; 本身在 JDK 内部已入池）
+String s4 = s3.intern();           // 池里没有，s3 登记入池
+System.out.println(s3 == s4);      // true（JDK 7+：登记的就是 s3 这个堆对象的引用）
+</code></pre>
+<p>实际开发中 <code>intern()</code> 用得不多，但某些场景（比如海量重复字符串，如城市名、状态码）能显著省内存。用之前先做内存分析，别乱用。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：字面量自动入池、相同字面量全局复用；<code>new String</code> 永远在堆里造新对象；<code>==</code> 比较的是引用（是不是同一个对象），<code>equals</code> 比较的是内容。判断字符串内容相等，永远用 <code>equals</code>，没有例外。</p>
+</blockquote>
+<h2>三、<code>+</code> 拼接的真相：编译器的&quot;善意的谎言&quot;</h2>
+<p>先来几道&quot;送分还是送命&quot;取决于你有没有认真听课的题：</p>
+<pre><code class="language-java">// 题目一：字面量拼接
+String a = &quot;hello&quot; + &quot;world&quot;;
+String b = &quot;helloworld&quot;;
+System.out.println(a == b);        // ? 
+
+// 题目二：变量拼接
+String c = &quot;hello&quot;;
+String d = c + &quot;world&quot;;
+System.out.println(d == b);        // ?
+
+// 题目三：final 变量拼接
+final String e = &quot;hello&quot;;
+String f = e + &quot;world&quot;;
+System.out.println(f == b);        // ?
+</code></pre>
+<p>答案是：<code>true</code>、<code>false</code>、<code>true</code>。为什么？关键就在<strong>编译期常量折叠</strong>和<strong>运行期 StringBuilder</strong> 的区别。</p>
+<p><strong>题目一</strong>：<code>&quot;hello&quot; + &quot;world&quot;</code> 两个都是编译期常量，编译器直接折叠成 <code>&quot;helloworld&quot;</code> 一个字面量，跟 <code>b</code> 指向池中同一个对象。看，编译器比你想的勤快。</p>
+<p><strong>题目二</strong>：<code>c</code> 是变量，编译器没法在编译期确定它的值，只能生成运行期拼接的代码。JDK 8 里 <code>c + &quot;world&quot;</code> 实际被编译成等价于 <code>new StringBuilder().append(c).append(&quot;world&quot;).toString()</code> 的逻辑——<code>toString()</code> 会 new 一个新 String，所以 <code>==</code> 是 false。</p>
+<p><strong>题目三</strong>：<code>e</code> 被 <code>final</code> 修饰且编译期就能确定值，它就是个&quot;常量变量&quot;（constant variable），编译器又把它折叠了，效果同题目一。</p>
+<p>怎么验证？<strong>反编译</strong>。用 <code>javap -c</code> 看字节码：</p>
+<pre><code class="language-bash">javap -c StringDemo.class
+</code></pre>
+<p>题目一的字节码里你会看到 <code>ldc #2 // String helloworld</code>——一行直接加载折叠好的常量；题目二的字节码里则会看到 <code>new StringBuilder</code>、<code>invokevirtual append</code>、<code>invokevirtual toString</code> 的三连击。眼见为实，比背八股文踏实一百倍。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：有学员拿 <code>final</code> 局部变量拼接做实验，结果跟预期不一样，百思不得其解。原因是他写了 <code>final String x = method();</code>——方法返回值编译期算不出来，<code>final</code> 也救不了，照样走 StringBuilder。记住：<code>final</code> 只有在<strong>赋的是编译期常量</strong>时才触发折叠。</p>
+</blockquote>
+<h3>循环拼接：<code>+</code> 的滑铁卢</h3>
+<p>单次拼接，<code>+</code> 和 StringBuilder 差别不大（编译器已经帮你转了）。但<strong>循环</strong>里就是灾难现场：</p>
+<pre><code class="language-java">// 反面教材：循环里用 +
+String result = &quot;&quot;;
+for (int i = 0; i &lt; 10000; i++) {
+    result += i;   // 每次循环都 new 一个 StringBuilder + new 一个 String
+                    // 1万次循环 = 2万个临时对象，GC 直呼顶不住
+}
+
+// 正确姿势：循环外建一个 StringBuilder，循环内 append
+StringBuilder sb = new StringBuilder();
+for (int i = 0; i &lt; 10000; i++) {
+    sb.append(i);   // 复用同一个 builder，偶尔内部扩容
+}
+String result2 = sb.toString();
+</code></pre>
+<p><code>result += i</code> 每执行一次，就完整地&quot;new StringBuilder → 拼接 → toString 新 String&quot;走一遍，而且前一轮拼接的成果被当作废料抛弃。数据量一大，时间复杂度退化成 O(n²)，内存里堆满短命对象。这种代码上了生产，Code Review 被打回来都是轻的。</p>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：记一条简单规则——<strong>单行拼接用 <code>+</code>（可读性最好），循环/递归/流式拼接用 <code>StringBuilder</code></strong>。多线程场景才考虑 <code>StringBuffer</code>，而实际开发中多线程拼字符串的场景少之又少，别为了&quot;安全感&quot;到处用 StringBuffer，白白损失性能。</p>
+</blockquote>
+<h2>四、String vs StringBuilder vs StringBuffer：三兄弟对比</h2>
+<table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>String</th>
+<th>StringBuilder</th>
+<th>StringBuffer</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>可变性</td>
+<td>不可变</td>
+<td>可变</td>
+<td>可变</td>
+</tr>
+<tr>
+<td>线程安全</td>
+<td>天生安全（不可变）</td>
+<td>不安全</td>
+<td>安全（方法加了 synchronized）</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>拼接差（产生大量临时对象）</td>
+<td>最快</td>
+<td>比 Builder 慢（锁开销）</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>少量拼接、常量、作 Map key</td>
+<td>单线程拼接（绝大多数场景）</td>
+<td>多线程拼接（罕见）</td>
+</tr>
+<tr>
+<td>引入版本</td>
+<td>JDK 1.0</td>
+<td>JDK 5</td>
+<td>JDK 1.0</td>
+</tr>
+</tbody></table>
+<p>一句话记忆：<strong>String 是定妆照，StringBuilder 是草稿纸，StringBuffer 是带锁的草稿纸</strong>。日常 99% 的拼接用 StringBuilder；JDK 8 编译器也正是把 <code>+</code> 翻译成它。</p>
+<p>顺带一提 StringBuilder 的扩容：无参构造初始容量 16，append 时不够用就扩成 <code>2n + 2</code>（约 2 倍），底层靠 <code>Arrays.copyOf</code> 搬家。如果你能预估最终长度，<code>new StringBuilder(1024)</code> 一次性给够，能避免多次扩容拷贝——老司机的小习惯。</p>
+<h2>五、常用 String API 盘点：工具箱巡礼</h2>
+<p><code>String</code> 的方法有六十多个，常用的就下面这些，过一遍眼熟：</p>
+<pre><code class="language-java">String s = &quot;  Hello, Java World!  &quot;;
+
+// ---- 判断类 ----
+s.equals(&quot;hello&quot;);            // 内容比较（大小写敏感）
+s.equalsIgnoreCase(&quot;  hello, java world!  &quot;); // 忽略大小写比较
+s.isEmpty();                  // 长度是否为 0，&quot;  &quot; 不算空！
+s.isBlank();                  // JDK 11+：是否全是空白，&quot;  &quot; 为 true
+s.contains(&quot;Java&quot;);           // 是否包含
+s.startsWith(&quot;  He&quot;);         // 前缀
+s.endsWith(&quot;!&quot;);              // 后缀
+
+// ---- 查找类 ----
+s.indexOf(&quot;Java&quot;);            // 首次出现位置，找不到返回 -1
+s.lastIndexOf(&quot;o&quot;);           // 最后一次出现位置
+s.charAt(3);                  // 取指定位置字符，越界抛 StringIndexOutOfBoundsException
+
+// ---- 截取与拆合 ----
+s.substring(2, 7);            // [2, 7) 左闭右开，得 &quot;Hello&quot;
+s.split(&quot;,\\s*&quot;);             // 按正则拆分，注意参数是正则表达式
+String.join(&quot;-&quot;, &quot;a&quot;, &quot;b&quot;, &quot;c&quot;);  // 静态方法拼接，得 &quot;a-b-c&quot;
+
+// ---- 替换与修剪 ----
+s.replace(&quot;Java&quot;, &quot;Java17&quot;);  // 替换所有匹配字面量
+s.replaceAll(&quot;\\s+&quot;, &quot; &quot;);    // 参数是正则，替换所有
+s.strip();                    // JDK 11+ 修剪空白，比 trim 更懂 Unicode
+s.trim();                     // 老牌修剪，只处理 &lt;= U+0020 的字符
+s.toUpperCase();              // 转大写（新对象）
+s.toLowerCase();              // 转小写（新对象）
+
+// ---- 流式处理（JDK 8+）----
+s.chars()                     // 返回 IntStream，字符流
+ .filter(c -&gt; c &gt; &#39;A&#39; &amp;&amp; c &lt; &#39;Z&#39;)
+ .count();
+s.lines();                    // JDK 11+：按行拆成 Stream&lt;String&gt;，处理多行文本神器
+&quot;5&quot;.repeat(3);                // JDK 11+：得 &quot;555&quot;
+</code></pre>
+<p>几个容易翻车的点：<code>split</code> 的参数是正则，<code>split(&quot;.&quot;)</code> 会得到空数组（<code>.</code> 在正则里是通配符），要写 <code>split(&quot;\\.&quot;)</code>；<code>substring</code> 是左闭右开；<code>replace</code> 是替换<strong>所有</strong>，跟某些语言里只替换第一个不一样。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：线上日志解析模块用 <code>line.split(&quot;|&quot;)</code> 拆分隔符，结果拆出来一堆单字符，数据全乱。因为 <code>|</code> 在正则里是&quot;或&quot;，得写 <code>split(&quot;\\|&quot;)</code>。凡是 <code>.</code> <code>|</code> <code>*</code> <code>+</code> <code>?</code> 这些正则元字符，当分隔符用一律先转义。又或者干脆用不会正则的 API：<code>String.valueOf</code>、<code>String.join</code>、<code>Pattern.quote(&quot;.&quot;)</code> 都能绕坑。</p>
+</blockquote>
+<h2>六、字符串判等的最佳实践</h2>
+<p>最后说说判等，这是新手 NPE（NullPointerException）和逻辑 bug 的重灾区。</p>
+<p><strong>第一原则：内容判等用 <code>equals</code>，永远别用 <code>==</code>。</strong> <code>==</code> 在字符串比较时比的是引用，碰巧相同（常量池复用）时返回 true，一换到 <code>new</code> 出来的或拼接出来的字符串就 false——这种&quot;时灵时不灵&quot;的 bug 最阴险。</p>
+<p><strong>第二原则：常量放前面，防 NPE。</strong></p>
+<pre><code class="language-java">String name = getNameFromDb();      // 可能返回 null
+
+// 反面教材：name 为 null 时直接 NPE
+if (name.equals(&quot;admin&quot;)) { ... }
+
+// 正确姿势一：常量在前，null 也能安全比较（结果 false）
+if (&quot;admin&quot;.equals(name)) { ... }
+
+// 正确姿势二：Objects.equals，语义最清晰
+if (Objects.equals(name, &quot;admin&quot;)) { ... }
+</code></pre>
+<p><code>&quot;admin&quot;.equals(name)</code> 之所以安全，是因为 <code>String.equals</code> 源码的第一行就做了 <code>instanceof String</code> 检查——null 不是任何类的实例，直接返回 false。而 <code>name.equals(...)</code> 当 name 是 null 时，等于对 null 调方法，NPE 当场表演。</p>
+<p><strong>第三原则：忽略大小写比较用 <code>equalsIgnoreCase</code></strong>，别自己 <code>toLowerCase()</code> 再 equals——土耳其语等 locale 下 <code>toLowerCase</code> 有惊喜，<code>equalsIgnoreCase</code> 专为比较而生，不踩 locale 坑。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：字符串判等三件套——<code>equals</code> 比内容、常量在前或 <code>Objects.equals</code> 防 NPE、忽略大小写用 <code>equalsIgnoreCase</code>。把这三条焊死在肌肉记忆里。</p>
+</blockquote>
+<h2>本篇小结</h2>
+<ul>
+<li><code>String</code> 不可变：类 final + 字段 final + 所有&quot;修改&quot;操作返回新对象；</li>
+<li>不可变的四大价值：常量池共享的前提、天生线程安全、hashCode 可缓存、安全防篡改；</li>
+<li>JDK 9 起 <code>char[]</code> 改为 <code>byte[] + coder</code>，纯 Latin-1 字符串内存省一半，对使用者无感；</li>
+<li>字面量入常量池并复用，<code>new String</code> 一定在堆里造新对象，<code>intern()</code> 手动入池；</li>
+<li><code>==</code> 比引用、<code>equals</code> 比内容，判等永远用 <code>equals</code> 系；</li>
+<li>编译期常量拼接会被折叠，变量拼接运行期走 StringBuilder——<code>final</code> 常量变量可触发折叠；</li>
+<li>循环内拼接必须用 StringBuilder，用 <code>+</code> 会产生大量临时对象，复杂度退化 O(n²)；</li>
+<li>防御性判等：常量在前（<code>&quot;x&quot;.equals(s)</code>）或 <code>Objects.equals(s, &quot;x&quot;)</code>。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li><strong>概念题</strong>：<code>String s = new String(&quot;abc&quot;);</code> 这行代码在什么情况下创建 1 个对象，什么情况下创建 2 个对象？对象分别在哪里？</li>
+<li><strong>分析题</strong>：请解释为什么 <code>String</code> 适合做 HashMap 的 key，而 <code>StringBuilder</code> 不适合？（提示：从可变性与 hashCode 缓存角度想）</li>
+<li><strong>辨析题</strong>：<code>String</code>、<code>StringBuilder</code>、<code>StringBuffer</code> 三者各自的使用场景是什么？为什么 JDK 8 编译器把 <code>+</code> 拼接翻译成 StringBuilder 而不是 StringBuffer？</li>
+<li><strong>编程题</strong>：统计一段英文文本中每个单词出现的次数并按次数降序输出。要求：不用 <code>split</code> 之外的正则，注意使用 <code>StringBuilder</code>、<code>Map</code> 的正确姿势，并与&quot;逐字符手写解析&quot;版对比代码量。（进阶：尝试用 <code>lines()</code> + <code>chars()</code> 的流式写法再来一遍）</li>
+<li><strong>动手验证题</strong>：写一段包含循环拼接与 StringBuilder 拼接各 10 万次的代码，用 <code>System.nanoTime()</code> 对比耗时，再用 <code>javap -c</code> 反编译查看循环 <code>+=</code> 的字节码，找到 <code>new StringBuilder</code> 出现的位置。</li>
+</ol>
+<p>下一篇预告：<strong>《集合框架（上）：容器选型地图》</strong>——数组的&quot;七大罪&quot;，List/Set/Queue/Map 四大家族的选型心法，以及&quot;LinkedList 查询慢增删快&quot;这个流传甚广的说法到底错在哪儿，咱们下期见。</p>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/01-java-basics/05-oop-part2.html"><span>← 上一篇</span><b>面向对象（下）：接口、抽象类与内部类的爱恨情仇</b></a><a class="pn" href="/01-java-basics/07-collections-part1.html"><span>下一篇 →</span><b>集合框架（上）：容器选型地图</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

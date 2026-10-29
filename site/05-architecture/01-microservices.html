@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>微服务拆分与 Spring Cloud 实战 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item active" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 微服务拆分与 Spring Cloud 实战</div>
+  <article>
+<h1>微服务拆分与 Spring Cloud 实战</h1>
+<p>先讲个真事。我带过一个学员，在一家电商公司守着一个跑了六年的单体应用（Monolith）：三百万行代码，war 包八百多兆，模块依赖关系画出来像一碗意大利面。每次发版，运维同学都得先烧一炷香：改了一行优惠券逻辑，整站重新部署四十分钟，期间用户看到的全是&quot;系统升级中，请稍后&quot;。想上个新功能？先排队，等五个团队的代码一起合并、一起回归、一起赌命。</p>
+<p>更刺激的还在后头。有一年大促，商品模块查大表没分页，一个内存泄漏把堆吃光，Full GC 一停三十秒，结果订单、支付、购物车在同进程里集体陪葬。老板冲进技术部就一句灵魂发问：&quot;你们就说改了一行代码，怎么整站挂了？&quot;这就是单体 grown-up 之后的三大烦恼：发布互相拖累、一个模块 OOM 全站陪葬、代码墙&quot;谁都不敢动&quot;。</p>
+<p>微服务（Microservices）就是针对这三大烦恼的一剂药方。但我开讲前先给你泼盆冷水：这药有副作用，而且不小。这一篇我们先把&quot;该不该拆、怎么拆&quot;想明白，再用 Spring Cloud Alibaba 把&quot;拆完之后怎么活&quot;的技术栈一次讲透。系好安全带，发车。</p>
+<h2>一、单体的三宗罪：先确诊，再开药</h2>
+<p><img src="/assets/images/05-01-monolith-vs-micro.svg" alt="单体巨石 vs 微服务小镇：独立部署与故障隔离"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：单体巨石 vs 微服务小镇：独立部署与故障隔离</p>
+</blockquote>
+<h3>1. 发布互相拖累：一荣俱荣，一损更损</h3>
+<p>单体里所有模块打成同一个包，共享一个发布周期。运营想周五上个活动页，支付团队说&quot;我们在改核心链路，别碰主干&quot;。于是需求排队、代码冲突、回归测试全员加班。更可怕的是回滚：你回滚的是整个应用，别人刚上线的功能跟着一起时光倒流。发布从技术动作变成了政治谈判。</p>
+<h3>2. 故障全域蔓延：一个 OOM，全站陪葬</h3>
+<p>所有模块跑在同一个 JVM 进程里，共享一份堆内存。商品服务一个慢查询把内存吃爆，同进程里的订单接口、支付接口全部被 Full GC 拖住。资源隔离为零，木桶效应拉满：整站的水位，取决于最烂的那块板。老板眼里&quot;就挂了一个小功能&quot;，在用户眼里就是&quot;全站挂了&quot;。</p>
+<h3>3. 代码墙：谁都不敢动</h3>
+<p>六年单体，测试覆盖约等于玄学，唯一懂那个核心 Service 的老员工早已离职。新需求只能往上糊，老代码没人敢重构——&quot;能跑就行&quot;。技术债像滚雪球，改动风险却指数上升，最后所有人都学会了绕着走，代码墙越砌越高。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：单体的本质问题不是&quot;代码写在一个工程里&quot;，而是所有模块<strong>共享进程、共享发布、共享故障域</strong>。微服务的价值，恰恰是把这三样东西拆开。</p>
+</blockquote>
+<h2>二、微服务不是银弹：先算账，再动手</h2>
+<p>我很喜欢一句大实话：微服务是用<strong>一系列新问题</strong>换取<strong>一群人的协作效率</strong>。动手之前，先看看你要接住哪些新问题。</p>
+<p><strong>代价一：分布式复杂性。</strong> 原来是进程内方法调用，纳秒级、不会丢；现在是网络调用，毫秒级、会超时、会丢包。超时（Timeout）、重试（Retry）、幂等（Idempotency）、降级（Degradation），每一个都是新课题。本地一个 <code>try-catch</code> 搞定的事，跨进程后你永远要面对薛定谔的调用：&quot;超时了，对方到底执行成功没有？&quot;</p>
+<p><strong>代价二：运维成本翻倍。</strong> 从管 1 个应用变成管 30 个应用。没有容器编排（K8s）、监控告警、日志聚合、链路追踪（Tracing），运维同学会提刀来见。微服务是富人家的游戏，基建不齐就别硬上。</p>
+<p><strong>代价三：数据一致性。</strong> 订单和库存分属两个服务、两个库，一个数据库事务（ACID）罩不住了，必须引入分布式事务方案——这是下一篇的主角，先埋个伏笔。</p>
+<p>那什么时候<strong>该</strong>拆？满足以下两条以上，再认真考虑：</p>
+<ul>
+<li><strong>团队规模</strong>：超过两三个&quot;两个披萨团队&quot;（Two-Pizza Team），主干合并冲突天天上演，发版窗口靠抢；</li>
+<li><strong>业务边界清晰</strong>：能画出各团队都认的业务域，而不是一团浆糊。边界都没想清楚就拆，拆出来的是分布式大泥球；</li>
+<li><strong>独立伸缩需求</strong>：秒杀模块大促要 100 台机器，后台管理平时 2 台就够。单体里没得选，只能跟着一起膨胀烧钱。</li>
+</ul>
+<p>再说**康威定律（Conway&#39;s Law）**的通俗版：系统结构会长得和组织沟通结构一模一样。你按技术分层组队（前端组、后端组、DBA 组），系统就长成一大坨分层单体；你按业务域组队（订单组、库存组、支付组），微服务边界自然浮出水面。所以拆服务之前先看组织架构图——<strong>拆系统，本质是拆组织的协作方式</strong>。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：某公司老板在技术大会听了微服务专场，回来强推&quot;全面微服务改造&quot;。5 人团队硬拆出 18 个服务，没有 DevOps 平台，发布要手动登十几台机器；一个列表查询跨 5 个服务，联调一次一下午。三个月后性能没提升，故障率翻了三倍，最后灰溜溜合并回 3 个服务。记住：微服务解决的是<strong>组织规模带来的协作问题</strong>，不是技术审美问题。</p>
+</blockquote>
+<h2>三、拆分方法论：DDD 战略设计速览</h2>
+<p>边界怎么找？拍脑袋是不行的，得靠领域驱动设计（Domain-Driven Design，DDD）的战略设计。别慌，速览版十分钟讲明白。</p>
+<h3>限界上下文（Bounded Context）：一个边界内，语言统一</h3>
+<p>判断标准很朴素：同一个词，在不同场景里含义是否一样。比如&quot;商品&quot;——在商品上下文里指 SKU 和详情；在物流上下文里指带重量、体积的发货单元；在搜索上下文里指一堆倒排索引词条。<strong>边界内模型可以不一样</strong>，别强行做一个&quot;大而全的商品类&quot;喂给所有人，那是单体思维的残留。每个上下文有自己独立的模型和数据库，上下文之间通过接口或事件通信。</p>
+<h3>子域（Subdomain）划分：核心、支撑、通用</h3>
+<ul>
+<li><strong>核心域（Core Domain）</strong>：业务赚钱、差异化的所在，投入最强兵力。电商里就是交易（订单 + 支付）；</li>
+<li><strong>支撑域（Supporting Domain）</strong>：业务必需但不构成差异化，够用就好，比如库存、营销；</li>
+<li><strong>通用域（Generic Domain）</strong>：行业通用能力，直接买或用开源，比如登录认证、消息推送。</li>
+</ul>
+<p>把资源砸在核心域上，通用域别自己造轮子——这话我每年都要跟学员念八遍。</p>
+<h3>电商系统拆分实战走一遍</h3>
+<p>拿中型电商过一遍流程：</p>
+<table>
+<thead>
+<tr>
+<th>上下文</th>
+<th>承载能力</th>
+<th>子域定位</th>
+<th>拆分理由</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>用户</td>
+<td>注册、登录、会员资料</td>
+<td>通用域</td>
+<td>可用开源方案，独立演进</td>
+</tr>
+<tr>
+<td>商品</td>
+<td>商品、类目、详情、搜索</td>
+<td>支撑域</td>
+<td>读多写少，可独立缓存与扩容</td>
+</tr>
+<tr>
+<td>订单</td>
+<td>下单、状态机流转、售后</td>
+<td>核心域</td>
+<td>变更最频繁，必须独立发布</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>渠道对接、退款、对账</td>
+<td>核心域</td>
+<td>合规隔离要求，与订单解耦</td>
+</tr>
+<tr>
+<td>库存</td>
+<td>扣减、预占、对账</td>
+<td>支撑域</td>
+<td>秒杀场景需独立伸缩</td>
+</tr>
+</tbody></table>
+<p>划边界的三板斧：看组织怎么分的活（康威定律）、看同一个名词是否需要多套模型（上下文）、看是否有独立伸缩或独立发布的诉求。三个视角互相印证，边界八九不离十。</p>
+<h3>Anti-pattern：按技术分层拆是灾难</h3>
+<p>把系统拆成&quot;Controller 服务、Service 服务、DAO 服务&quot;——恭喜你，成功制造了分布式单体：每个需求横跨三个服务，一次本地调用变两次网络调用，事务彻底没救，团队还要跨服务协作。<strong>微服务拆的是业务能力（垂直切），不是技术层次（水平切）</strong>。</p>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：拆分粒度的黄金检验法——&quot;这个服务能不能由一个小团队<strong>独立开发、独立测试、独立部署、独立上线</strong>？&quot;四个独立有一个不满足，边界就有问题。宁可先拆粗（5~8 个服务），跑顺了再细化。拆细容易，合并难。</p>
+</blockquote>
+<h2>四、拆分节奏：绞杀者模式（Strangler Fig）</h2>
+<p>别想&quot;推倒重来重写一个新系统&quot;——那是业界著名坟场，Netscape 就这么把自己送走的。正确姿势是<strong>绞杀者模式（Strangler Fig Pattern）</strong>：名字来自绞杀榕，种子落在老树上，新枝一寸寸长满，最终取代老树。</p>
+<div class="mermaid">flowchart LR
+    U[用户/客户端] --> G[网关/入口层]
+    G -- 新功能流量 --> NS[新微服务<br>订单中心]
+    G -- 未迁移流量 --> M[单体应用<br>逐步瘦身]
+    NS --> DB1[(订单库)]
+    M --> DB2[(共享老库)]
+    M -- 模块逐步迁出 --> NS
+    M -- 全部迁完后 --> X[单体下线 🎉]
+</div>
+<p>落地四步走：</p>
+<ol>
+<li><strong>止血</strong>：新功能一律做进新服务，坚决不再往单体里加代码，先让肿瘤停止长大；</li>
+<li><strong>引流</strong>：在网关/Nginx 按路由把对应流量切给新服务，用户无感知；</li>
+<li><strong>蚕食</strong>：优先迁出边界最清晰、变更最频繁的模块（比如订单），每迁一块灰度验证一块；</li>
+<li><strong>收尾</strong>：单体瘦到只剩顽固模块，最后下线，或作为&quot;祖传遗产&quot;长期共存（现实往往如此，没关系）。</li>
+</ol>
+<h2>五、Spring Cloud Alibaba 全家桶地图</h2>
+<p>边界划好了，接下来解决&quot;拆完怎么活&quot;。Spring Cloud Alibaba 是国内事实标准，先看全家桶地图，心里有张作战图：</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>角色</th>
+<th>取代/对标</th>
+<th>一句话点评</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Nacos</td>
+<td>注册中心 + 配置中心</td>
+<td>Eureka + Config + Bus</td>
+<td>一个打俩，运维省心</td>
+</tr>
+<tr>
+<td>OpenFeign</td>
+<td>声明式 HTTP 调用</td>
+<td>RestTemplate + 手写负载均衡</td>
+<td>写个接口就能调，优雅</td>
+</tr>
+<tr>
+<td>Spring Cloud Gateway</td>
+<td>API 网关</td>
+<td>Zuul 1.x（阻塞 IO）</td>
+<td>基于 WebFlux，性能在线</td>
+</tr>
+<tr>
+<td>Sentinel</td>
+<td>熔断、降级、限流</td>
+<td>Hystrix（已停更）</td>
+<td>规则动态推送，自带控制台</td>
+</tr>
+<tr>
+<td>Seata</td>
+<td>分布式事务</td>
+<td>手写补偿代码</td>
+<td>AT 模式几乎零侵入</td>
+</tr>
+<tr>
+<td>RocketMQ</td>
+<td>消息队列</td>
+<td>按场景对标 Kafka/RabbitMQ</td>
+<td>事务消息是分布式事务利器</td>
+</tr>
+</tbody></table>
+<p>版本一句提醒：Spring Cloud Alibaba 2021.x 对应 Spring Cloud 2020.0.x、Spring Boot 2.6.x；2022.x 对应 Spring Boot 2.7.x。<strong>千万别乱配版本</strong>——启动时那些诡异的 <code>NoSuchMethodError</code>，九成来自版本错配。</p>
+<h2>六、Nacos：服务注册发现 + 配置中心</h2>
+<h3>注册发现原理：心跳模型与 AP/CP</h3>
+<p>服务提供者启动时向 Nacos 注册自己的 IP、端口、元数据；消费者从 Nacos 拉取服务列表并缓存在本地，调用时直接按列表负载均衡，注册中心短暂宕机也不影响存量调用。</p>
+<p>对于<strong>临时实例（Ephemeral Instance，默认）</strong>，Nacos 采用客户端心跳模型：客户端每 <strong>5 秒</strong>上报一次心跳；<strong>15 秒</strong>没收到，标记为不健康；<strong>30 秒</strong>没收到，直接剔除。数据在集群内用 Distro 协议异步同步，保证可用性优先——这是 <strong>AP 模式</strong>，主流注册中心的选择（网络抖动时宁可返回略旧的列表，也不能整体拒绝服务）。对于<strong>持久化实例</strong>，则由服务端主动健康探测，集群用 Raft 协议保证强一致——<strong>CP 模式</strong>。切换很简单：</p>
+<pre><code class="language-yaml">spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        namespace: prod          # 命名空间：隔离环境
+        ephemeral: false         # false = 持久化实例，走 CP；默认 true 走 AP
+</code></pre>
+<h3>配置中心：命名空间、分组与动态刷新</h3>
+<p>配置管理的三板斧：**命名空间（Namespace）**隔离环境（dev/test/prod），**分组（Group）**隔离业务线，<strong>DataId</strong> 定位具体配置文件。加一个 <code>@RefreshScope</code>，配置就能热生效：</p>
+<pre><code class="language-yaml">spring:
+  application:
+    name: order-service
+  cloud:
+    nacos:
+      config:
+        server-addr: 127.0.0.1:8848
+        namespace: prod            # 环境隔离：生产命名空间
+        group: TRADE_GROUP         # 业务隔离：交易业务线
+        file-extension: yaml
+</code></pre>
+<pre><code class="language-java">@RestController
+@RefreshScope // 配置变更时销毁重建该 Bean，@Value 字段重新注入
+public class PromoController {
+
+    @Value(&quot;${promo.switch.enabled:false}&quot;)
+    private boolean promoEnabled; // 运营在 Nacos 控制台改开关，这里热生效，无需重启
+
+    @GetMapping(&quot;/promo/enabled&quot;)
+    public boolean isEnabled() {
+        return promoEnabled;
+    }
+}
+</code></pre>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：见过一家公司把测试和生产的配置全放在 <code>public</code> 命名空间，只靠 DataId 前缀区分。某天同事改配置时手一抖，测试配置推到了生产， promo 优惠直接翻倍，资损一晚上五位数。从此立下铁律：<strong>环境用 Namespace 隔离，生产命名空间只给极少数人写权限</strong>。</p>
+</blockquote>
+<h2>七、OpenFeign：声明式调用，写个接口就完事</h2>
+<p>远程调用最怕样板代码，OpenFeign 的思路是&quot;你只管声明，剩下的我来&quot;：</p>
+<pre><code class="language-java">@FeignClient(name = &quot;inventory-service&quot;, path = &quot;/api/inventory&quot;,
+        fallbackFactory = InventoryClientFallbackFactory.class)
+public interface InventoryClient {
+
+    @PostMapping(&quot;/deduct&quot;)
+    Result&lt;Boolean&gt; deduct(@RequestBody DeductDTO dto); // 只写接口，框架生成实现并发起 HTTP 调用
+}
+</code></pre>
+<pre><code class="language-java">@Component
+@Slf4j
+public class InventoryClientFallbackFactory implements FallbackFactory&lt;InventoryClient&gt; {
+
+    @Override
+    public InventoryClient create(Throwable cause) {
+        return dto -&gt; {
+            // 拿到异常才能区分处理：超时？限流？服务不存在？
+            log.warn(&quot;库存服务调用失败，触发降级: {}&quot;, cause.getMessage());
+            return Result.degrade(&quot;库存服务繁忙，请稍后重试&quot;); // 返回兜底而不是抛异常
+        };
+    }
+}
+</code></pre>
+<p>超时与重试必须显式配置，默认值（连接 10s、读 60s）在生产上就是灾难——一个慢接口能把你的线程池全拖住：</p>
+<pre><code class="language-yaml">feign:
+  client:
+    config:
+      default:
+        connectTimeout: 2000    # 全局默认：连接超时 2 秒
+        readTimeout: 3000       # 全局默认：读超时 3 秒
+      inventory-service:
+        readTimeout: 1000       # 覆盖特定服务：库存是核心链路，超时收紧到 1 秒
+  httpclient:
+    enabled: true               # 换 Apache HttpClient 连接池，性能更稳
+</code></pre>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：OpenFeign 默认<strong>不重试</strong>（<code>Retryer.NEVER_RETRY</code>）。想开重试可以自定义 <code>Retryer</code>，但记住两条铁律：<strong>只对幂等接口开重试</strong>（查询类可以，扣款类千万别）；重试次数要少（1~2 次），否则重试风暴会把下游打得更死。另外，<code>fallbackFactory</code> 比 <code>fallback</code> 好用，因为它能把异常带给你，方便打日志和区分处理。</p>
+</blockquote>
+<h2>八、Spring Cloud Gateway：系统的南北大门</h2>
+<p>网关（Gateway）是所有外部流量的统一入口，干三件事：路由转发、统一鉴权、横切面处理（限流、日志、灰度）。核心模型是<strong>路由（Route）= 谓词（Predicate）+ 过滤器（Filter）</strong>：谓词决定&quot;哪些请求匹配这条路由&quot;（Path、Method、Header、Query、时间窗等），过滤器决定&quot;匹配后前后做什么&quot;（改头、限流、鉴权）。实战中最常见的需求——统一鉴权，用 <code>GlobalFilter</code> 实现：</p>
+<pre><code class="language-java">@Component
+public class AuthGlobalFilter implements GlobalFilter, Ordered {
+
+    @Override
+    public Mono&lt;Void&gt; filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        String token = exchange.getRequest().getHeaders().getFirst(&quot;Authorization&quot;);
+        if (token == null || !JwtUtil.verify(token)) {
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete(); // 未登录直接 401，根本不进后端服务
+        }
+        String userId = JwtUtil.parseUserId(token);
+        ServerHttpRequest newRequest = exchange.getRequest().mutate()
+                .header(&quot;X-User-Id&quot;, userId)   // 鉴权通过，把用户身份透传给下游服务
+                .build();
+        return chain.filter(exchange.mutate().request(newRequest).build());
+    }
+
+    @Override
+    public int getOrder() {
+        return -100; // 数值越小优先级越高，鉴权必须抢在最前面执行
+    }
+}
+</code></pre>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：网关要保持&quot;薄&quot;，只做与业务无关的横切逻辑（鉴权、限流、路由、灰度）。千万别把业务逻辑写进网关——我见过在网关里算优惠价格的，最后网关成了最胖、最难发布的单体。另外网关是无状态关键组件，<strong>至少两节点 + 负载均衡</strong>，它挂了就是全站挂了。</p>
+</blockquote>
+<h2>九、Sentinel：熔断限流，全站的保险丝</h2>
+<h3>为什么需要：雪崩效应（Cascade Failure）</h3>
+<p>分布式系统最经典的连环车祸：库存服务变慢 → 订单服务调用它的线程全部阻塞在等待 → 线程池耗尽，订单服务自身不可用 → 依赖订单的服务依次倒下 → 全站雪崩。</p>
+<div class="mermaid">flowchart TD
+    A[库存服务 DB 慢查询] --> B[库存服务响应变慢]
+    B --> C[订单服务调用线程大量阻塞]
+    C --> D[订单服务线程池耗尽<br>自身不可用]
+    D --> E[依赖订单的服务连锁倒下]
+    E --> F[全站雪崩 💥]
+</div>
+<p>解法就是保险丝思想：<strong>快速失败，好过慢慢等死</strong>。Sentinel 是 Hystrix 停更后的主流选择。</p>
+<h3>熔断器三状态机</h3>
+<p>熔断（Circuit Breaker）不是拍脑袋开关，是状态机：关闭态下统计请求，当<strong>慢调用比例 / 异常比例 / 异常数</strong>超过阈值，熔断器打开，后续请求直接拒绝（不再打向下游）；经过熔断时长后进入半开态，放一个探测请求过去：成功则恢复关闭态，失败则继续打开。</p>
+<div class="mermaid">flowchart LR
+    C[关闭态 Closed<br>正常放行, 统计指标] -- 慢调用比例/异常比例<br>超阈值 --> O[打开态 Open<br>请求直接拒绝, 快速失败]
+    O -- 熔断时长结束 --> H[半开态 Half-Open<br>放探测请求]
+    H -- 探测成功 --> C
+    H -- 探测失败 --> O
+</div>
+<h3>限流策略与实战代码</h3>
+<p>流量控制两个维度：<strong>QPS</strong>（每秒请求数）和<strong>并发线程数</strong>；流控效果三种：快速失败（直接拒绝）、Warm Up（冷启动预热，缓存刚预热时放慢流量进入）、排队等待（匀速通过，削峰填谷）。还有大杀器<strong>热点参数限流</strong>：只对&quot;某个商品 ID&quot;的访问限流，而不是整个接口。</p>
+<pre><code class="language-java">@RestController
+public class OrderController {
+
+    @GetMapping(&quot;/order/{id}&quot;)
+    @SentinelResource(value = &quot;getOrder&quot;, blockHandler = &quot;getOrderBlock&quot;,
+            fallback = &quot;getOrderFallback&quot;)
+    public Result&lt;OrderVO&gt; getOrder(@PathVariable Long id) {
+        return Result.ok(orderService.getById(id));
+    }
+
+    // 触发限流/熔断规则（BlockException）时走这里
+    public Result&lt;OrderVO&gt; getOrderBlock(Long id, BlockException e) {
+        return Result.degrade(&quot;当前访问人数过多，请稍后再试&quot;); // 友好拒绝
+    }
+
+    // 业务代码抛异常时走这里（降级兜底）
+    public Result&lt;OrderVO&gt; getOrderFallback(Long id, Throwable t) {
+        return Result.degrade(&quot;订单服务开小差了，请稍后重试&quot;);
+    }
+}
+</code></pre>
+<p>Dashboard 控制台可以实时配置规则、查看流量曲线和熔断状态，可视化非常友好。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：Sentinel Dashboard 配的规则<strong>默认存在应用内存里</strong>，应用一重启，规则全蒸发。某团队大促前一天因发版重启了服务，限流规则悄悄消失，第二天流量洪峰直接打穿 DB。生产环境务必把规则<strong>持久化到 Nacos/Apollo</strong>（推模式），重启自动加载，别依赖控制台手点。</p>
+</blockquote>
+<h2>十、同步还是异步：OpenFeign vs MQ</h2>
+<p>服务间通信选同步调用还是消息队列（MQ）异步消息？不吹不黑，列表说话：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>OpenFeign 同步调用</th>
+<th>MQ 异步消息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>结果时效</td>
+<td>实时拿到结果</td>
+<td>最终一致（Final Consistency）</td>
+</tr>
+<tr>
+<td>耦合度</td>
+<td>强耦合，需感知服务名</td>
+<td>松耦合，只认 Topic</td>
+</tr>
+<tr>
+<td>主流程决策</td>
+<td>适合（下单要实时知道库存够不够）</td>
+<td>不适合</td>
+</tr>
+<tr>
+<td>流量削峰</td>
+<td>不能</td>
+<td>能（消息堆积缓冲）</td>
+</tr>
+<tr>
+<td>失败处理</td>
+<td>调用方立刻感知失败</td>
+<td>重试、死信队列（DLQ）兜底</td>
+</tr>
+<tr>
+<td>广播通知</td>
+<td>一对一，多个下游要调多次</td>
+<td>一条消息多方订阅</td>
+</tr>
+<tr>
+<td>典型场景</td>
+<td>库存校验、余额扣减、实时查询</td>
+<td>发短信、记积分、通知仓储、日志清洗</td>
+</tr>
+</tbody></table>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：选型口诀——<strong>主干决策用同步</strong>（必须立刻知道成败，能快速失败），<strong>旁路通知用异步</strong>（不该阻塞主流程的动作全部扔进 MQ）。下单时校验库存用 OpenFeign，下单成功后发短信、记积分、同步物流，全部走消息。</p>
+</blockquote>
+<h2>十一、别只顾着拆：链路追踪与本地开发之痛</h2>
+<p>一句带过但很重要：一个请求跨 8 个服务，排查慢在哪，没有<strong>分布式链路追踪</strong>就是盲人摸象。生产环境必布 <strong>SkyWalking</strong>（或 Zipkin/Jaeger），靠 TraceID 串起全链路——怎么玩转，下一阶段专门开一篇。</p>
+<p>微服务还悄悄抬高了测试与本地开发的门槛。原来起一个应用就能跑，现在起全量服务笔记本直接起飞。实战两招：**契约测试（Contract Testing）**思想——消费方定义&quot;我期望你返回什么样&quot;，提供方跑测试验证契约不被悄悄破坏（可用 Spring Cloud Contract 或 WireMock）；<strong>本地依赖 Mock</strong>——开发时用 WireMock 桩掉下游服务，只真实起自己负责的服务 + 数据库，集成验证交给测试环境的 Testcontainers。</p>
+<h2>十二、落地自检清单（CheckList）</h2>
+<p>拆分之前，逐条打勾，打不满别开工：</p>
+<ol>
+<li>业务边界（限界上下文）已画出，且各团队负责人签字认可；</li>
+<li>数据库跟随服务拆分，<strong>没有跨库 join、没有绕过接口直连别人的库</strong>；</li>
+<li>服务间接口有契约定义（接口文档或契约测试）；</li>
+<li>Nacos、网关等基础组件高可用部署（至少 3 节点集群）；</li>
+<li>监控告警、日志聚合（ELK）、链路追踪（SkyWalking）就位；</li>
+<li>熔断降级预案已制定并做过故障演练（Chaos Engineering 思想）；</li>
+<li>分布式事务方案已评审确定（本系列下一篇专讲）；</li>
+<li>团队已按服务边界重组或规划重组（康威定律要反着用：先按目标架构调组织）。</li>
+</ol>
+<h2>本篇小结</h2>
+<ul>
+<li>单体的本质病灶：共享进程、共享发布、共享故障域；</li>
+<li>微服务不是银弹，本质是用技术复杂度换组织协作效率，团队小、边界糊就别硬拆；</li>
+<li>康威定律：系统结构 = 组织沟通结构，拆服务先拆协作方式；</li>
+<li>找边界用 DDD 战略设计：限界上下文 + 核心/支撑/通用子域，按业务垂直切，严禁按技术分层水平切；</li>
+<li>拆分节奏用绞杀者模式：新功能进新服务，逐步蚕食，拒绝推倒重来；</li>
+<li>Nacos 一个打俩：注册中心（默认 AP 心跳模型）+ 配置中心（Namespace/Group 隔离 + <code>@RefreshScope</code> 热刷新）；</li>
+<li>OpenFeign 声明式调用，超时重试必须显式配置且只对幂等接口重试；</li>
+<li>Gateway 统一入口做鉴权限流，Sentinel 熔断限流防雪崩，规则务必持久化。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>你手头的系统如果要拆微服务，按 DDD 战略设计划分，你会切出哪几个限界上下文？哪个是核心域？说出你的理由。</li>
+<li>Sentinel 熔断器从&quot;打开&quot;进入&quot;半开&quot;依赖什么条件？如果把熔断时长配置得非常短（比如 1 秒），会带来什么问题？</li>
+<li>为什么注册中心（如 Nacos 默认模式）普遍选择 AP 而不是 CP？如果注册中心短暂返回了过期的服务列表，调用方有什么兜底手段？</li>
+<li><strong>动手实践</strong>：用 Spring Boot 2.7.x + Spring Cloud Alibaba 2021.x 搭一个迷你 Demo：order-service 通过 OpenFeign 调用 inventory-service，Nacos 做注册与配置中心，给 OpenFeign 配置降级工厂，再用 Sentinel 给下单接口配一条 QPS=10 的限流规则并用 JMeter 压测验证，观察触发限流后返回的降级文案。</li>
+<li>反向思考题：什么情况下应该把多个微服务<strong>合并</strong>回一个？合并的判断标准和拆分有什么相通之处？</li>
+</ol>
+<p>下一篇预告：服务拆完了、链路通了，真正的分布式噩梦才刚开始——跨服务下单扣库存，事务怎么保？下一篇《分布式疑难杂症门诊》，CAP、TCC、本地消息表、Seata、雪花算法，疑难杂症一网打尽，不见不散。</p>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/04-practice/06-logging-monitoring.html"><span>← 上一篇</span><b>日志、监控与上线部署</b></a><a class="pn" href="/05-architecture/02-distributed.html"><span>下一篇 →</span><b>分布式疑难杂症门诊</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

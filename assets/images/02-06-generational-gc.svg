@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 420" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#DC2626"/>
+    </marker>
+  </defs>
+  <rect width="860" height="420" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">对象的一生：在分代堆里的"晋升之路"</text>
+  <text x="430" y="60" text-anchor="middle" font-size="12" fill="#64748B">绝大多数对象朝生夕死（98%），所以新生代用复制算法；活得久的进老年代</text>
+
+  <!-- eden -->
+  <rect x="60" y="90" width="200" height="130" rx="12" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="160" y="118" text-anchor="middle" font-size="15" font-weight="700" fill="#1D4ED8">Eden 区（8）</text>
+  <text x="160" y="140" text-anchor="middle" font-size="12" fill="#475569">new 出来的对象先住这</text>
+  <g text-anchor="middle" font-size="11" fill="#1E40AF">
+    <rect x="78" y="156" width="40" height="30" rx="5" fill="#FFFFFF" stroke="#93C5FD"/><text x="98" y="176">obj</text>
+    <rect x="126" y="156" width="40" height="30" rx="5" fill="#FFFFFF" stroke="#93C5FD"/><text x="146" y="176">obj</text>
+    <rect x="174" y="156" width="40" height="30" rx="5" fill="#FFFFFF" stroke="#93C5FD"/><text x="194" y="176">obj</text>
+  </g>
+  <text x="160" y="206" text-anchor="middle" font-size="11" fill="#64748B">Eden 满 → 触发 Minor GC</text>
+
+  <!-- survivors -->
+  <rect x="300" y="90" width="110" height="130" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+  <text x="355" y="118" text-anchor="middle" font-size="14" font-weight="700" fill="#B45309">S0（1）</text>
+  <text x="355" y="150" text-anchor="middle" font-size="11" fill="#92400E">年龄 1,2,3...</text>
+  <text x="355" y="170" text-anchor="middle" font-size="11" fill="#92400E">熬过 GC +1 岁</text>
+  <text x="355" y="200" text-anchor="middle" font-size="11" fill="#92400E">↕ 与 S1</text>
+  <text x="355" y="212" text-anchor="middle" font-size="11" fill="#92400E">轮流清空</text>
+  <rect x="300" y="228" width="110" height="4" rx="2" fill="#FCD34D"/>
+  <rect x="300" y="238" width="110" height="60" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+  <text x="355" y="266" text-anchor="middle" font-size="14" font-weight="700" fill="#B45309">S1（1）</text>
+  <text x="355" y="288" text-anchor="middle" font-size="11" fill="#92400E">交换位置的</text>
+  <text x="355" y="292" text-anchor="middle" font-size="0" fill="#92400E"></text>
+  <text x="355" y="288" text-anchor="middle" font-size="0" fill="#92400E"></text>
+
+  <!-- old -->
+  <rect x="450" y="90" width="220" height="270" rx="12" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+  <text x="560" y="118" text-anchor="middle" font-size="15" font-weight="700" fill="#6D28D9">老年代 Old（8）</text>
+  <text x="560" y="142" text-anchor="middle" font-size="12" fill="#475569">年龄 ≥ 15（-XX:MaxTenuring-<tspan x="560" dy="16">Threshold）晋级入住</tspan></text>
+  <text x="560" y="196" text-anchor="middle" font-size="12" fill="#475569">大对象直接进（-XX:Pretenure-<tspan x="560" dy="16">SizeThreshold）：省得来回搬家</tspan></text>
+  <rect x="474" y="240" width="172" height="34" rx="7" fill="#FFFFFF" stroke="#C4B5FD"/>
+  <text x="560" y="262" text-anchor="middle" font-size="11" fill="#5B21B6">这里满了 → Major/Full GC（更慢）</text>
+  <text x="560" y="304" text-anchor="middle" font-size="11" fill="#6D28D9">标记-整理算法：挪到一头，无碎片</text>
+  <text x="560" y="330" text-anchor="middle" font-size="11" fill="#6D28D9">对象死得慢，回收不频繁</text>
+
+  <!-- flows -->
+  <line x1="264" y1="150" x2="296" y2="150" stroke="#475569" stroke-width="2.4" marker-end="url(#arr)"/>
+  <text x="280" y="138" text-anchor="middle" font-size="10" fill="#475569">存活</text>
+  <line x1="355" y1="224" x2="355" y2="234" stroke="#475569" stroke-width="0"/>
+  <line x1="414" y1="150" x2="446" y2="150" stroke="#7C3AED" stroke-width="2.4" marker-end="url(#arr)"/>
+  <text x="430" y="132" text-anchor="middle" font-size="10" fill="#6D28D9">熬够 15 岁</text>
+  <path d="M 160 226 Q 160 360 446 372" fill="none" stroke="#DC2626" stroke-width="2.4" marker-end="url(#arrR)"/>
+  <text x="290" y="368" text-anchor="middle" font-size="11" fill="#DC2626">大对象直达通道（跳过 Survivor，避免反复复制）</text>
+
+  <!-- dead note -->
+  <rect x="700" y="90" width="132" height="270" rx="12" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="766" y="118" text-anchor="middle" font-size="13" font-weight="700" fill="#1E293B">死亡去向</text>
+  <text x="766" y="146" text-anchor="middle" font-size="12" fill="#475569">Minor GC 时</text>
+  <text x="766" y="166" text-anchor="middle" font-size="12" fill="#475569">无人引用的对象</text>
+  <text x="766" y="186" text-anchor="middle" font-size="12" font-weight="700" fill="#DC2626">就地蒸发</text>
+  <text x="766" y="216" text-anchor="middle" font-size="11" fill="#64748B">这也是为什么</text>
+  <text x="766" y="234" text-anchor="middle" font-size="11" fill="#64748B">用完置 null / 缩短</text>
+  <text x="766" y="252" text-anchor="middle" font-size="11" fill="#64748B">生命周期，就是在</text>
+  <text x="766" y="270" text-anchor="middle" font-size="11" fill="#64748B">帮 GC 减负</text>
+  <text x="766" y="306" text-anchor="middle" font-size="11" fill="#059669">动态年龄判定：</text>
+  <text x="766" y="324" text-anchor="middle" font-size="11" fill="#059669">同龄对象超 Survivor</text>
+  <text x="766" y="342" text-anchor="middle" font-size="11" fill="#059669">一半 → 提前晋升</text>
+</svg>

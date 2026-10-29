@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spring AOP：动态代理的魔法 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item active" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / Spring AOP：动态代理的魔法</div>
+  <article>
+<h1>Spring AOP：动态代理的魔法</h1>
+<p>先看一个价值&quot;三天排查时间&quot;的 bug 现场：</p>
+<pre><code class="language-java">@Service
+public class OrderService {
+    @Transactional
+    public void createOrder(Order order) { ... }        // 有事务
+
+    public void batchCreate(List&lt;Order&gt; orders) {
+        for (Order o : orders) {
+            this.createOrder(o);                        // ← 灵异现场：事务没生效！
+        }
+    }
+}
+</code></pre>
+<p><code>createOrder</code> 明明标了 @Transactional，从 <code>batchCreate</code> 里调它，事务却消失了；而 Controller 直接调 <code>createOrder</code> 时事务好好的。同一个方法，两种命运——为什么？</p>
+<p>答案四个字：<strong>动态代理</strong>。这篇咱们从 AOP 的思想讲到 Spring 的实现，从手写 JDK 代理讲到 CGLIB，最后把&quot;代理失效&quot;的各种姿势一网打尽。学完这篇，上面这个 bug 你一眼就能看穿。</p>
+<hr>
+<h2>一、为什么需要 AOP：横切关注点的觉醒</h2>
+<p>想象一个电商系统，几乎每个业务方法都需要：记日志、开事务、控权限、打耗时埋点。按老写法：</p>
+<pre><code class="language-java">public void createOrder(Order order) {
+    long start = System.currentTimeMillis();
+    log.info(&quot;createOrder begin, param={}&quot;, order);
+    TransactionStatus tx = txManager.begin();           // 开事务
+    try {
+        // ……10 行真正的业务逻辑……
+        txManager.commit(tx);
+    } catch (Exception e) {
+        txManager.rollback(tx);
+        throw e;
+    } finally {
+        log.info(&quot;createOrder end, cost={}ms&quot;, System.currentTimeMillis() - start);
+    }
+}
+</code></pre>
+<p>业务逻辑 10 行，&quot;配套设施&quot; 15 行。复制到几十个方法里，改一次日志格式要改几十处。这些<strong>每个业务都要、但又不属于业务的逻辑</strong>，叫做<strong>横切关注点（Cross-Cutting Concern）</strong>。</p>
+<p>OOP 的继承解决不了它（日志和事务不是&quot;一种业务&quot;，没法继承），组合也要每个类手动塞。于是 AOP（Aspect-Oriented Programming，面向切面编程）登场：<strong>把横切逻辑抽成&quot;切面&quot;，织入（Weaving）到目标方法周围</strong>——业务代码干干净净只写业务，日志事务全自动。</p>
+<div class="mermaid">flowchart LR
+    subgraph 无AOP["没有 AOP"]
+        A1["业务1+日志+事务"] ~~~ A2["业务2+日志+事务"] ~~~ A3["业务3+日志+事务"]
+    end
+    subgraph AOP["有 AOP"]
+        B1["业务1"] ~~~ B2["业务2"] ~~~ B3["业务3"]
+        C["日志切面 / 事务切面 / 权限切面<br/>统一织入"]
+        C -.织入.-> B1
+        C -.织入.-> B2
+        C -.织入.-> B3
+    end
+    无AOP ==>|抽出横切逻辑| AOP
+    style C fill:#ffe0b2
+</div>
+<hr>
+<h2>二、核心概念词典（用&quot;体检流水线&quot;记牢）</h2>
+<p>AOP 的术语出了名的劝退，咱们用体检类比一次性记牢：</p>
+<table>
+<thead>
+<tr>
+<th>术语</th>
+<th>英文</th>
+<th>体检类比</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>连接点</td>
+<td>Joinpoint</td>
+<td>每个可以插队的体检项目</td>
+<td>程序执行中的点，Spring 里=<strong>方法的执行</strong></td>
+</tr>
+<tr>
+<td>切点</td>
+<td>Pointcut</td>
+<td>&quot;只拦 40 岁以上的项目&quot;</td>
+<td>匹配哪些连接点的<strong>表达式</strong></td>
+</tr>
+<tr>
+<td>通知</td>
+<td>Advice</td>
+<td>抽血前/后的动作</td>
+<td>拦截到之后要执行的增强逻辑</td>
+</tr>
+<tr>
+<td>切面</td>
+<td>Aspect</td>
+<td>&quot;抽血全套流程&quot;</td>
+<td>切点 + 通知 = 何时何地干什么</td>
+</tr>
+<tr>
+<td>织入</td>
+<td>Weaving</td>
+<td>把流程装到体检线上</td>
+<td>把切面应用到目标对象的过程（Spring 用<strong>运行时代理</strong>实现）</td>
+</tr>
+<tr>
+<td>目标对象</td>
+<td>Target</td>
+<td>你本人</td>
+<td>被增强的原始 Bean</td>
+</tr>
+<tr>
+<td>代理</td>
+<td>Proxy</td>
+<td>替你跑腿的护士</td>
+<td>拦截你、套上增强逻辑再调真身的对象</td>
+</tr>
+</tbody></table>
+<h3>五种通知类型</h3>
+<pre><code class="language-java">@Aspect
+@Component
+public class LogAspect {
+    // 切点表达式：execution(修饰符 返回值 包.类.方法(参数))
+    @Pointcut(&quot;execution(* com.demo.service..*.*(..))&quot;)
+    public void serviceMethods() {}                     // 空方法只做切点&quot;命名锚点&quot;
+
+    @Before(&quot;serviceMethods()&quot;)                          // 前置：方法前
+    public void before(JoinPoint jp) {
+        System.out.println(&quot;→ 进入 &quot; + jp.getSignature().getName());
+    }
+
+    @AfterReturning(value = &quot;serviceMethods()&quot;, returning = &quot;result&quot;)   // 返回后：正常返回
+    public void afterReturning(JoinPoint jp, Object result) {
+        System.out.println(&quot;← &quot; + jp.getSignature().getName() + &quot; 返回 &quot; + result);
+    }
+
+    @AfterThrowing(value = &quot;serviceMethods()&quot;, throwing = &quot;ex&quot;)         // 异常后
+    public void afterThrowing(JoinPoint jp, Exception ex) {
+        System.out.println(&quot;✖ &quot; + jp.getSignature().getName() + &quot; 抛异常 &quot; + ex.getMessage());
+    }
+
+    @After(&quot;serviceMethods()&quot;)                           // 后置：finally，无论成败
+    public void after(JoinPoint jp) { System.out.println(&quot;· &quot; + jp.getSignature() + &quot; 结束&quot;); }
+
+    @Around(&quot;serviceMethods()&quot;)                          // 环绕：全能选手，手动控制执行
+    public Object around(ProceedingJoinPoint pjp) throws Throwable {
+        long start = System.currentTimeMillis();
+        try {
+            Object result = pjp.proceed();               // 放行目标方法（不调它方法就不执行！）
+            return result;
+        } finally {
+            System.out.println(&quot;⏱ &quot; + pjp.getSignature() + &quot; 耗时 &quot;
+                    + (System.currentTimeMillis() - start) + &quot;ms&quot;);
+        }
+    }
+}
+</code></pre>
+<p>正常执行顺序（Spring 5.2.7+）：<code>@Around 前 → @Before → 目标方法 → @Around 后 → @After → @AfterReturning</code>。<strong>@Around 是&quot;包围圈&quot;</strong>：proceed() 之前相当于 Before，之后相当于 AfterReturning，甚至可以改参数（<code>pjp.getArgs()</code> 改完传给 <code>proceed(newArgs)</code>）、改返回值、吞异常。</p>
+<p>切点表达式速查（匹配范围从小到大排）：</p>
+<table>
+<thead>
+<tr>
+<th>表达式</th>
+<th>例子</th>
+<th>匹配什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>execution</td>
+<td><code>execution(* com.demo.service.OrderService.*(..))</code></td>
+<td>按&quot;方法签名&quot;匹配：任意返回值/该类所有方法/任意参数</td>
+</tr>
+<tr>
+<td>within</td>
+<td><code>within(com.demo.service..*)</code></td>
+<td>整个包下的所有类</td>
+</tr>
+<tr>
+<td>@annotation</td>
+<td><code>@annotation(com.demo.LogRecord)</code></td>
+<td>带<strong>指定注解</strong>的方法（业务里最常用、最精准）</td>
+</tr>
+<tr>
+<td>bean</td>
+<td><code>bean(orderService)</code></td>
+<td>按 Bean 名字</td>
+</tr>
+</tbody></table>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：业务开发 90% 的自定义切面就该用 <code>@annotation</code> 方式——自定义一个 @LogRecord 注解，想增强哪个方法就贴哪个方法，精准优雅，绝无误伤。</p>
+</blockquote>
+<hr>
+<h2>三、底层实现：JDK 动态代理 vs CGLIB</h2>
+<p><img src="/assets/images/03-03-jdk-proxy-vs-cglib.svg" alt="JDK 代理（实现接口）vs CGLIB（继承覆写）的结构差异"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：JDK 代理（实现接口）vs CGLIB（继承覆写）的结构差异</p>
+</blockquote>
+<p>Spring AOP 的织入方式是<strong>运行时代理</strong>：容器启动时（还记得上一篇 BeanPostProcessor 的&quot;初始化后&quot;关卡吗），如果检测到一个 Bean 需要增强，就动态生成一个代理对象放进单例池。两种生成方式：</p>
+<h3>3.1 手写 JDK 动态代理（基于接口）</h3>
+<pre><code class="language-java">public interface UserService {
+    String getUser(Long id);
+}
+
+public class UserServiceImpl implements UserService {
+    public String getUser(Long id) { return &quot;用户&quot; + id; }
+}
+
+public class JdkProxyDemo {
+    public static void main(String[] args) {
+        UserService target = new UserServiceImpl();
+
+        UserService proxy = (UserService) Proxy.newProxyInstance(
+                UserService.class.getClassLoader(),        // 用谁的类加载器
+                new Class[]{UserService.class},            // 代理要实现哪些接口
+                (p, method, methodArgs) -&gt; {               // InvocationHandler：调用分发
+                    System.out.println(&quot;[前置] 调用 &quot; + method.getName());
+                    Object result = method.invoke(target, methodArgs);   // 反射调真身
+                    System.out.println(&quot;[后置] 返回 &quot; + result);
+                    return result;
+                });
+
+        proxy.getUser(1L);
+        // 输出：[前置] 调用 getUser → 用户1 → [后置] 返回 用户1
+        // proxy 的类型是运行时生成的 $Proxy0（extends Proxy implements UserService）
+    }
+}
+</code></pre>
+<p>关键认知：<strong>调用方拿到的 proxy 和 target 是两个不同的对象</strong>。proxy 内部持有 target，调用方法时先进 InvocationHandler（增强逻辑住这），再反射调 target。<strong>&quot;this 是谁&quot;决定了走不走增强</strong>——这就是开篇 bug 的伏笔。</p>
+<h3>3.2 CGLIB（基于继承）</h3>
+<p>目标类没有接口怎么办？CGLIB 在运行时<strong>生成目标类的子类</strong>（字节码增强），重写非 final 方法，子类里插入增强逻辑：</p>
+<pre><code class="language-java">Enhancer enhancer = new Enhancer();
+enhancer.setSuperclass(UserServiceImpl.class);       // 代理类是它的&quot;儿子&quot;
+enhancer.setCallback((MethodInterceptor) (obj, method, args1, proxy) -&gt; {
+    System.out.println(&quot;[前置] &quot; + method.getName());
+    Object result = proxy.invokeSuper(obj, args1);   // 调用父类（真身）逻辑
+    System.out.println(&quot;[后置] 返回 &quot; + result);
+    return result;
+});
+UserServiceImpl proxy = (UserServiceImpl) enhancer.create();
+</code></pre>
+<h3>3.3 Spring 的选择策略</h3>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>JDK 动态代理</th>
+<th>CGLIB</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>前提</td>
+<td>目标类实现了接口</td>
+<td>无要求（final 类/方法不行）</td>
+</tr>
+<tr>
+<td>原理</td>
+<td>实现相同接口，组合真身</td>
+<td>继承目标类，覆写方法</td>
+</tr>
+<tr>
+<td>限制</td>
+<td>只能增强接口方法</td>
+<td>final/private/static 方法增强不了</td>
+</tr>
+<tr>
+<td>Spring 默认</td>
+<td>有接口时用它</td>
+<td><strong>Spring Boot 2.x 起默认全用它</strong>（proxyTargetClass=true）</td>
+</tr>
+</tbody></table>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：Spring Boot 默认 CGLIB 后出现一类新坑——把 Bean 注入为<strong>接口类型</strong>之外的<strong>具体类型</strong>时没问题，但若用 <code>@Autowired List&lt;UserService&gt;</code> 收集时混入&quot;代理类与接口类型不一致&quot;的认知偏差，就容易翻车。更典型的是 CGLIB 代理类没有默认构造器时启动报错（Spring 6 修复了大部分场景）。记住一个排查心法：<strong>怀疑代理问题时，打印 <code>bean.getClass()</code>，看到 <code>$Proxyxx</code>（JDK）或 <code>xx$$SpringCGLIB$$0</code>（CGLIB）就说明被增强了。</strong></p>
+</blockquote>
+<hr>
+<h2>四、代理失效大全：this 调用是万坑之源</h2>
+<p>现在揭晓开篇 bug。容器单例池里的 OrderService 是<strong>代理对象</strong>；Controller 调 <code>orderService.createOrder()</code> 走代理 → 事务增强生效 ✓。但 <code>batchCreate</code> <strong>内部</strong>的 <code>this.createOrder(o)</code>：此时 <code>this</code> 是<strong>原始对象</strong>（代理调用真身时，真身内部的 this 永远是它自己），完全绕过了代理 → 事务拦截器根本没机会执行 ✗。</p>
+<div class="mermaid">sequenceDiagram
+    participant Ctrl as Controller
+    participant Proxy as OrderService代理（有事务增强）
+    participant Raw as OrderService原始对象
+
+    Ctrl->>Proxy: batchCreate()
+    Proxy->>Raw: batchCreate()
+    Note over Raw: 事务增强只有从 Proxy 进来才有！
+    Raw->>Raw: this.createOrder(o)   ← this 是 Raw，绕过代理
+    Note over Raw: 事务失效 ✗（没经过代理的拦截）
+</div>
+<p><strong>通用解法两招</strong>：</p>
+<pre><code class="language-java">// 解法① 自注入（推荐）：注入自己的代理，调代理而不是 this
+@Service
+public class OrderService {
+    @Autowired
+    private OrderService self;             // 注入的是代理对象
+
+    public void batchCreate(List&lt;Order&gt; orders) {
+        for (Order o : orders) {
+            self.createOrder(o);           // 走代理 → 事务生效 ✓
+        }
+    }
+}
+
+// 解法② AopContext（需开启 exposeProxy = true）
+((OrderService) AopContext.currentProxy()).createOrder(o);
+</code></pre>
+<p><strong>其余高频失效场景速查表</strong>（@Transactional 通用，因为事务就是切面）：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>this 自调用（如上）</td>
+<td>绕过代理</td>
+</tr>
+<tr>
+<td>方法不是 public</td>
+<td>CGLIB/JDK 都无法代理非 public（代理机制限制）</td>
+</tr>
+<tr>
+<td>final / static / private 方法</td>
+<td>final 覆写不了；static 属于类不属于实例代理；private 同上</td>
+</tr>
+<tr>
+<td>异常被 catch 吞掉</td>
+<td>切面/事务感知不到异常（事务默认只对 RuntimeException 回滚）</td>
+</tr>
+<tr>
+<td>类没被 Spring 管理</td>
+<td>没 Bean 化就没代理化</td>
+</tr>
+<tr>
+<td>多线程里调 this 方法</td>
+<td>同 this 自调用，子线程拿的是原始对象引用</td>
+</tr>
+<tr>
+<td>@PostConstruct 里调增强方法</td>
+<td>代理还没生成（上一篇讲过的时序问题）</td>
+</tr>
+</tbody></table>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：排查代理问题的第一反射动作——打印 <code>AopUtils.isAopProxy(bean)</code> 或 <code>bean.getClass()</code>：看到 <code>$Proxy123</code>（JDK）或 <code>OrderService$$SpringCGLIB$$0</code>（CGLIB）就是被增强了，看到原始类名就是没走代理。另外，切面虽好别贪多：一个方法挂上事务+异步+自定义日志三个切面时，注意 <code>@Order</code> 控制切面执行顺序，否则拦截顺序和你想的不一样（事务切面默认优先级最低，会最先进入最晚退出）。</p>
+</blockquote>
+<hr>
+<h2>五、手写迷你 AOP：40 行看透本质</h2>
+<p>把 AOP 的&quot;织入&quot;用最朴素的方式实现一遍——<strong>拦截 Bean 创建，返回代理</strong>：</p>
+<pre><code class="language-java">@Component
+public class MiniAopPostProcessor implements BeanPostProcessor {
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) {
+        Class&lt;?&gt; targetClass = bean.getClass();
+        // 扫描类上的方法，看有没有标注我们的 @MiniAspect 注解（简化：按注解判断是否增强）
+        boolean needProxy = Arrays.stream(targetClass.getDeclaredMethods())
+                .anyMatch(m -&gt; m.isAnnotationPresent(MiniTimed.class));
+        if (!needProxy) return bean;                        // 不需要增强：原样返回
+
+        // 生成 JDK 代理：接口在就 JDK（简化演示，仅支持有接口的场景）
+        Class&lt;?&gt;[] interfaces = targetClass.getInterfaces();
+        return Proxy.newProxyInstance(targetClass.getClassLoader(), interfaces,
+                (proxy, method, args) -&gt; {
+                    long start = System.currentTimeMillis();
+                    try {
+                        return method.invoke(bean, args);   // 调用真身
+                    } finally {
+                        System.out.println(&quot;⏱ &quot; + method.getName() + &quot; 耗时 &quot;
+                                + (System.currentTimeMillis() - start) + &quot;ms&quot;);
+                    }
+                });
+        // 真实 Spring：这里会合并所有切面（Advisor 链），生成 CglibAopProxy/JdkDynamicAopProxy
+        // 方法调用时走拦截器链 CglibMethodInvocation.proceed()——责任链模式！
+    }
+}
+
+@Target(ElementType.METHOD) @Retention(RetentionPolicy.RUNTIME)
+public @interface MiniTimed {}
+</code></pre>
+<p>这就是 Spring AOP 的骨架：<strong>BeanPostProcessor（初始化后关卡）+ 动态代理 + 拦截器链（责任链）</strong>。@Transactional、@Async、@Cacheable、全局日志切面，全是这条生产线上的产品。</p>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>AOP 解决横切关注点问题：切面 = 切点（在哪拦）+ 通知（干什么）；</li>
+<li>五种通知里 @Around 最全能，proceed() 控制目标方法执行；切点表达式业务首选 @annotation；</li>
+<li>Spring AOP 靠运行时代理织入：JDK 代理（接口+InvocationHandler）或 CGLIB（继承+MethodInterceptor），Boot 2.x 默认 CGLIB；</li>
+<li>代理与目标是两个对象；<strong>this 调用绕过代理</strong>是事务/异步失效的第一大坑，解法是自注入或 AopContext；</li>
+<li>失效速查：非 public/final/static/private、异常被吞、类没被容器管理、@PostConstruct 时序；</li>
+<li>迷你 AOP = BeanPostProcessor + 动态代理 + 责任链拦截器，@Transactional 等注解魔法皆源于此。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）连接点和切点的区别是什么？织入在 Spring 里发生在 Bean 生命周期的哪个阶段？</li>
+<li>（概念）JDK 动态代理和 CGLIB 的实现原理差异？为什么 CGLIB 无法代理 final 方法？</li>
+<li>（概念）复述 this 调用导致事务失效的完整链路（从 Controller 进来到方法执行，经过哪些对象）。</li>
+<li>（动手）写一个 @LogRecord 注解 + AOP 切面：记录方法名、入参、返回值、耗时到日志；贴在任意 Service 方法上验证；再故意抛异常验证 @AfterThrowing。</li>
+<li>（动手·进阶）复现并修复开篇的批量下单事务失效 bug：用自注入方式修复；然后写一个 @Around 切面打印 <code>bean.getClass()</code>，观察被代理类名（<code>$$SpringCGLIB$$</code>）；最后试试给 private 方法加 @Transactional，验证它确实不生效并解释原因。</li>
+</ol>
+<blockquote>
+<p>下一篇预告：《Spring Boot 自动配置：@SpringBootApplication 拆解》——一个注解三个分身，@EnableAutoConfiguration 凭什么能&quot;猜&quot;出你要装什么？顺手咱们再手写一个自己的 Starter，让别的项目一行配置接入你的组件。</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/03-spring-boot/02-bean-lifecycle.html"><span>← 上一篇</span><b>Bean 生命周期与循环依赖</b></a><a class="pn" href="/03-spring-boot/04-auto-configuration.html"><span>下一篇 →</span><b>Spring Boot 自动配置：@SpringBootApplication 拆解</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

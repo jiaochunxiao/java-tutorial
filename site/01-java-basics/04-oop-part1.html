@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>面向对象（上）：封装、继承、多态三巨头 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item active" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 面向对象（上）：封装、继承、多态三巨头</div>
+  <article>
+<h1>面向对象（上）：封装、继承、多态三巨头</h1>
+<p><img src="/assets/images/01-04-polymorphism-memory.svg" alt="多态的运行时绑定：编译看左边，运行看右边"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：多态的运行时绑定：编译看左边，运行看右边</p>
+</blockquote>
+<p>先聊个生活场景。你想吃红烧肉，有两种活法：第一种，自己照着菜谱从头干——买肉、切块、炒糖色、控火候，锅碗瓢盆摆满一桌，油点子溅一身；第二种，走进饭店喊一嗓子&quot;来份红烧肉&quot;，十分钟后端上桌，后厨怎么炒的、糖色怎么熬的，你一概不管。第一种叫过程式编程（procedural programming），第二种叫面向对象编程（Object-Oriented Programming，OOP）——你面对的是&quot;对象&quot;（厨师、饭店、菜品），而不是一步步的&quot;过程&quot;（菜谱）。</p>
+<p>我刚入行那会儿，也觉得面向对象是&quot;脱裤子放屁&quot;：明明三行代码能解决的事，非要建个类、写个方法、再 new 个对象？直到我维护了一个三千行的&quot;面条式&quot;项目——所有变量挤在一个文件里，谁都能改，改一处、崩三处，排查 bug 排到怀疑人生。那一刻我悟了：面向对象不是让你多写代码，是让代码&quot;分而治之&quot;。</p>
+<p>这一篇是 Java 的灵魂篇章：封装、继承、多态三巨头全员登场。篇幅较长，含金量也最高，建议泡杯咖啡慢慢看。</p>
+<h2>一、过程式的痛：一盘散沙的红烧肉</h2>
+<p>用代码对比一下两种思路。过程式做法大致长这样：一堆零散的变量（肉、盐、糖、火候），一堆各自为政的函数（切肉、调味、翻炒），函数之间靠参数传来传去，&quot;火候&quot;这个变量谁都能伸手改一改：</p>
+<pre><code class="language-java">// 过程式：数据和操作是分离的，全局变量像公共调料台，谁都能来一勺
+double fire = 1.0;    // 火候
+double sugar = 2.0;   // 糖量
+
+void cook(double meat) {
+    fire = 5.0;       // 炒糖色需要大火
+    fry(meat, sugar, fire);
+}
+void fry(double meat, double sugar, double fire) { /* ... */ }
+</code></pre>
+<p>项目一大，问题全冒出来了：fire 是谁改的？什么时候改的？为什么是 5.0 不是 3.0？三百个函数里查三个小时。根本病因就一句话：<strong>数据和行为分离，数据无人看守</strong>。面向对象的药方也一句话：<strong>把数据和操作这份数据的方法打包进同一个&quot;类&quot;，数据私有化，行为公开化</strong>——肉、糖、火候全部锁进后厨，外界只能通过&quot;点菜&quot;（公开方法）来交互。</p>
+<h2>二、类与对象：图纸与房子</h2>
+<p>类（class）和对象（object）的关系，是 OOP 第一课也是面试第一题：<strong>类是图纸，对象是按图纸盖出来的房子</strong>。图纸只有一份，房子可以盖 N 栋，每栋住着不同的住户（各自独立的属性值）。</p>
+<pre><code class="language-java">public class Student {
+    // 成员变量（实例变量）：每个对象各存一份
+    String name;
+    int age;
+
+    // 成员方法：对象的行为
+    void study(String course) {
+        System.out.println(name + &quot; 正在学习 &quot; + course);
+    }
+
+    void show() {
+        System.out.println(&quot;我是 &quot; + name + &quot;，今年 &quot; + age + &quot; 岁&quot;);
+    }
+}
+
+public class School {
+    public static void main(String[] args) {
+        Student s1 = new Student();  // 按图纸施工第一栋：在堆中开辟对象空间
+        s1.name = &quot;张三&quot;;            // s1 在栈上，存的是堆中对象的地址
+        s1.age = 20;
+        s1.show();                   // 我是 张三，今年 20 岁
+
+        Student s2 = new Student();  // 第二栋，与 s1 互不干扰
+        s2.name = &quot;李四&quot;;
+        s2.show();                   // 我是 null，今年 0 岁：成员变量有默认值！
+    }
+}
+</code></pre>
+<p>注意 <code>new Student()</code> 的内存动作：堆里开辟对象空间、成员变量赋默认值、执行构造器、把地址返回给栈上的 s1。s1 和 s2 各自指向各自的房子，改 s1 的 name 不影响 s2——这就是&quot;图纸一份、房子多栋&quot;。</p>
+<p>成员变量和局部变量是新人最容易混的哥俩，表格伺候：</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>成员变量（实例变量）</th>
+<th>局部变量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定义位置</td>
+<td>类中、方法外</td>
+<td>方法内、参数、代码块内</td>
+</tr>
+<tr>
+<td>内存位置</td>
+<td>随对象在堆中</td>
+<td>在栈中</td>
+</tr>
+<tr>
+<td>默认值</td>
+<td>有（int 为 0、引用为 null 等）</td>
+<td>没有，必须手动初始化</td>
+</tr>
+<tr>
+<td>生命周期</td>
+<td>随对象生灭</td>
+<td>随方法调用结束而出栈</td>
+</tr>
+</tbody></table>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：<code>s2.show()</code> 输出&quot;我是 null，今年 0 岁&quot;——成员变量有默认值是 Java 的承诺，也是隐蔽 bug 的温床：忘了赋值的字段不报错，只在运行时输出 null 或 0。创建对象后立刻检查必填字段，或者干脆用构造器强制初始化。</p>
+</blockquote>
+<h2>三、构造器与 this：对象的出生证明</h2>
+<p>构造器（constructor）是&quot;创建对象时自动执行的特殊方法&quot;，负责把对象以合法状态带到人间。它的签名很有个性：<strong>方法名与类名完全相同，且没有返回值类型——连 void 都不许写</strong>（写了就变成普通方法，编译器不再当它是构造器）：</p>
+<pre><code class="language-java">public class Student {
+    String name;
+    int age;
+
+    // 无参构造器：不写的话编译器免费赠送这一个；写了有参的，赠品立刻取消
+    public Student() {
+        this(&quot;无名氏&quot;, 18);   // this(...)：调用兄弟构造器，必须在第一行，实现逻辑复用
+    }
+
+    public Student(String name) {
+        this(name, 18);
+    }
+
+    public Student(String name, int age) { // 构造器重载：同名不同参
+        this.name = name;   // this.name 是成员变量，name 是参数，this 用于&quot;撕标签&quot;
+        this.age = age;
+    }
+}
+</code></pre>
+<p>this 关键字两个用法要分清：<code>this.字段</code> 指&quot;当前对象的字段&quot;，专治构造器参数名和字段名相同的&quot;重名纠纷&quot;——参数就近原则下，不写 this 的 name 永远指参数自己，赋值等于自己给自己，字段永远是 null；<code>this(...)</code> 指&quot;调用本类另一个构造器&quot;，且必须写在第一行。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：学员给实体类只写了有参构造器，配 MyBatis 框架时死活报错——框架底层通过反射调用无参构造器创建对象，找不到就抛异常。血泪教训：<strong>只要写了有参构造器，就手动补一个无参的</strong>，这是和各类框架的&quot;社交礼仪&quot;。</p>
+</blockquote>
+<h2>四、封装：private + getter/setter 绝不是脱裤子放屁</h2>
+<p>新手对封装（encapsulation）最大的质疑是：&quot;把字段设为 private，再写 public 的 getter/setter 绕一圈访问，这不是脱裤子放屁吗？&quot;来，看一段代码你就闭嘴了：</p>
+<pre><code class="language-java">public class Account {
+    private double balance;   // 余额私有：外面的手不许直接伸进来
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        if (balance &lt; 0) {                        // 入口校验：不合格的数据直接拒收
+            throw new IllegalArgumentException(&quot;余额不能为负数&quot;);
+        }
+        this.balance = balance;
+    }
+
+    public void withdraw(double amount) {
+        if (amount &gt; balance) {
+            System.out.println(&quot;余额不足，交易失败&quot;);
+            return;
+        }
+        this.balance -= amount;                   // 业务规则内聚在对象内部
+    }
+}
+</code></pre>
+<p>如果 balance 是 public 的，任何一行代码都能写 <code>account.balance = -999999</code>，你连凶手都找不到。而封装之后：第一，<strong>入口统一</strong>，所有修改必须过 setter 这道安检，脏数据进不来；第二，<strong>实现自由</strong>，哪天你想把余额从&quot;元&quot;改成&quot;分&quot;存储、或者加个汇率换算，只改类内部，外界调用 getBalance 的十万行代码一行不动；第三，<strong>按需暴露</strong>，只想读不让改的字段，只提供 getter。所谓&quot;脱裤子放屁&quot;，是把字段直接 public；封装这&quot;绕的一圈&quot;，是防火墙。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：封装 = 字段私有（private）+ 按需提供公开访问方法。它买到的不是&quot;安全&quot;两个字，而是：数据校验的关卡、修改实现的自由、对外承诺的稳定。</p>
+</blockquote>
+<h2>五、包与访问修饰符：四级门禁卡</h2>
+<p>类一多就得分文件夹管理，这就是包（package），对应磁盘上的目录结构，命名惯例是倒写的域名加项目名，如 <code>com.company.order</code>。而类内部的成员（字段、方法、构造器）对外开放到什么程度，由访问修饰符（access modifier）决定，一共四级门禁：</p>
+<table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>同一个类</th>
+<th>同一个包</th>
+<th>不同包的子类</th>
+<th>不同包的其他类</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>private</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>不写（默认/default）</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>protected</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>public</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody></table>
+<p>记忆口诀：private 是&quot;自留地&quot;（只有自己家的类能进），默认是&quot;小区&quot;（同包随便进），protected 是&quot;家族&quot;（同包加不同包的子孙类能进），public 是&quot;广场&quot;（全世界随便进）。</p>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：工程默认配置——字段一律 private，方法按&quot;最小可见范围&quot;原则从默认开始放，真需要跨包再升 protected/public。public 是一种承诺：一旦公开，别人就会依赖它，以后想改就要掂量&quot;破坏别人代码&quot;的代价。权限放得越克制，将来重构越自由。</p>
+</blockquote>
+<h2>六、继承：extends 与 super</h2>
+<p>继承（inheritance）解决&quot;重复代码&quot;问题：多个类有公共部分，抽个父类出来装公共代码，子类通过 <code>extends</code> 白捡。就像猫和狗都有名字、都会吃饭，这些共性放进 Animal，猫狗只写自己特有的&quot;抓老鼠&quot;&quot;看家&quot;：</p>
+<pre><code class="language-java">public class Animal {
+    protected String name;   // protected：专门留给子类用的字段
+
+    public Animal(String name) {
+        this.name = name;
+    }
+
+    public void eat() {
+        System.out.println(name + &quot; 在吃东西&quot;);
+    }
+}
+
+public class Cat extends Animal {     // 猫是动物：is-a 关系才配继承
+    public Cat(String name) {
+        super(name);                  // 调用父类构造器，必须在第一行
+    }
+
+    public void catchMouse() {        // 子类特有技能
+        System.out.println(name + &quot; 在抓老鼠&quot;);
+    }
+}
+</code></pre>
+<p>四条铁律请背下来：第一，Java 是<strong>单继承</strong>（一个类只能 extends 一个父类），多层继承（爷爷-爸爸-儿子）可以；第二，子类继承父类的字段和方法，但<strong>私有成员只是&quot;拥有&quot;却不能直接访问</strong>，构造器不能被继承；第三，子类构造器第一行默认藏着 <code>super()``，若父类只有有参构造器，子类必须显式写 </code>super(参数)<code>，否则编译报错；第四，super 和 this 一样有三个用法——</code>super.字段<code>、</code>super.方法()<code>、</code>super(参数)`，分别访问父类的字段、方法和构造器。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：学员在父类只写了 <code>Animal(String name)</code> 有参构造器，Cat 的构造器里没写 <code>super(name)</code>，编译器自动加的 <code>super()</code> 找不到父类无参构造，直接红字报错。看到 &quot;Implicit super constructor Animal() is undefined&quot; 这句报错，条件反射就想到：父类构造器没对上。</p>
+</blockquote>
+<h2>七、方法重写：两同两小一大</h2>
+<p>子类对父类的方法&quot;重新实现&quot;，叫方法重写（override）。比如猫觉得父类的 eat 太敷衍，要加上&quot;细嚼慢咽&quot;：</p>
+<pre><code class="language-java">@Override                        // 注解：请编译器帮我检查这真是重写，写错签名立刻报错
+public void eat() {
+    System.out.println(name + &quot; 在细嚼慢咽吃小鱼干&quot;);
+}
+</code></pre>
+<p>重写规则总结成七个字：<strong>两同两小一大</strong>：</p>
+<ul>
+<li>两同：方法名相同、参数列表相同；</li>
+<li>两小：返回值类型小于等于父类（相同，或是其子类，即协变返回类型）、抛出的异常小于等于父类（更少或更窄）；</li>
+<li>一大：访问权限大于等于父类（父类 protected，子类可以升 public，但不能降 private）。</li>
+</ul>
+<p>另外三条禁区：private 方法（子类根本看不见，谈不上重写）、static 方法（属于类不属于对象，子类同名只是&quot;隐藏&quot;）、final 方法（字面意思，最终版，不许动）。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：@Override 不是装饰品，是保险丝。手写重写最容易把参数类型写错，写成了&quot;重载&quot;而浑然不觉——程序安安静静跑了个寂寞，父类方法照样执行。加上 @Override，编译器立刻揪出这种&quot;假重写&quot;。所有重写方法，无条件加 @Override。</p>
+</blockquote>
+<h2>八、多态：一个引用，多种形态</h2>
+<p>三巨头压轴登场。多态（polymorphism）的前提是继承加重写，形态是&quot;父类引用指向子类对象&quot;：</p>
+<pre><code class="language-java">Animal a = new Cat(&quot;Tom&quot;);   // 向上转型：猫装进&quot;动物&quot;的口袋里，自动、安全
+a.eat();                     // 调用的是 Cat 重写后的 eat！
+// a.catchMouse();           // 编译报错：动物口袋里掏不出&quot;抓老鼠&quot;
+</code></pre>
+<p>这段代码的两个现象就是多态的全部考点。现象一：<code>a.eat()</code> 明明是 Animal 类型的引用，执行的却是 Cat 的方法——<strong>编译看左边，运行看右边</strong>：编译器按引用类型（Animal）检查&quot;有没有这个方法&quot;，JVM 按实际对象类型（Cat）决定&quot;执行谁的实现&quot;。现象二：a 调不到 catchMouse——向上转型会&quot;缩窄视野&quot;，父类引用看不见子类特有成员。</p>
+<p>想用回子类特有方法，就得<strong>向下转型</strong>（强制转换），转之前必须用 <code>instanceof</code> 验明正身，否则类型对不上就抛 ClassCastException：</p>
+<pre><code class="language-java">if (a instanceof Cat) {           // 先检查再转型，工程铁律
+    Cat cat = (Cat) a;            // 向下转型：把&quot;动物&quot;口袋里的猫还原成猫
+    cat.catchMouse();             // 子类特有方法回来了
+}
+// Java 16+ 模式匹配一步到位：if (a instanceof Cat cat) { cat.catchMouse(); }
+</code></pre>
+<p>为什么运行时能自动找到 Cat 的 eat？这就是<strong>动态绑定（dynamic binding）</strong>：JVM 为每个类维护一张虚方法表（vtable），表里记录各方法的实际入口；子类重写了某方法，子类方法表里该位置的指针就指向子类实现。调用 <code>a.eat()</code> 时，JVM 不看引用类型，而是顺着 a 指向的对象找到它真实类型的方法表，按表索引取出真正的实现执行。一句话：<strong>方法调用看对象的&quot;血统&quot;，不看引用的&quot;户口&quot;</strong>。</p>
+<p>经典案例再上一个：图形面积计算，体会多态在工程里的杀伤力：</p>
+<pre><code class="language-java">public class Shape {
+    public double getArea() {
+        return 0;
+    }
+}
+
+public class Circle extends Shape {
+    private double radius;
+    public Circle(double radius) { this.radius = radius; }
+
+    @Override
+    public double getArea() { return Math.PI * radius * radius; }
+}
+
+public class Rectangle extends Shape {
+    private double width, height;
+    public Rectangle(double w, double h) { this.width = w; this.height = h; }
+
+    @Override
+    public double getArea() { return width * height; }
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        Shape[] shapes = { new Circle(2), new Rectangle(3, 4) }; // 父类引用统一收纳
+        double total = 0;
+        for (Shape s : shapes) {
+            total += s.getArea();   // 同一句代码，各自执行各自的实现——这就是多态
+        }
+        System.out.println(&quot;总面积：&quot; + total); // 约 28.57
+    }
+}
+</code></pre>
+<div class="mermaid">classDiagram
+    class Shape {
+        +double getArea()
+    }
+    class Circle {
+        -double radius
+        +double getArea()
+    }
+    class Rectangle {
+        -double width
+        -double height
+        +double getArea()
+    }
+    Shape <|-- Circle
+    Shape <|-- Rectangle
+</div>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：多态的工程价值是&quot;新增不改旧&quot;：for 循环那行代码一行不改，明天新加 Triangle、Hexagon，把对象扔进数组就自动生效。所有设计模式里的一半以上，地基都是它。另外注意：<strong>成员方法有多态，成员变量没有</strong>——变量按引用类型（编译期）决定，父子类有同名字段时不会&quot;动态绑定&quot;，这是面试送分变送命题的常客。</p>
+</blockquote>
+<h2>九、Object 类：万物之祖的三大法宝</h2>
+<p>Java 里所有类，不管你写没写 extends，都默认继承 java.lang.Object。Object 有三个方法出场率奇高，必须拿下。</p>
+<p><strong>toString()</strong>：直接打印对象时自动调用，默认输出&quot;类名@十六进制哈希码&quot;，比如 <code>Student@1b6d3586</code>——对人毫无意义。所以业务类应重写它，输出有意义的内容（IDEA 里按 Cmd+N / Alt+Insert 一键生成）。</p>
+<p><strong>equals() 与 ==</strong>：== 比较基本类型的值，或两个引用是否指向同一个对象（比地址）；equals 默认就是 ==，但 String、Integer 等类已重写为&quot;内容相等&quot;。自定义类想按内容比较，必须自己重写：</p>
+<pre><code class="language-java">public class OrderItem {
+    private String orderId;
+    private double amount;
+    // 构造器、getter/setter 省略
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;              // 同一对象，直接相等（性能优化）
+        if (o == null || getClass() != o.getClass()) return false; // 空值或类型不同，直接不等
+        OrderItem that = (OrderItem) o;
+        return orderId.equals(that.orderId) &amp;&amp; amount == that.amount;
+    }
+
+    @Override
+    public int hashCode() {                       // 与 equals 必须成对出现！
+        return Objects.hash(orderId, amount);
+    }
+}
+</code></pre>
+<p><strong>hashCode() 的约定</strong>：equals 相等的两个对象，hashCode 必须相等；反过来，hashCode 相等，equals 未必相等（哈希冲突，正常现象）。为什么是死规定？因为 HashSet、HashMap 按&quot;哈希值分组 + equals 精确比对&quot;的流程找对象——只重写 equals 不重写 hashCode，两个&quot;相等&quot;的对象会拿到不同的哈希值，被分进不同的桶，HashMap 里就出现&quot;明明 put 进去了却 contains 不到&quot;的灵异事件。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：真实事故复盘——同事给实体类重写了 equals 忘了 hashCode，去重后的 Set 里躺着两个&quot;一模一样&quot;的用户，下游短信发送重复触达，客诉一片。规则记死：<strong>equals 和 hashCode 永远成对重写，谁单独出场谁惹祸</strong>。</p>
+</blockquote>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：工程里 equals/hashCode/toString 三件套交给 IDE 的 Generate 生成，或者用 Java 16+ 的 record（一行定义不可变数据类，三件套全送）；手写是面试的基本功，但生产代码里手写，除了炫技只剩风险。</p>
+</blockquote>
+<h2>本篇小结</h2>
+<ul>
+<li>面向对象的核心：数据和行为打包进类，数据私有、行为公开，与过程式&quot;数据裸奔&quot;形成本质区别；</li>
+<li>类是图纸、对象是房子，new 在堆中建房、栈上变量存地址；成员变量在堆中有默认值，局部变量在栈中必须手动初始化；</li>
+<li>构造器与类同名、无返回值；写了有参构造器务必补无参的；this(...) 复用兄弟构造器必须在第一行；</li>
+<li>封装 = private 字段 + 按需 getter/setter，买到的是校验关卡和修改自由；</li>
+<li>访问修饰符从窄到宽：private &lt; 默认 &lt; protected &lt; public；</li>
+<li>继承单继承，子类构造器第一行默认 super()；重写口诀&quot;两同两小一大&quot;，@Override 必加；</li>
+<li>多态&quot;编译看左、运行看右&quot;，动态绑定靠虚方法表；向下转型先 instanceof；</li>
+<li>equals 与 hashCode 成对重写，== 比地址、equals 比内容。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>为什么 Java 只允许单继承？如果一个类同时继承两个有相同方法签名的父类，会发生什么尴尬？（顺便查查别的语言怎么解决这个问题。）</li>
+<li>默写方法重写的&quot;两同两小一大&quot;，并说明哪些方法不能被重写、为什么。</li>
+<li>&quot;编译看左边，运行看右边&quot;怎么理解？成员变量有没有多态？请写一段代码验证你的结论。</li>
+<li>只重写 equals 不重写 hashCode，在什么场景下会出问题？请具体描述一次&quot;翻车过程&quot;。</li>
+<li>【编程题】多态图形系统：定义 Shape 类（含 getArea 方法），派生 Circle、Rectangle、Triangle 三个子类并重写 getArea；在 main 方法中创建 Shape 数组装 5 个随机图形，循环求总面积并打印每个图形的面积；再用 instanceof 统计圆形的个数。加分项：重写 toString 并尝试把 Shape 改成 abstract，体会两种写法的差别（看不懂没关系，下一篇的主角就是它）。</li>
+</ol>
+<p>下一篇预告：Shape 那个 <code>return 0</code> 的 getArea 是不是很别扭？总感觉&quot;这个方法在父类里根本不该有实现&quot;。你的直觉完全正确——下一篇《面向对象（下）：接口、抽象类与内部类的爱恨情仇》，我们把这种&quot;别扭&quot;连根拔掉，还会迎来这几年最火的 Lambda 表达式。压轴大戏，不见不散！</p>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/01-java-basics/03-control-flow-arrays.html"><span>← 上一篇</span><b>流程控制与数组：程序的岔路口</b></a><a class="pn" href="/01-java-basics/05-oop-part2.html"><span>下一篇 →</span><b>面向对象（下）：接口、抽象类与内部类的爱恨情仇</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>网络编程：从 Socket 到 HTTP · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item active" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 网络编程：从 Socket 到 HTTP</div>
+  <article>
+<h1>网络编程：从 Socket 到 HTTP</h1>
+<p>先说个扎心的事实：你每天写的 <code>@GetMapping</code> 接口，层层扒开之后，最底下跑的就是今天要讲的这些东西——Socket、TCP、HTTP。Spring Boot 只是给你穿了西装，里子还是 JDK 的网络编程。</p>
+<p>很多同学学到网络编程就跳过：&quot;我用框架就行，学这个干嘛？&quot; 这就好比会开车但不知道发动机是啥——车能跑，但一冒烟就只能干瞪眼。线上接口超时、连接池耗尽、TIME_WAIT 堆积、粘包拆包……这些高频疑难杂症，答案全在网络基础里。今天咱们把这些底层知识一次捋顺。</p>
+<hr>
+<h2>一、网络模型：先认路再开车</h2>
+<p>经典 OSI 七层模型背下来意义不大，<strong>TCP/IP 四层模型</strong>才是工程世界的主流通货：</p>
+<table>
+<thead>
+<tr>
+<th>TCP/IP 四层</th>
+<th>干什么</th>
+<th>对应协议/技术</th>
+<th>生活类比（快递系统）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>应用层</td>
+<td>业务语义：请求响应格式</td>
+<td>HTTP、HTTPS、DNS、MQTT</td>
+<td>包裹里的信件内容</td>
+</tr>
+<tr>
+<td>传输层</td>
+<td>端到端传输：端口、可靠性</td>
+<td><strong>TCP</strong>、UDP</td>
+<td>快递公司（顺丰/圆通）</td>
+</tr>
+<tr>
+<td>网络层</td>
+<td>主机到主机：IP 寻址路由</td>
+<td>IP、ICMP</td>
+<td>分拣中心（省市路由）</td>
+</tr>
+<tr>
+<td>链路层</td>
+<td>相邻设备传输：网卡</td>
+<td>以太网、Wi-Fi</td>
+<td>快递员和货车</td>
+</tr>
+</tbody></table>
+<p>一台服务器上跑着几百个进程，数据到了网卡给谁？靠**端口（Port）**区分：IP 定位主机，端口定位进程，<code>IP + Port = Socket 地址</code>。所以 Tomcat 默认占 8080，MySQL 占 3306，大家各回各家。</p>
+<h3>TCP vs UDP：可靠先生和速度先生</h3>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>TCP（传输控制协议）</th>
+<th>UDP（用户数据报协议）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>连接</td>
+<td>面向连接（先握手）</td>
+<td>无连接（拿起来就发）</td>
+</tr>
+<tr>
+<td>可靠性</td>
+<td>可靠：不丢、不重、按序</td>
+<td>尽力而为：可能丢、可能乱序</td>
+</tr>
+<tr>
+<td>速度/开销</td>
+<td>慢，头部 20 字节起</td>
+<td>快，头部固定 8 字节</td>
+</tr>
+<tr>
+<td>传输形态</td>
+<td>字节流（无边界的&quot;水管&quot;）</td>
+<td>数据报（一封封独立的信）</td>
+</tr>
+<tr>
+<td>典型场景</td>
+<td>网页、API、文件传输、消息</td>
+<td>直播弹幕、游戏、DNS、心跳</td>
+</tr>
+</tbody></table>
+<h3>三次握手与四次挥手（高频面试题）</h3>
+<p>TCP 建立连接要&quot;三次握手（Three-way Handshake）&quot;，断开要&quot;四次挥手&quot;：</p>
+<div class="mermaid">sequenceDiagram
+    participant C as 客户端
+    participant S as 服务端
+    Note over C,S: —— 三次握手（建立连接）——
+    C->>S: SYN (seq=x) 我能听到吗？
+    S->>C: SYN+ACK (seq=y, ack=x+1) 收到！我能听到吗？
+    C->>S: ACK (ack=y+1) 收到！开始通信
+    Note over C,S: —— 数据传输 ——
+    C->>S: 请求数据...
+    Note over C,S: —— 四次挥手（断开连接）——
+    C->>S: FIN (seq=u) 我说完了
+    S->>C: ACK (ack=u+1) 收到（但我可能还有话说）
+    S->>C: FIN (seq=w) 我也说完了
+    C->>S: ACK (ack=w+1) 好，再见（随后等 2MSL 再关）
+</div>
+<p><strong>为什么握手是三次不是两次？</strong> 两次的话，服务端无法确认&quot;自己发出去的应答客户端收到了&quot;；而且一个迟到的旧 SYN（网络迷路的老包）会让服务端白白建立连接浪费资源。三次握手本质是<strong>双方各确认一次&quot;我能发、我能收&quot;</strong>。</p>
+<p><strong>为什么挥手是四次？</strong> TCP 全双工（双向都能发）。一方说&quot;我说完了&quot;（FIN），另一方可能还有数据没发完，只能先应答 ACK，等自己发完再 FIN——所以 ACK 和 FIN 分开发，多了一次。</p>
+<p><strong>为什么主动断开方要等 2MSL（TIME_WAIT）？</strong> 确保最后一个 ACK 对方能收到（丢了就重发 FIN）；同时让旧连接的报文在网络中自然死亡，避免污染下一个同名端口的新连接。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：服务器上大量 TIME_WAIT 是<strong>主动断开方的正常现象</strong>（高并发短连接场景），它本身不是 bug；大量 CLOSE_WAIT 才危险——那是你的代码收到对方 FIN 后<strong>没有调用 close()</strong>，连接泄漏，八成是忘了关资源。</p>
+</blockquote>
+<hr>
+<h2>二、Socket 编程：BIO 的三轮演进</h2>
+<p><img src="/assets/images/02-09-bio-vs-nio.svg" alt="BIO 一桌一服务员死等 vs NIO 一个总管盯全场事件"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：BIO 一桌一服务员死等 vs NIO 一个总管盯全场事件</p>
+</blockquote>
+<p>Socket（套接字）是操作系统对 TCP/UDP 的编程抽象——你可以把它理解为&quot;网络世界的电话机&quot;：拨号（connect）、接听（accept）、说话（write）、听声（read）、挂断（close）。</p>
+<h3>2.1 第一轮：单线程服务器（一个电话一部机）</h3>
+<pre><code class="language-java">public class BioEchoServer {
+    public static void main(String[] args) throws IOException {
+        ServerSocket serverSocket = new ServerSocket(9000);   // 占住 9000 端口
+        System.out.println(&quot;服务器启动，监听 9000...&quot;);
+        while (true) {
+            Socket socket = serverSocket.accept();   // 阻塞：等电话铃响
+            System.out.println(&quot;客户端接入：&quot; + socket.getRemoteSocketAddress());
+            handle(socket);                          // 处理完这个才能 accept 下一个！
+        }
+    }
+
+    private static void handle(Socket socket) throws IOException {
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = socket.getInputStream().read(buffer)) != -1) {  // 阻塞：等对方说话
+            socket.getOutputStream().write(buffer, 0, len);   // echo：原样回写
+        }
+        socket.close();
+    }
+}
+</code></pre>
+<p>问题很明显：<code>accept</code> 和 <code>read</code> 都是<strong>阻塞</strong>的。第一个客户端不挂断，第二个客户端连电话都打不进来。</p>
+<h3>2.2 第二轮：一连接一线程（每个客户一个客服）</h3>
+<pre><code class="language-java">while (true) {
+    Socket socket = serverSocket.accept();
+    new Thread(() -&gt; {                          // 每个连接一个线程
+        try { handle(socket); }
+        catch (IOException e) { /* 记日志 */ }
+    }).start();
+}
+</code></pre>
+<p>能用了，但代价惨烈：<strong>1 万个连接 = 1 万个线程</strong>。每个线程默认 1MB 栈内存，还没算上下文切换的开销。这就是著名的 <strong>C10K 问题</strong>：连接数上万时，机器先被线程拖死。线程还都阻塞在 read 上等数据——大部分时间在睡觉，纯浪费。</p>
+<h3>2.3 第三轮：线程池 + 仍然存在的天花板</h3>
+<pre><code class="language-java">ExecutorService pool = new ThreadPoolExecutor(20, 50, 60, TimeUnit.SECONDS,
+        new ArrayBlockingQueue&lt;&gt;(100));
+while (true) {
+    Socket socket = serverSocket.accept();
+    pool.execute(() -&gt; { try { handle(socket); } catch (IOException ignored) {} });
+}
+</code></pre>
+<p>线程数可控了，但<strong>根本矛盾没解决</strong>：BIO 模型里&quot;等待数据&quot;本身就要占一个线程。1000 个空闲连接即使不说话，也要 1000 个线程守着 read。就像餐厅给每桌派一个服务员，客人光聊天不点菜，服务员也干站着——<strong>真正缺的是&quot;谁有需要叫谁&quot;的机制</strong>，这就引出了 NIO。</p>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：BIO 并非一无是处：连接少、请求快的内部系统用它反而简单稳定。技术选型没有鄙视链，只有适不适合。</p>
+</blockquote>
+<hr>
+<h2>三、NIO 三大件：Buffer、Channel、Selector</h2>
+<p>JDK 1.4 引入 NIO（New IO / Non-blocking IO），三大核心组件配合&quot;一个线程管上千连接&quot;：</p>
+<h3>3.1 Buffer：数据的中转站</h3>
+<p>NIO 读写都经过 Buffer（<code>ByteBuffer</code> 最常用），它内部有四个关键指针，构成一个小状态机：</p>
+<pre><code class="language-java">ByteBuffer buf = ByteBuffer.allocate(1024);
+// 写模式：position=写入位置，limit=容量
+channel.read(buf);        // 从通道读数据进 buffer（position 前进）
+buf.flip();               // 翻转：写模式→读模式（limit=position，position=0）
+while (buf.hasRemaining()) {
+    byte b = buf.get();   // 读取（position 前进）
+}
+buf.clear();              // 清空回到写模式（position=0，limit=容量，数据其实没擦）
+
+// 手写体验一次状态切换：
+ByteBuffer b = ByteBuffer.allocate(8);
+b.put((byte) 1).put((byte) 2).put((byte) 3);   // 写入 3 字节
+System.out.println(b.position());              // 3
+b.flip();                                       // 翻转
+System.out.println(b.limit());                 // 3：只能读 3 个
+System.out.println(b.get());                   // 1
+</code></pre>
+<p><strong>忘调 flip() 就读不到数据 / 读写错乱</strong>，是 NIO 编程的第一大坑。</p>
+<h3>3.2 Channel：双向的高速公路</h3>
+<p>Stream（BIO）是单向的（Input 或 Output 二选一），<strong>Channel 是双向的</strong>，可以同时读写，还能异步关闭。常用的有 <code>SocketChannel</code>、<code>ServerSocketChannel</code>、<code>FileChannel</code>。</p>
+<h3>3.3 Selector：多路复用器（NIO 的灵魂）</h3>
+<p>Selector 就是那个&quot;餐厅服务员总管&quot;：<strong>一个线程把上千个 Channel 都注册到 Selector 上，Selector 监听哪些 Channel 有事件（可读/可写/可连接/可接受），谁就绪就处理谁。</strong> 线程不再傻等某一个连接，而是&quot;事件驱动&quot;。</p>
+<p>底层依赖操作系统的多路复用调用：</p>
+<table>
+<thead>
+<tr>
+<th>系统调用</th>
+<th>原理</th>
+<th>复杂度</th>
+<th>平台</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>select</td>
+<td>每次把 fd 集合拷进内核，线性扫描</td>
+<td>O(n)</td>
+<td>老牌通用</td>
+</tr>
+<tr>
+<td>poll</td>
+<td>同 select，只是突破了 1024 限制</td>
+<td>O(n)</td>
+<td>Unix</td>
+</tr>
+<tr>
+<td><strong>epoll</strong></td>
+<td>内核事件表注册 + 回调，就绪的 fd 主动通知</td>
+<td>O(1)</td>
+<td>Linux（主流）</td>
+</tr>
+</tbody></table>
+<p>Linux 下 Java NIO 底层就是 epoll（Mac 上是 kqueue）。这也是 Nginx、Redis 快的共同秘诀：<strong>单线程 + IO 多路复用</strong>。</p>
+<pre><code class="language-java">public class NioEchoServer {
+    public static void main(String[] args) throws IOException {
+        Selector selector = Selector.open();
+        ServerSocketChannel server = ServerSocketChannel.open();
+        server.bind(new InetSocketAddress(9000));
+        server.configureBlocking(false);                       // 必须非阻塞才能注册
+        server.register(selector, SelectionKey.OP_ACCEPT);     // 关心&quot;接入&quot;事件
+
+        System.out.println(&quot;NIO 服务器启动...&quot;);
+        while (true) {
+            selector.select();                                 // 阻塞直到至少一个事件就绪
+            Iterator&lt;SelectionKey&gt; it = selector.selectedKeys().iterator();
+            while (it.hasNext()) {
+                SelectionKey key = it.next();
+                it.remove();                                   // 手动移除已处理的事件（经典坑）
+                if (key.isAcceptable()) {                      // 新连接
+                    SocketChannel client = server.accept();
+                    client.configureBlocking(false);
+                    client.register(selector, SelectionKey.OP_READ);   // 改关心&quot;可读&quot;
+                } else if (key.isReadable()) {                 // 有数据可读
+                    SocketChannel client = (SocketChannel) key.channel();
+                    ByteBuffer buf = ByteBuffer.allocate(1024);
+                    int len = client.read(buf);
+                    if (len == -1) { client.close(); continue; }       // 对端关闭
+                    buf.flip();
+                    client.write(buf);                          // echo 回去
+                }
+            }
+        }
+    }
+}
+</code></pre>
+<p>一个线程，一个 while 循环，就能扛上千连接——<strong>线程数与连接数解耦了</strong>。</p>
+<h3>3.4 TCP 粘包拆包：流式协议的原罪</h3>
+<p>TCP 是<strong>字节流</strong>，没有&quot;消息边界&quot;——就像水管里流水，你分不清哪一瓢是第一杯。发送端连发两条 &quot;hello&quot; 和 &quot;world&quot;，接收端可能一次收到 &quot;helloworld&quot;，也可能收到 &quot;hell&quot; + &quot;oworld&quot;。这不是 bug，是流的本质。</p>
+<p>解法就是<strong>自定义边界</strong>：定长协议（每条消息固定字节）、分隔符协议（如换行）、<strong>长度字段协议</strong>（最通用：头部 4 字节写明包体长度，Netty 的 LengthFieldBasedFrameDecoder 就是干这个的）。HTTP 的 Content-Length 头，本质就是长度字段方案。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：新手写 Socket 聊天程序，客户端 <code>write</code> 两次，服务端 <code>read</code> 一次就把两条拼一起显示了，然后怀疑人生。记住：<strong>TCP 保证字节不丢不乱序，但不保证&quot;消息&quot;的边界——边界是应用层协议的责任。</strong></p>
+</blockquote>
+<hr>
+<h2>四、HTTP：应用层的通用语</h2>
+<p>HTTP 是 TCP 之上的应用层协议：请求-响应模型、无状态。日常开发必备的几个点：</p>
+<p><strong>报文结构</strong>（请求）：</p>
+<pre><code>POST /api/orders HTTP/1.1        ← 请求行：方法 路径 版本
+Host: api.example.com            ← 请求头：键值对
+Content-Type: application/json
+Content-Length: 46
+
+{&quot;productId&quot;: 1001, &quot;quantity&quot;: 2}   ← 请求体
+</code></pre>
+<p><strong>状态码分类</strong>（面试和排障都高频）：</p>
+<table>
+<thead>
+<tr>
+<th>状态码</th>
+<th>含义</th>
+<th>常见场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>200</td>
+<td>成功</td>
+<td>正常响应</td>
+</tr>
+<tr>
+<td>201 / 204</td>
+<td>已创建 / 无内容</td>
+<td>RESTful 创建成功 / 删除成功</td>
+</tr>
+<tr>
+<td>301 / 302</td>
+<td>永久/临时重定向</td>
+<td>域名迁移、登录跳转</td>
+</tr>
+<tr>
+<td>400</td>
+<td>请求参数错误</td>
+<td>参数校验不过</td>
+</tr>
+<tr>
+<td>401 / 403</td>
+<td>未认证 / 无权限</td>
+<td>没登录 / 登录了但权限不够</td>
+</tr>
+<tr>
+<td>404</td>
+<td>资源不存在</td>
+<td>路径写错</td>
+</tr>
+<tr>
+<td>429</td>
+<td>请求过多</td>
+<td>被限流</td>
+</tr>
+<tr>
+<td>500</td>
+<td>服务器内部错误</td>
+<td>代码抛异常没接住</td>
+</tr>
+<tr>
+<td>502 / 504</td>
+<td>网关错误 / 网关超时</td>
+<td>后端挂了 / 后端太慢（Nginx 等不到响应）</td>
+</tr>
+</tbody></table>
+<p><strong>HTTP/1.1 keep-alive</strong>：一条 TCP 连接可以连续发多个请求，避免每次都三次握手（否则一个页面几十个资源就要几十次握手，慢死）。连接池的复用本质就是复用 keep-alive 连接。</p>
+<p><strong>HTTPS = HTTP + TLS</strong>：在 TCP 和 HTTP 之间加一层加密。TLS 握手（非对称加密协商）→ 之后用协商出的对称密钥加密通信。你只需要记住：HTTPS 解决**窃听（加密）、篡改（完整性校验）、冒充（证书验证）**三大问题。</p>
+<hr>
+<h2>五、Netty：为什么没人裸写 NIO</h2>
+<p>看完上面的 NIO 代码你可能已经感觉到了：Selector、Buffer、flip、事件循环……写得人心态爆炸。而且 JDK NIO 还有著名的 <strong>epoll 空轮询 bug</strong>（select() 在无事件时也被唤醒，CPU 飙到 100%，JDK 至今没彻底修）。所以业界共识：<strong>生产级网络程序用 Netty</strong>（Dubbo、RocketMQ、ElasticSearch、gRPC Java 的底层全是它）。</p>
+<p>Netty 对 NIO 做了三件事：修 bug（空轮询检测与重建 Selector）、简化 API（链式 ByteBuf 不用手动 flip）、提供企业级组件（内置编解码器、心跳、半包处理）。</p>
+<p>核心组件一张表：</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>职责</th>
+<th>类比</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>EventLoopGroup</td>
+<td>一组事件循环线程（Boss 接客，Worker 干活）</td>
+<td>餐厅：迎宾员 + 服务员团队</td>
+</tr>
+<tr>
+<td>Channel</td>
+<td>网络连接的抽象</td>
+<td>一桌客人</td>
+</tr>
+<tr>
+<td>ChannelPipeline</td>
+<td>处理器链，进出的数据流经一串 Handler</td>
+<td>后厨流水线</td>
+</tr>
+<tr>
+<td>ChannelHandler</td>
+<td>真正的业务/编解码逻辑</td>
+<td>流水线上的一个工位</td>
+</tr>
+</tbody></table>
+<p>一个能跑的 Netty Echo 服务器：</p>
+<pre><code class="language-java">public class NettyEchoServer {
+    public static void main(String[] args) throws Exception {
+        EventLoopGroup boss = new NioEventLoopGroup(1);    // 只管 accept
+        EventLoopGroup worker = new NioEventLoopGroup();   // 管读写（默认 CPU核数*2）
+        try {
+            ServerBootstrap b = new ServerBootstrap();
+            b.group(boss, worker)
+             .channel(NioServerSocketChannel.class)
+             .childHandler(new ChannelInitializer&lt;SocketChannel&gt;() {
+                 @Override
+                 protected void initChannel(SocketChannel ch) {
+                     ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
+                         @Override
+                         public void channelRead(ChannelHandlerContext ctx, Object msg) {
+                             ctx.writeAndFlush(msg);        // echo：原样写回（自动 release）
+                         }
+                         @Override
+                         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+                             cause.printStackTrace();
+                             ctx.close();
+                         }
+                     });
+                 }
+             });
+            ChannelFuture f = b.bind(9000).sync();          // 绑定端口启动
+            System.out.println(&quot;Netty Echo Server 启动于 9000&quot;);
+            f.channel().closeFuture().sync();
+        } finally {
+            boss.shutdownGracefully();
+            worker.shutdownGracefully();
+        }
+    }
+}
+</code></pre>
+<p>对比裸 NIO 版：代码没少多少，但你白拿了空轮询修复、ByteBuf（读写指针分离，不用 flip）、优雅关闭和一堆现成编解码器。</p>
+<p>顺带一提：Java 11 之后调用 HTTP API 有官方的 <code>HttpClient</code>（支持 HTTP/2、异步），比古老的 HttpURLConnection 舒服多了：</p>
+<pre><code class="language-java">HttpClient client = HttpClient.newHttpClient();
+HttpRequest req = HttpRequest.newBuilder(URI.create(&quot;https://httpbin.org/get&quot;)).build();
+client.sendAsync(req, HttpResponse.BodyHandlers.ofString())
+      .thenAccept(resp -&gt; System.out.println(resp.statusCode() + &quot; &quot; + resp.body()));
+</code></pre>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>TCP/IP 四层模型里，传输层定位进程靠端口；TCP 可靠有序但重，UDP 轻快但可能丢；</li>
+<li>三次握手是双方确认收发能力，四次挥手因为 TCP 全双工且半关闭需要分开应答；TIME_WAIT 是主动方的正常状态，CLOSE_WAIT 才是泄漏信号；</li>
+<li>BIO 的天花板是&quot;等待占用线程&quot;：一连接一线程导致 C10K 问题；</li>
+<li>NIO 三大件：Buffer（注意 flip 状态机）、Channel（双向）、Selector（多路复用，Linux 下是 epoll），实现线程数与连接数解耦；</li>
+<li>TCP 是字节流没有消息边界，粘包拆包要靠应用层协议：定长/分隔符/长度字段；</li>
+<li>HTTP 要熟悉报文结构与状态码分类；HTTPS 靠 TLS 解决窃听、篡改、冒充；</li>
+<li>生产级网络编程用 Netty：修了 JDK NIO 的坑、简化了 API，核心是 EventLoopGroup + Pipeline + Handler。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）为什么握手三次而挥手四次？TIME_WAIT 出现在主动方还是被动方，为什么要等 2MSL？</li>
+<li>（概念）一台服务器上出现 5 万个 CLOSE_WAIT，说明代码可能出了什么问题？</li>
+<li>（动手）把本文 BIO 单线程版 echo 跑起来，用两个终端同时 <code>telnet localhost 9000</code>，验证第二个客户端进不来；再改成&quot;一连接一线程&quot;版验证可同时聊天。</li>
+<li>（动手）用 <code>ByteBuffer</code> 完成一次&quot;写入 3 字节 → flip → 读出 → clear&quot;全过程，打印每次操作后的 position/limit/capacity，画出状态变化。</li>
+<li>（动手·进阶）给 NioEchoServer 加上&quot;长度字段&quot;协议处理：客户端 4 字节长度 + 包体发送两条消息，服务端按边界正确拆出两条（提示：需要累积 buffer 判断够不够一个完整包）。</li>
+</ol>
+<blockquote>
+<p>下一篇预告：《设计模式：高频模式实战》——23 种模式不用全背，咱们只精讲最高频的 7 个，而且每个都能在 Spring/JDK 源码里找到&quot;官方示范&quot;。学完你会发现：框架不神秘，只是把设计模式用得炉火纯青。</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/02-java-advanced/08-jvm-tuning.html"><span>← 上一篇</span><b>JVM 调优实战：工具箱与真实案例</b></a><a class="pn" href="/02-java-advanced/10-design-patterns.html"><span>下一篇 →</span><b>设计模式：高频模式实战</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>垃圾回收：对象的生与死 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item active" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 垃圾回收：对象的生与死</div>
+  <article>
+<h1>垃圾回收：对象的生与死</h1>
+<p>上篇咱们把 JVM 大楼的房间逛了个遍，对象们在堆里安家落户、生儿育女。但有个问题一直没正面回答：对象死了以后，谁收尸？你 <code>new</code> 了一个对象，用完就撒手不管，连句再见都没有——在 Java 的世界里，这不是你的冷漠，这是设计者的温柔：垃圾回收（Garbage Collection，GC）替你兜底。</p>
+<p>不过这个&quot;保姆&quot;到底怎么判断对象死没死？多久扫一次屋子？扫地的时候为什么你的程序会卡一下？这些问题的答案，就是从&quot;会写 Java&quot;到&quot;会救 Java&quot;的分水岭。我见过面试者把 GC 算法背得滚瓜烂熟，一问&quot;你们线上为什么选 G1&quot;就哑火——背结论和懂原理，是两码事。</p>
+<p>今天这节课，咱们从&quot;没有 GC 的悲惨世界&quot;讲起，一路讲到亚毫秒停顿的 ZGC。系好安全带，发车。</p>
+<h2>一、没有 GC 的世界：手动 free 的 C 时代悲歌</h2>
+<p>C 语言时代，<code>malloc</code> 拿内存、<code>free</code> 还内存，全靠程序员自觉。忘记 free？内存泄漏（Memory Leak），程序像貔貅一样只进不出，最后被操作系统掐死。free 早了？悬垂指针（Dangling Pointer），那块内存已经被别人征用，你还拿着旧地址去读写，数据错乱、诡异的崩溃随机出现——这类 Bug 的排查难度，堪比在西湖里找一根指定的水草。</p>
+<p>更要命的是&quot;谁来 free&quot;这个所有权问题：一个 buffer 传了三个函数，到底谁负责释放？早期 C++ 搞出引用计数智能指针，结果又栽在循环引用上。于是 1959 年 Lisp 之父 John McCarthy 提出了自动垃圾回收的构想，Java 把它发扬光大：<strong>内存管理的责任从程序员转移到运行时</strong>，用一点性能开销，换来开发效率和内存安全的大跃进。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：GC 解决的是&quot;自动发现并回收不再使用的对象&quot;。它管不了两类事：一是还持着引用但逻辑上已无用的对象（这叫内存泄漏，GC 认为它活着）；二是堆外资源（文件句柄、Socket，得靠 try-with-resources）。</p>
+</blockquote>
+<h2>二、怎么判断对象该死</h2>
+<h3>2.1 引用计数法：看起来很美的老骗局</h3>
+<p>思路朴素：给对象配个计数器，被引用 +1，引用失效 -1，归零即死。实现简单、判断高效，Python（CPython）就用它。但它有个致命伤——<strong>循环引用（Circular Reference）</strong>：俩对象互相指着对方，计数器都是 1，实际上从外面谁也够不着它们，却永远&quot;活着&quot;。</p>
+<pre><code class="language-java">public class CircularRef {
+    public Object instance = null;
+    // -Xms20m -Xmx20m
+    public static void main(String[] args) {
+        CircularRef a = new CircularRef();   // a 引用计数 = 1
+        CircularRef b = new CircularRef();   // b 引用计数 = 1
+        a.instance = b;                      // b 计数 = 2
+        b.instance = a;                      // a 计数 = 2
+        a = null;                            // a 对象计数 = 1（被 b.instance 指着）
+        b = null;                            // b 对象计数 = 1（被 a.instance 指着）
+        System.gc();   // 若是引用计数，这俩永远回收不了；HotSpot 实际能回收 → 证明它不用引用计数
+    }
+}
+</code></pre>
+<p>HotSpot 没有采用引用计数，用的是下面这位。</p>
+<h3>2.2 可达性分析：从根出发的寻亲之旅</h3>
+<p>可达性分析（Reachability Analysis）从一组叫 <strong>GC Roots</strong> 的根对象出发，顺着引用链（Reference Chain）往下搜，能搜到的对象算&quot;可达&quot;——活着；搜不到的，就是&quot;不可达&quot;——死亡候选人。</p>
+<p>GC Roots 包括哪些？记住这张&quot;寻亲名单&quot;：</p>
+<ul>
+<li>虚拟机栈（栈帧局部变量表）中引用的对象——正在执行的方法里的参数、局部变量；</li>
+<li>方法区中类静态属性引用的对象——<code>static</code> 字段；</li>
+<li>方法区中常量引用的对象——比如字符串常量池里的引用；</li>
+<li>本地方法栈中 JNI（native 方法）引用的对象；</li>
+<li>活跃线程、系统类加载器、同步锁持有的对象等 JVM 内部引用。</li>
+</ul>
+<div class="mermaid">flowchart TB
+    subgraph roots["GC Roots 集合"]
+        R1["栈帧局部变量"]
+        R2["静态变量 static"]
+        R3["字符串常量池"]
+        R4["JNI 引用"]
+    end
+    R1 --> A["objA 存活"]
+    R2 --> B["objB 存活"]
+    A --> C["objC 存活：被 objA 引用"]
+    D["objD 死亡"] <-->|"互相引用<br/>但从 Root 不可达"| E["objE 死亡"]
+    style D fill:#ff8888
+    style E fill:#ff8888
+    style A fill:#99cc99
+    style B fill:#99cc99
+    style C fill:#99cc99
+</div>
+<p>看图说话：objD 和 objE 互相手拉手，引用计数视角下它们都是 1，但可达性分析视角下，没有任何一条链从 Roots 通向它们——手拉手淹死的经典画面。这就是 HotSpot 的选择：<strong>以连通性论生死，不看人气看户口</strong>。</p>
+<h3>2.3 对象的自我救赎：finalize 的一次自救机会</h3>
+<p>被判不可达的对象不马上死。宣告死亡至少要经历两次标记：第一次发现不可达后，检查是否重写了 <code>finalize()</code> 且没被执行过——是的话对象被塞进 F-Queue 队列，由一条低优先级的 Finalizer 线程去执行它的 finalize()。如果在 finalize() 里把自己重新挂到 GC Roots 上（比如给静态变量赋值 this），它就完成自救；否则第二次标记后，真的死了。</p>
+<pre><code class="language-java">public class FinalizeEscape {
+    public static FinalizeEscape SAVE_HOOK = null;
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        System.out.println(&quot;finalize() 执行，我把自己挂回静态变量，完成自救&quot;);
+        SAVE_HOOK = this;                    // 自救：重新建立引用链
+    }
+
+    public static void main(String[] args) throws Exception {
+        SAVE_HOOK = new FinalizeEscape();
+        SAVE_HOOK = null;                    // 第一次断链
+        System.gc();
+        Thread.sleep(500);                   // Finalizer 线程优先级低，等它一下
+        System.out.println(&quot;第一次 GC 后还活着吗：&quot; + (SAVE_HOOK != null));
+
+        SAVE_HOOK = null;                    // 第二次断链
+        System.gc();
+        Thread.sleep(500);
+        System.out.println(&quot;第二次 GC 后还活着吗：&quot; + (SAVE_HOOK != null)); // false：finalize 只有一次机会
+    }
+}
+</code></pre>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：有学员真在生产里用 finalize() 关数据库连接，结果连接池越用越少。原因：finalize() 执行时机完全不确定，Finalizer 线程优先级还低，对象堆积在队列里，连接释放遥遥无期。JDK 9 已将 finalize() 标记为 Deprecated。<strong>任何资源释放都请用 try-with-resources</strong>，finalize 自救实验仅用于理解机制，不是给你的后门。</p>
+</blockquote>
+<h2>三、三大引用类型：生死看淡，各有底线</h2>
+<p>JDK 1.2 后引用分四级，重点看后三级（表格里&quot;回收时机&quot;是核心考点）：</p>
+<table>
+<thead>
+<tr>
+<th>引用类型</th>
+<th>类</th>
+<th>回收时机</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>强引用（Strong）</td>
+<td>直接 <code>Object o = new Object()</code></td>
+<td>永不回收——只要强引用在，GC 宁可 OOM 也不动它</td>
+<td>日常编码，99% 的场景</td>
+</tr>
+<tr>
+<td>软引用（Soft）</td>
+<td><code>SoftReference&lt;T&gt;</code></td>
+<td>内存不足时（将要 OOM 前）回收</td>
+<td>内存敏感缓存：图片缓存、页面缓存</td>
+</tr>
+<tr>
+<td>弱引用（Weak）</td>
+<td><code>WeakReference&lt;T&gt;</code></td>
+<td>只要发生 GC 就回收</td>
+<td>ThreadLocalMap 的 Entry、WeakHashMap</td>
+</tr>
+<tr>
+<td>幻象引用（Phantom）</td>
+<td><code>PhantomReference&lt;T&gt;</code></td>
+<td>形同虚设，不影响生命周期，仅回收时收到通知</td>
+<td>堆外内存回收通知（DirectByteBuffer 的 Cleaner）</td>
+</tr>
+</tbody></table>
+<pre><code class="language-java">import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
+
+public class ReferenceDemo {
+    public static void main(String[] args) {
+        // 软引用：内存不够才回收，适合缓存
+        SoftReference&lt;byte[]&gt; soft = new SoftReference&lt;&gt;(new byte[1024 * 1024 * 5]);
+        // 弱引用：一 GC 就没，ThreadLocalMap 的坑就埋在这
+        WeakReference&lt;byte[]&gt; weak = new WeakReference&lt;&gt;(new byte[1024 * 1024 * 5]);
+
+        System.out.println(&quot;GC 前  soft=&quot; + (soft.get() != null) + &quot;  weak=&quot; + (weak.get() != null));
+        System.gc();
+        System.out.println(&quot;GC 后  soft=&quot; + (soft.get() != null) + &quot;  weak=&quot; + (weak.get() != null)); // weak=false
+        byte[] pressure = new byte[1024 * 1024 * 12];  // 制造内存压力，软引用也保不住
+        System.out.println(&quot;内存吃紧后 soft=&quot; + (soft.get() != null));
+    }
+}
+// JVM 参数：-Xmx20m
+</code></pre>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：ThreadLocal 用完必须 <code>remove()</code>，就是因为 Entry 的 key 是弱引用、value 是强引用：线程池的线程长生不老，key 被 GC 拿走了，value 还被 Entry 强持着——这就是 ThreadLocal 内存泄漏的经典剧本。弱引用不是&quot;自动防泄漏&quot;，只是让泄漏能被清理掉一半。</p>
+</blockquote>
+<h2>四、回收算法三大件</h2>
+<h3>4.1 标记-清除（Mark-Sweep）</h3>
+<p>第一步标记所有存活对象（注意，标的是活的，不是死的），第二步统一清除未标记者。简单直接，但两大毛病：<strong>效率不稳定</strong>（对象多就慢）和<strong>空间碎片</strong>（清完的内存七零八落，下次分配大对象可能明明总空间够、连续空间不够，被迫提前触发下一次 GC）。</p>
+<h3>4.2 标记-复制（Copying）</h3>
+<p>把空间对半分，只用一半；GC 时把存活对象复制到另一半，然后整块清空原空间。优点：没有碎片、分配高效（指针碰撞即可）；缺点：浪费一半空间，且<strong>对象存活率高时复制开销剧增</strong>。所以它是<strong>新生代的绝配</strong>——新生代对象&quot;朝生夕死&quot;，98% 以上熬不过第一次 Minor GC，需要复制的没几个，浪费自然可以优化：HotSpot 把新生代切成 Eden 和两块 Survivor（8:1:1），每次只用 Eden + 一个 Survivor（共 90%），回收时把活对象复制进另一块 Survivor，两块轮换，最坏也就浪费 10%。</p>
+<h3>4.3 标记-整理（Mark-Compact）</h3>
+<p>标记后不直接清除，而是把存活对象向一端移动，再清掉边界外的内存。老年代的绝配——老年代对象存活率高，标记-复制要搬的家当太多；标记-整理不产生碎片，代价是移动对象需要<strong>全程暂停修正引用</strong>，慢但值。</p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>核心思路</th>
+<th>优点</th>
+<th>缺点</th>
+<th>适用代</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>标记-清除</td>
+<td>标记存活，清除垃圾</td>
+<td>实现简单</td>
+<td>内存碎片、效率不稳</td>
+<td>CMS 老年代（用碎片换低停顿）</td>
+</tr>
+<tr>
+<td>标记-复制</td>
+<td>存活对象复制到另一半</td>
+<td>无碎片、分配快</td>
+<td>浪费空间、存活多则慢</td>
+<td>新生代（存活率低）</td>
+</tr>
+<tr>
+<td>标记-整理</td>
+<td>存活对象向一端搬移</td>
+<td>无碎片、不浪费</td>
+<td>移动对象需 STW、慢</td>
+<td>老年代（存活率高）</td>
+</tr>
+</tbody></table>
+<h2>五、分代收集：跨代引用与卡页</h2>
+<p><img src="/assets/images/02-06-generational-gc.svg" alt="对象晋升之路：Eden→Survivor 熬年龄→老年代，大对象走直达通道"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：对象晋升之路：Eden→Survivor 熬年龄→老年代，大对象走直达通道</p>
+</blockquote>
+<p>既然分了代，就冒出新问题：老年代对象引用着新生代对象怎么办？Minor GC 时难道把整个老年代也扫一遍？那分代就白分了。解法是<strong>记忆集（Remembered Set）</strong>：把老年代划成一个个 512 字节的<strong>卡页（Card Page）</strong>，维护一张卡表（Card Table）；一旦老年代某处写入引用指向新生代，就把对应卡页标为&quot;脏&quot;。Minor GC 时只需扫描脏卡页对应的老年代区域，一个小字节节数组，解决跨代引用的大问题。</p>
+<p>原则一句话：<strong>分代收集不是一种具体算法，而是&quot;按对象存活特征选合适算法&quot;的策略组合</strong>——新生代 Mark-Copy，老年代 Mark-Sweep 或 Mark-Compact。</p>
+<h2>六、STW：世界暂停为什么不可避免</h2>
+<p>GC 过程中，回收器需要确保对象引用关系不再变化，否则标记结果就作废（想象你数教室人数时同学们还在窜座位）。所以不少阶段必须暂停所有用户线程（Stop The World，STW）。停顿时长与堆大小、活对象数量、算法能力相关。<strong>&quot;低延迟收集器&quot;卷了几十年，卷的不是消灭 STW，而是把 STW 压短、压稳</strong>——这也是后面收集器演进的主旋律。</p>
+<h2>七、收集器演进史：从摩托车到高铁</h2>
+<h3>7.1 Serial 与 Parallel：单线程摩托车与多线程公交车</h3>
+<p><strong>Serial</strong>（-XX:+UseSerialGC）：单线程收集，STW 时只有它一个人干活，像一辆小摩托——灵活、省油（无线程交互开销），适合单核、小内存（几十 MB）的客户端或嵌入式的场景。<strong>Parallel Scavenge / Parallel Old</strong>（JDK 8 默认，-XX:+UseParallelGC）：多线程并行回收，主打<strong>吞吐量</strong>（用户代码时间占比），像一辆公交车一趟拉一车人，总耗时不短但用户代码跑得爽，适合后台批处理、计算型任务。</p>
+<h3>7.2 CMS：低延迟先驱，也是悲情英雄</h3>
+<p>CMS（Concurrent Mark Sweep，-XX:+UseConcMarkSweepGC）第一次把&quot;最短停顿&quot;立为主目标，老年代收集首次实现<strong>大部分工作与用户线程并发</strong>。四个阶段：</p>
+<ol>
+<li><strong>初始标记（Initial Mark）</strong>：STW，仅标记 GC Roots 直连对象，速度快；</li>
+<li><strong>并发标记（Concurrent Mark）</strong>：与用户线程并发，沿引用链遍历全堆；</li>
+<li><strong>重新标记（Remark）</strong>：STW，修正并发期间用户线程导致的标记变化；</li>
+<li><strong>并发清除（Concurrent Sweep）</strong>：与用户线程并发，清理垃圾。</li>
+</ol>
+<p>并发标记阶段引出<strong>三色标记</strong>抽象：白（未访问）、灰（自己访问完、成员还没访问完）、黑（自己成员都访问完）。并发时用户线程改引用，可能产生<strong>漏标</strong>——同时满足&quot;黑色对象插入了指向白色对象的新引用&quot;和&quot;灰色对象到该白对象的引用断开&quot;两个条件时发生。CMS 用**增量更新（Incremental Update）**破坏第一个条件：记录并发期间新增的引用，重新标记阶段重新扫；G1 用 **SATB（Snapshot-At-The-Beginning，原始快照）**破坏第二个条件：并发开始时拍快照，删除引用时记录旧引用，当快照处理。</p>
+<p>CMS 三宗罪：<strong>浮动垃圾</strong>（并发阶段产生的新垃圾本轮管不了）、<strong>并发失败退化</strong>（老年代预留空间不够放晋升对象，Concurrent Mode Failure，退化成 Serial Old 单线程整理，停顿时间暴涨）、<strong>内存碎片</strong>（标记-清除天生抽奖）。JDK 9 起被标记 Deprecated，14 正式移除——先驱的宿命就是成为铺路石。</p>
+<h3>7.3 G1：Region 化的时代（JDK 9+ 默认）</h3>
+<p>G1（Garbage First，-XX:+UseG1GC）把堆切成一堆大小相等的 <strong>Region</strong>（1~32MB），每个 Region 可以动态扮演 Eden、Survivor、Old 或大对象区（Humongous）。回收价值比拼：G1 跟踪各 Region 的垃圾比例与回收耗时，<strong>优先收垃圾最多的 Region（Garbage First 名字的由来）</strong>，并用 <code>-XX:MaxGCPauseMillis=200</code> 设定停顿目标，按预算挑出一组 Region 组成回收集（Collection Set，CSet），实现<strong>停顿时间可预测</strong>。跨 Region 引用靠记忆集（RSet），漏标用 SATB 解决。兼顾吞吐与低延迟，大堆（6GB+）表现稳，是当下绝大多数服务的默认选择。</p>
+<h3>7.4 ZGC / Shenandoah：亚毫秒俱乐部</h3>
+<p>ZGC（JDK 11 实验、15 转正、21 支持分代）与 Shenandoah 把停顿压进<strong>亚毫秒/毫秒级且与堆大小无关</strong>，TB 级大堆也能hold住。核心技术是<strong>着色指针（Colored Pointer，在 64 位指针里埋 GC 标记位）+ 读屏障（Load Barrier，读引用时顺带自愈/转移）</strong>，实现并发整理对象。代价是吞吐略降、某些平台特性支持有差异。超大堆、超低延迟（交易、实时风控）场景值得投入。</p>
+<table>
+<thead>
+<tr>
+<th>收集器</th>
+<th>并行/并发</th>
+<th>停顿</th>
+<th>吞吐</th>
+<th>适用场景</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Serial</td>
+<td>单线程</td>
+<td>长</td>
+<td>低</td>
+<td>小内存客户端</td>
+<td>简单省资源</td>
+</tr>
+<tr>
+<td>Parallel Scavenge + Parallel Old</td>
+<td>并行</td>
+<td>中</td>
+<td><strong>高</strong></td>
+<td>批处理、计算任务</td>
+<td>JDK 8 默认</td>
+</tr>
+<tr>
+<td>ParNew + CMS</td>
+<td>并发</td>
+<td><strong>低</strong></td>
+<td>中</td>
+<td>老牌低延迟 Web</td>
+<td>JDK 14 已移除</td>
+</tr>
+<tr>
+<td>G1</td>
+<td>并行+并发</td>
+<td>低且可预测</td>
+<td>较高</td>
+<td>大堆通用服务</td>
+<td>JDK 9+ 默认</td>
+</tr>
+<tr>
+<td>ZGC / Shenandoah</td>
+<td>并发</td>
+<td><strong>亚毫秒级</strong></td>
+<td>中</td>
+<td>超大堆/超低延迟</td>
+<td>JDK 11+/15+</td>
+</tr>
+</tbody></table>
+<h2>八、GC 日志关键字入门</h2>
+<pre><code class="language-java">// 用最简单的方式主动触发一次 GC 观察日志
+public class GcLogDemo {
+    public static void main(String[] args) {
+        byte[] a = new byte[1024 * 1024 * 5];  // 5MB，占点地方
+        a = null;
+        System.gc();                            // 建议式触发 Full GC（别忘了 -XX:+DisableExplicitGC 能拒绝）
+    }
+}
+// JDK 8：-XX:+PrintGCDetails；JDK 11+：-Xlog:gc*
+</code></pre>
+<p>关键字解读：<code>[GC (Allocation Failure) ...]</code> 开头无 Full 的，是 <strong>Minor GC</strong>（新生代空间分配失败触发）；<code>[Full GC ...</code> 是 <strong>Full GC</strong>（整堆+方法区，最疼的那种）；<code>Java heap space</code> 后缀说明 GC 后空间仍不够。还有个阴险货——<code>GC overhead limit exceeded</code>：超过 98% 的时间在做 GC、却回收不到 2% 的堆，JVM 判定&quot;这么耗下去没意义&quot;提前自杀，本质是堆将满未满的僵尸状态（下篇实战详聊）。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：日志里看三件事——GC 类型（Minor/Full）、GC 原因（括号里那个）、GC 前后堆占用变化。Full GC 频繁出现且回收后老年代占用高位不降，基本就是内存泄漏的前兆。</p>
+</blockquote>
+<h2>本篇小结</h2>
+<ul>
+<li>引用计数有循环引用硬伤，HotSpot 采用可达性分析：从 GC Roots 出发不可达即死。</li>
+<li>GC Roots：栈帧局部变量、静态变量、常量、JNI 引用、活跃线程等。</li>
+<li>finalize() 提供一次且仅一次的自救机会，但时机不可控，已被废弃，别用。</li>
+<li>软引用（内存不足回收，做缓存）、弱引用（遇 GC 就回收，ThreadLocalMap）、幻象引用（回收通知，堆外内存）。</li>
+<li>三大算法：标记-清除（碎片）、标记-复制（新生代绝配，98% 朝生夕死）、标记-整理（老年代绝配）。</li>
+<li>跨代引用靠卡页记忆集解决，避免全堆扫描。</li>
+<li>STW 无法彻底消灭，收集器演进史就是压缩 STW 的历史：Serial→Parallel（吞吐）→CMS（并发低延迟，三色标记+增量更新）→G1（Region+CSet+SATB）→ZGC/Shenandoah（着色指针+读屏障）。</li>
+<li>GC 日志三看法：类型、原因、回收前后变化；警惕 GC overhead limit exceeded。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>为什么标记-复制适合新生代、标记-整理适合老年代？如果反过来会怎样？</li>
+<li>CMS 的&quot;并发失败&quot;是怎么发生的？为什么一旦发生停顿时间反而更夸张？</li>
+<li>G1 是怎么做到&quot;停顿时间可预测&quot;的？CSet 在其中扮演什么角色？</li>
+<li>软引用做缓存就一定安全吗？结合 <code>GC overhead limit exceeded</code> 说说软引用缓存把堆吃满时会发生什么。</li>
+<li>【动手实验】用 <code>-Xms64m -Xmx64m -XX:+UseSerialGC -Xlog:gc*</code>（JDK 11+）跑一段循环分配 1MB 数组的代码，观察日志里的 Minor GC 频率；再换 <code>-Xmn16m</code> 与 <code>-Xmn48m</code> 各跑一次，对比 Minor GC 次数与单次耗时，写一段你的结论。</li>
+</ol>
+<p>下一篇预告：对象会死，类也有生命周期。下一篇《类加载机制：双亲委派与字节码》——从一个 class 文件被加载，讲到&quot;自定义 java.lang.String 为什么永远转正不了&quot;，再带你看懂 javap 反编译出的那堆天书。</p>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/02-java-advanced/05-jvm-memory.html"><span>← 上一篇</span><b>JVM 内存结构：运行时数据区巡礼</b></a><a class="pn" href="/02-java-advanced/07-class-loading.html"><span>下一篇 →</span><b>类加载机制：双亲委派与字节码</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

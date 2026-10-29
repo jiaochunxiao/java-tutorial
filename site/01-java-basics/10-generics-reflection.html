@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>泛型与反射：类型的编译期与运行时 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item active" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 泛型与反射：类型的编译期与运行时</div>
+  <article>
+<h1>泛型与反射：类型的编译期与运行时</h1>
+<p>今天这两位主角，堪称 Java 世界里的&quot;冰与火之歌&quot;。</p>
+<p><strong>泛型（Generics）</strong> 是编译期的守护神：它站在编译器身边，盯着你别把 <code>String</code> 塞进 <code>List&lt;Integer&gt;</code>，天一黑（编译结束）它就下班回家了。<strong>反射（Reflection）</strong> 是运行时的透视镜：程序跑起来之后，它能把任何一个对象扒得明明白白——你 private 的字段、你藏起来的方法，它都能看见，甚至能改。</p>
+<p>更有意思的是，这俩看似对立的技术，联手撑起了 Java 生态的半壁江山：Spring 的依赖注入、MyBatis 的 Mapper、Gson/Jackson 的 JSON 序列化、JUnit 的测试方法发现……背后全是&quot;泛型擦除 + 运行时反射&quot;的组合拳。学完这篇，你看框架的眼神都会变得清澈起来——原来所谓的&quot;魔法&quot;，不过如此。</p>
+<hr>
+<h2>一、泛型：编译期的安检员</h2>
+<h3>1.1 没有泛型的世界有多惨</h3>
+<p>Java 5 之前没有泛型，集合里装的都是 <code>Object</code>。想用？先强转：</p>
+<pre><code class="language-java">List list = new ArrayList();      // 里面什么都能装，像个杂货铺
+list.add(&quot;张三&quot;);
+list.add(18);                     // 编译器：不关我事，反正都是 Object
+
+String name = (String) list.get(0);  // 取出来必须强转
+String age = (String) list.get(1);   // 第 2 个是 Integer，这里直接爆炸！
+// 运行时：ClassCastException: java.lang.Integer cannot be cast to java.lang.String
+</code></pre>
+<p>注意看，这段代码<strong>编译完全通过</strong>，炸弹埋到了运行时才炸。而泛型的价值就是把这颗雷提前到编译期引爆：</p>
+<pre><code class="language-java">List&lt;String&gt; list = new ArrayList&lt;&gt;();
+list.add(&quot;张三&quot;);
+list.add(18);       // 编译器直接画红线：不兼容的类型
+String name = list.get(0);  // 不用强转，类型安全
+</code></pre>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：泛型把类型检查从运行时提前到编译期，本质是&quot;参数化类型&quot;——把元素的类型当成参数传给容器，让编译器替你把关。</p>
+</blockquote>
+<h3>1.2 泛型类、泛型接口、泛型方法</h3>
+<pre><code class="language-java">// 泛型类：T 是类型参数（Type 的首字母，约定俗成）
+public class Box&lt;T&gt; {
+    private T content;
+    public void put(T item) { this.content = item; }
+    public T get() { return content; }
+}
+
+Box&lt;String&gt; box = new Box&lt;&gt;();   // 菱形语法：右边尖括号可以留空，编译器自己推
+box.put(&quot;Hello&quot;);
+
+// 泛型接口：典型代表就是 Comparable&lt;T&gt;
+public interface Comparable&lt;T&gt; {
+    int compareTo(T other);
+}
+
+// 泛型方法：类型参数写在返回值前面，调用时自动推断
+public static &lt;K, V&gt; Map&lt;K, V&gt; zip(List&lt;K&gt; keys, List&lt;V&gt; values) {
+    Map&lt;K, V&gt; map = new HashMap&lt;&gt;();
+    for (int i = 0; i &lt; keys.size(); i++) {
+        map.put(keys.get(i), values.get(i));
+    }
+    return map;
+}
+
+Map&lt;String, Integer&gt; m = zip(List.of(&quot;a&quot;, &quot;b&quot;), List.of(1, 2));  // 自动推断 K=String, V=Integer
+</code></pre>
+<p>常见类型参数命名约定：<code>T</code>（Type）、<code>E</code>（Element，集合用）、<code>K/V</code>（Key/Value，Map 用）、<code>R</code>（Result，返回值用）。这不是语法强制，是程序员的江湖默契。</p>
+<p>三种泛型用法对比：</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>泛型类</th>
+<th>泛型接口</th>
+<th>泛型方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>声明位置</td>
+<td>类名后 <code>class Box&lt;T&gt;</code></td>
+<td>接口名后 <code>interface Comparable&lt;T&gt;</code></td>
+<td>返回值前 <code>&lt;K, V&gt; Map&lt;K,V&gt; zip(...)</code></td>
+</tr>
+<tr>
+<td>类型参数何时确定</td>
+<td>创建实例时 <code>new Box&lt;String&gt;()</code></td>
+<td>实现接口时 / 实现类继续泛型化</td>
+<td><strong>调用时自动推断</strong></td>
+</tr>
+<tr>
+<td>作用范围</td>
+<td>整个类的成员</td>
+<td>实现类的成员</td>
+<td>仅方法内部（连静态方法也能用）</td>
+</tr>
+<tr>
+<td>JDK 代表</td>
+<td><code>ArrayList&lt;E&gt;</code>、<code>Optional&lt;T&gt;</code></td>
+<td><code>Comparable&lt;T&gt;</code>、<code>List&lt;E&gt;</code></td>
+<td><code>Collections.swap(List&lt;?&gt;, int, int)</code></td>
+</tr>
+</tbody></table>
+<h3>1.3 类型擦除：泛型只活在编译期</h3>
+<p><img src="/assets/images/01-10-generics-erasure.svg" alt="泛型擦除：编译期严格安检，运行时都是裸 List"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：泛型擦除：编译期严格安检，运行时都是裸 List</p>
+</blockquote>
+<p>重点来了，也是面试最爱：<strong>泛型信息在编译后会被&quot;擦除&quot;（Type Erasure）</strong>。编译器编译完 <code>List&lt;String&gt;</code> 和 <code>List&lt;Integer&gt;</code>，它们在字节码里是<strong>同一个类</strong>。</p>
+<p>不信？看证据：</p>
+<pre><code class="language-java">List&lt;String&gt; a = new ArrayList&lt;&gt;();
+List&lt;Integer&gt; b = new ArrayList&lt;&gt;();
+System.out.println(a.getClass() == b.getClass());   // true！同一个 Class 对象
+
+// 编译器只会做&quot;替换&quot;：把 T 替换为限定类型（无限定时是 Object）
+// Box&lt;String&gt; 和 Box&lt;Integer&gt; 的字节码里，content 字段的类型都是 Object
+</code></pre>
+<p>擦除规则可以概括为一句话：<strong>无界类型参数擦成 <code>Object</code>，有界参数擦成边界类型</strong>（如 <code>&lt;T extends Number&gt;</code> 擦成 <code>Number</code>）。所有对泛型的检查，都发生在编译期&quot;擦除之前&quot;；运行时 JVM 根本不知道 <code>List&lt;String&gt;</code> 这回事。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：正因擦除的存在，下面这些代码统统编译不过——</p>
+<pre><code class="language-java">new T();                        // 不知道 T 是谁，无法创建
+if (obj instanceof List&lt;String&gt;) {}  // 运行时分不清 List 里装什么
+List&lt;int&gt; list;                 // 泛型只能用引用类型，基本类型不行（得用 Integer）
+class Box&lt;T&gt; { static T field; }    // 静态成员属于类，不能引用类的泛型参数
+</code></pre>
+<p>想创建 T 的实例？老老实实把 <code>Class&lt;T&gt;</code> 传进来，用反射：<code>clazz.getDeclaredConstructor().newInstance()</code>。</p>
+</blockquote>
+<h3>1.4 通配符与 PECS：泛型里的&quot;送花难题&quot;</h3>
+<p>泛型不支持协变：<code>List&lt;Object&gt;</code> 不是 <code>List&lt;String&gt;</code> 的父类（因为擦除后它俩根本是同一个类，谈不上父子）。但有时我们确实需要&quot;能装任何元素的 List&quot;这种模糊表达，于是有了通配符 <code>?</code>：</p>
+<pre><code class="language-java">public static double sum(List&lt;? extends Number&gt; list) {   // 生产者：只读不写
+    double total = 0;
+    for (Number n : list) {
+        total += n.doubleValue();
+    }
+    // list.add(1);  // 编译报错！不知道具体类型，不能写入
+    return total;
+}
+
+public static void fill(List&lt;? super Integer&gt; list) {     // 消费者：只写不读（读出来只能当 Object）
+    for (int i = 0; i &lt; 10; i++) {
+        list.add(i);   // 可以写 Integer：Integer 一定是 ? super Integer 的子类
+    }
+}
+</code></pre>
+<p>这就是著名的 <strong>PECS 原则（Producer Extends, Consumer Super）</strong>：</p>
+<ul>
+<li>如果这个参数是<strong>生产者</strong>（往外掏数据给你读）：用 <code>? extends T</code>；</li>
+<li>如果这个参数是<strong>消费者</strong>（你往里塞数据）：用 <code>? super T</code>。</li>
+</ul>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：PECS 记不住就记场景——JDK 里 <code>Collections.copy(List&lt;? super T&gt; dest, List&lt;? extends T&gt; src)</code> 就是标准答案：src 是数据来源（生产者，extends），dest 是数据去处（消费者，super）。源码即教材。</p>
+</blockquote>
+<hr>
+<h2>二、反射：运行时的透视镜</h2>
+<h3>2.1 什么是反射</h3>
+<p>普通调用是&quot;正向&quot;的：写代码时就知道要 new 谁、调哪个方法。<strong>反射是&quot;逆向&quot;的：程序运行中，拿到一个类名或对象，动态地获取它的结构、调用它的方法、修改它的字段。</strong></p>
+<p>好比参观工厂：普通方式是跟着导游走固定路线；反射是拿到了工厂的全套图纸，想去哪个车间去哪个车间，连仓库里上锁的房间（private）都能打开——<code>setAccessible(true)</code> 就是那把万能钥匙。</p>
+<h3>2.2 Class 对象：每个类的&quot;身份证&quot;</h3>
+<p>JVM 加载每个类时，都会在堆里创建一个对应的 <code>java.lang.Class</code> 对象，它是反射的入口。获取方式有三种：</p>
+<pre><code class="language-java">// 方式一：类名.class（编译期已知类型时用）
+Class&lt;String&gt; c1 = String.class;
+
+// 方式二：对象.getClass()（运行期拿到对象时用）
+String s = &quot;hello&quot;;
+Class&lt;?&gt; c2 = s.getClass();
+
+// 方式三：Class.forName(&quot;全限定名&quot;)（只有类名字符串时用，JDBC 驱动加载的经典写法）
+Class&lt;?&gt; c3 = Class.forName(&quot;java.lang.String&quot;);
+
+System.out.println(c1 == c2 &amp;&amp; c2 == c3);  // true：一个类在同一个类加载器里只有一个 Class 对象
+</code></pre>
+<h3>2.3 反射核心 API 走读</h3>
+<p>以一个普通的实体类为例，把反射的家底全过一遍：</p>
+<pre><code class="language-java">public class User {
+    private String name;
+    private int age;
+
+    public User() {}                  // 无参构造
+    public User(String name, int age) { this.name = name; this.age = age; }
+
+    public String getName() { return name; }
+    private void secret() { System.out.println(&quot;我是私有方法，也能被反射调用&quot;); }
+}
+</code></pre>
+<pre><code class="language-java">// ① 拿构造器，创建对象
+Class&lt;User&gt; clazz = User.class;
+Constructor&lt;User&gt; ctor = clazz.getDeclaredConstructor(String.class, int.class);
+User user = ctor.newInstance(&quot;张三&quot;, 25);   // 相当于 new User(&quot;张三&quot;, 25)
+
+// ② 读写字段（包括 private）
+Field nameField = clazz.getDeclaredField(&quot;name&quot;);
+nameField.setAccessible(true);              // 突破 private 限制，&quot;万能钥匙&quot;
+nameField.set(user, &quot;李四&quot;);                 // 相当于 user.name = &quot;李四&quot;
+
+// ③ 调用方法（包括 private）
+Method secret = clazz.getDeclaredMethod(&quot;secret&quot;);
+secret.setAccessible(true);
+secret.invoke(user);                        // 输出：我是私有方法，也能被反射调用
+
+// ④ 批量获取结构信息
+Field[] fields = clazz.getDeclaredFields();        // 所有字段
+Method[] methods = clazz.getDeclaredMethods();     // 所有方法
+for (Field f : fields) {
+    System.out.println(f.getName() + &quot; : &quot; + f.getType().getSimpleName());
+}
+</code></pre>
+<h3>2.4 实战：手写一个 30 行的&quot;迷你依赖注入&quot;</h3>
+<p>反射真正的威力在于写&quot;通用框架&quot;。咱们用泛型 + 反射模拟一下 Spring 依赖注入的核心原理，给框架&quot;祛魅&quot;：</p>
+<pre><code class="language-java">// 自定义注解，模拟 @Autowired
+@Retention(RetentionPolicy.RUNTIME)   // 关键：运行期保留，反射才能读到
+@Target(ElementType.FIELD)
+public @interface Inject {}
+
+// 迷你容器：扫描 → 实例化 → 注入
+public class MiniIoc {
+    private static final Map&lt;Class&lt;?&gt;, Object&gt; BEANS = new HashMap&lt;&gt;();
+
+    public static &lt;T&gt; T getBean(Class&lt;T&gt; clazz) throws Exception {
+        if (BEANS.containsKey(clazz)) return clazz.cast(BEANS.get(clazz));
+
+        T instance = clazz.getDeclaredConstructor().newInstance();  // 反射创建实例
+        BEANS.put(clazz, instance);                                  // 先放入容器（简化处理，忽略循环依赖）
+
+        for (Field field : clazz.getDeclaredFields()) {              // 遍历字段找 @Inject
+            if (field.isAnnotationPresent(Inject.class)) {
+                Class&lt;?&gt; fieldType = field.getType();
+                Object dependency = getBean(fieldType);              // 递归获取依赖
+                field.setAccessible(true);
+                field.set(instance, dependency);                     // 反射注入字段
+            }
+        }
+        return instance;
+    }
+}
+
+// 使用：OrderService 里注入 UserService，一行代码都不用手动 new
+class OrderService {
+    @Inject private UserService userService;
+    public void createOrder() { System.out.println(&quot;下单时调用：&quot; + userService.hello()); }
+}
+// MiniIoc.getBean(OrderService.class).createOrder();
+</code></pre>
+<p>Spring 的 IoC 容器比这复杂一万倍，但<strong>灵魂就这三步：反射创建 Bean、扫描注解、反射注入依赖</strong>。所谓框架，不过是用反射替你干了&quot;体力活&quot;。</p>
+<h3>2.5 泛型 + 反射的经典配合：TypeReference 套路</h3>
+<p>类型擦除说泛型运行时拿不到，那 <code>new TypeReference&lt;List&lt;User&gt;&gt;(){}</code> 为什么能拿到泛型？秘密在于：<strong>类的泛型签名（父类、接口的泛型参数）会被写进字节码，通过匿名子类 + <code>getGenericSuperclass()</code> 就能读到</strong>：</p>
+<pre><code class="language-java">public abstract class TypeReference&lt;T&gt; {
+    private final Type type;
+
+    public TypeReference() {
+        // getGenericSuperclass() 拿到带泛型信息的父类型 ParameterizedType
+        Type superClass = getClass().getGenericSuperclass();
+        this.type = ((ParameterizedType) superClass).getActualTypeArguments()[0];
+    }
+    public Type getType() { return type; }
+}
+
+// 匿名子类：编译器会把 List&lt;User&gt; 这个签名固化到字节码里
+TypeReference&lt;List&lt;User&gt;&gt; ref = new TypeReference&lt;List&lt;User&gt;&gt;() {};
+System.out.println(ref.getType());   // java.util.List&lt;com.example.User&gt;
+
+// Jackson/Retrofit/fastjson 的泛型反序列化，全靠这一招：
+// JSON 字符串 → List&lt;User&gt;，泛型信息一个都不丢
+</code></pre>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：泛型擦除擦的是&quot;字段、方法参数上的泛型&quot;；<strong>类的继承体系上的泛型签名会保留在字节码中</strong>，可通过 <code>getGenericSuperclass()</code> / <code>getGenericInterfaces()</code> 在运行时获取。这就是各大框架泛型操作的底层密码。</p>
+</blockquote>
+<h3>2.6 反射的代价：能力越大，责任越大</h3>
+<ul>
+<li><strong>性能开销</strong>：反射调用比直接调用慢（方法查找、装箱拆箱、安全检查），高频调用场景（每秒百万次）要谨慎。框架的做法是&quot;反射一次，缓存 Method 对象&quot;，或者像 Spring 那样用字节码增强（CGLIB、反射元数据缓存）摊薄成本；</li>
+<li><strong>破坏封装</strong>：<code>setAccessible(true)</code> 绕过 private 访问控制，等于跳过了类的自我保护；</li>
+<li><strong>模块化限制</strong>：JDK 9+ 引入模块系统后，反射访问 JDK 内部 API 会收到警告甚至被拒绝（<code>--add-opens</code> 是常见的绕行方式）；</li>
+<li><strong>与泛型的边界</strong>：反射也拿不到被擦除的字段级泛型（只能拿通配的 Object），除非走 2.5 的继承签名路线。</li>
+</ul>
+<hr>
+<h2>三、一张图收尾：编译期与运行时的分工</h2>
+<div class="mermaid">flowchart LR
+    A["你写的源码<br/>List&lt;String&gt; list"] -->|"javac：泛型检查<br/>然后擦除"| B["字节码<br/>List（无泛型）"]
+    B -->|"类加载"| C["Class 对象<br/>含字段/方法/注解"]
+    C -->|"反射 API"| D["运行时动态操作<br/>new / set / invoke"]
+    D --> E["框架的世界<br/>Spring / MyBatis / Jackson"]
+</div>
+<p>泛型管编译期安全，反射管运行时灵活，一个负责&quot;锁门&quot;，一个负责&quot;万能钥匙&quot;——门锁是防小人的，钥匙是防自己没辙的。</p>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>泛型把类型检查提前到编译期，本质是参数化类型；编译后泛型信息被<strong>擦除</strong>，<code>List&lt;String&gt;</code> 与 <code>List&lt;Integer&gt;</code> 运行时是同一个类；</li>
+<li>通配符遵循 <strong>PECS 原则</strong>：生产者用 <code>? extends T</code>，消费者用 <code>? super T</code>；</li>
+<li>擦除导致 <code>new T()</code>、<code>instanceof 泛型</code>、基本类型泛型参数都不可行；</li>
+<li>反射通过 <code>Class</code> 对象在运行时透视类结构：Constructor / Method / Field 三大件 + <code>setAccessible(true)</code> 突破私有；</li>
+<li>框架的核心套路 = 反射创建对象 + 扫描注解 + 反射注入，30 行就能写个迷你 IoC；</li>
+<li>类继承体系上的泛型签名保留在字节码中，<code>getGenericSuperclass()</code> 是运行时获取泛型的标准姿势；</li>
+<li>反射有性能开销且破坏封装，高频路径要缓存 Method、慎用 setAccessible。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）为什么 <code>List&lt;String&gt;</code> 不能赋值给 <code>List&lt;Object&gt;</code>？这和数组的协变（<code>String[]</code> 可以赋给 <code>Object[]</code>）有什么不同？</li>
+<li>（概念）PECS 原则中，<code>? extends</code> 和 <code>? super</code> 分别为什么不能写入、不能按具体类型读取？</li>
+<li>（找茬）<code>new ArrayList&lt;?&gt;()</code>、<code>static T field</code>、<code>if (x instanceof Box&lt;String&gt;)</code> 三段代码，哪些编译不过？为什么？</li>
+<li>（动手）用反射写一个 <code>ObjectPrinter</code>：接收任意对象，打印其所有字段名与字段值（含 private 字段），用 User 类和 Book 类各测试一次。</li>
+<li>（动手·进阶）给本篇的 MiniIoc 增加&quot;单例&quot;和&quot;构造器注入&quot;支持：扫描构造器参数类型，递归创建依赖后调用构造器生成实例。测试 OrderService → UserService → MailService 三层注入。</li>
+</ol>
+<blockquote>
+<p>下一篇预告：基础篇到此圆满收官！接下来进入<strong>进阶篇</strong>——第一炮《多线程（一）：万物皆可 Thread》。你的 CPU 有好几个核，而你写的代码只用了其中一个，是时候唤醒它们了。系好安全带！</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/01-java-basics/09-exceptions.html"><span>← 上一篇</span><b>异常处理：优雅地搞砸事情</b></a><a class="pn" href="/02-java-advanced/01-thread-basics.html"><span>下一篇 →</span><b>多线程（一）：万物皆可 Thread</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

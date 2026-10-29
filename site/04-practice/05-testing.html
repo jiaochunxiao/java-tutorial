@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>测试与质量守护 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item active" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 测试与质量守护</div>
+  <article>
+<h1>测试与质量守护</h1>
+<p>先讲两个真实场景，你品品哪种更惨：</p>
+<p>场景 A：某同学改了订单折扣计算逻辑，自测&quot;没问题&quot;上线。三天后客服投诉：部分老订单退款金额错了。排查发现是两年前的一段满减逻辑被误伤——而他根本不知道那段代码和折扣有关联。</p>
+<p>场景 B：同样的改动，跑一遍 <code>mvn test</code>，红了三个测试用例，五分钟定位到关联影响，修复后再绿，安心上线。</p>
+<p>区别在哪？场景 B 的项目有一套<strong>回归测试</strong>——改动的&quot;影响面&quot;由测试自动守护。<strong>测试不是给测试部门写的，是给三个月后的你自己写的</strong>——那时候你早忘了这段代码的细节，但测试会替你记住&quot;这个行为不能变&quot;。</p>
+<p>这篇讲清楚：测试怎么分层（金字塔）、单测怎么写（JUnit5 + Mockito）、集成测试怎么跑（@SpringBootTest + TestContainers）、覆盖率怎么正确对待。</p>
+<hr>
+<h2>一、测试金字塔：分层策略</h2>
+<p><img src="/assets/images/04-05-testing-pyramid-cases.svg" alt="金字塔三层 × 图书系统实例对照，别修成倒金字塔"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：金字塔三层 × 图书系统实例对照，别修成倒金字塔</p>
+</blockquote>
+<div class="mermaid">flowchart TD
+    E2E["端到端测试 E2E<br/>（占比 ~10%）<br/>真实环境全链路：慢、脆、贵<br/>只测核心流程"]
+    INT["集成测试 Integration<br/>（占比 ~20%）<br/>Spring 上下文 + 真实依赖（DB）：中速<br/>测组件协作与配置"]
+    UNIT["单元测试 Unit<br/>（占比 ~70%）<br/>毫秒级、可重复、无外部依赖<br/>测业务逻辑"]
+    E2E --> INT --> UNIT
+    style UNIT fill:#e8f5e9
+    style INT fill:#fff9c4
+    style E2E fill:#ffcdd2
+</div>
+<p><strong>为什么金字塔底宽顶窄？</strong></p>
+<ul>
+<li>单测跑得飞快（全量几千个用例几秒钟），改完代码立刻能跑，反馈成本最低，所以量最大；</li>
+<li>越往上越慢越脆（E2E 挂了可能是环境问题不是代码问题），所以只覆盖&quot;下单、支付&quot;这类一条路走到黑的核心链路；</li>
+<li>倒金字塔（大量 E2E、没有单测）是反模式：全量跑一小时，失败定位半天，最后大家都选择性忽略测试邮件——测试名存实亡。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>测什么</th>
+<th>工具</th>
+<th>原则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单元测试</td>
+<td>Service 业务逻辑、工具类、边界条件</td>
+<td>JUnit5 + Mockito + AssertJ</td>
+<td>快、隔离、多写</td>
+</tr>
+<tr>
+<td>集成测试</td>
+<td>Repository 层 SQL、配置装配、切面</td>
+<td>@SpringBootTest + TestContainers</td>
+<td>关键路径覆盖</td>
+</tr>
+<tr>
+<td>端到端</td>
+<td>完整用户流程</td>
+<td>MockMvc / API 测试</td>
+<td>少而精</td>
+</tr>
+</tbody></table>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：<strong>什么值得测</strong>——有业务逻辑的（价格计算、状态流转）、有边界条件的（空列表、并发）、有 bug 史的（修过的 bug 必须补测试，防复活）。<strong>什么不值得测</strong>——getter/setter、纯框架代码（Spring 自己测过了）、随时变的 UI 细节。</p>
+</blockquote>
+<hr>
+<h2>二、JUnit 5 速成</h2>
+<pre><code class="language-java">class DiscountCalculatorTest {
+    private final DiscountCalculator calculator = new DiscountCalculator();
+
+    @Test                                        // 最基本的测试方法
+    @DisplayName(&quot;满100减20：原价120应支付100&quot;)
+    void discount_100_20() {
+        BigDecimal result = calculator.finalPrice(new BigDecimal(&quot;120&quot;));
+        assertEquals(new BigDecimal(&quot;100.00&quot;), result);
+    }
+
+    @Test
+    @DisplayName(&quot;异常场景：负价格应抛参数异常&quot;)
+    void negativePrice() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -&gt; calculator.finalPrice(new BigDecimal(&quot;-1&quot;)));
+        assertTrue(ex.getMessage().contains(&quot;价格&quot;));
+    }
+
+    @Nested                                      // 嵌套分组：按场景组织用例
+    class VipDiscount {
+        @Test
+        @DisplayName(&quot;VIP 9折叠加满减&quot;)
+        void vipWithFullReduction() { ... }
+    }
+
+    @ParameterizedTest                           // 参数化：一个方法跑 N 组数据
+    @CsvSource({&quot;100,80&quot;, &quot;200,160&quot;, &quot;0,0&quot;})
+    void vipEightyPercent(String price, String expected) {
+        assertEquals(new BigDecimal(expected),
+                calculator.vipPrice(new BigDecimal(price)));
+    }
+
+    @Test
+    @Disabled(&quot;等风控规则确定后启用&quot;)              // 临时跳过（要写原因！）
+    void riskCheck() { ... }
+
+    @BeforeEach                                  // 每个测试方法前执行（准备数据）
+    void setUp() { /* 每个用例独立的新计算器 */ }
+
+    @BeforeAll                                   // 全类只执行一次（static）
+    static void initAll() { }
+}
+</code></pre>
+<h3>AssertJ：让断言回到人类语言</h3>
+<pre><code class="language-java">// 原生 assertEquals：参数顺序反了是家常便饭，失败信息还难读
+assertEquals(3, list.size());
+
+// AssertJ 流式断言：主语开头，链式表达，失败信息自带上下文
+assertThat(list)
+        .hasSize(3)
+        .contains(&quot;java&quot;, &quot;go&quot;)
+        .doesNotContain(&quot;php&quot;);
+
+assertThat(order.getStatus())
+        .isEqualTo(OrderStatus.PAID)
+        .isNotEqualTo(OrderStatus.CLOSED);
+
+// 提取对象属性批量断言（DTO 转换测试神器）
+assertThat(books)
+        .extracting(Book::getTitle, Book::getPrice)
+        .containsExactly(
+                tuple(&quot;JVM实战&quot;, new BigDecimal(&quot;129&quot;)),
+                tuple(&quot;并发编程&quot;, new BigDecimal(&quot;99&quot;)));
+</code></pre>
+<hr>
+<h2>三、Mockito：隔离依赖，只测&quot;你写的逻辑&quot;</h2>
+<p>Service 依赖 Mapper、MQ、Redis……单测如果连真依赖，那是集成测试（慢、脆）。<strong>Mockito 用&quot;替身&quot;替换依赖</strong>，让测试只聚焦被测逻辑本身。</p>
+<pre><code class="language-java">@ExtendWith(MockitoExtension.class)              // JUnit5 集成
+class BookServiceTest {
+    @Mock                                        // 替身：接口的所有方法返回默认值（null/0）
+    BookMapper bookMapper;
+
+    @InjectMocks                                 // 被测对象：自动把 @Mock 注进去
+    BookServiceImpl bookService;
+
+    @Test
+    void getById_存在_返回VO() {
+        // given：安排替身的行为
+        Book dbBook = new Book();
+        dbBook.setId(1L); dbBook.setTitle(&quot;JVM实战&quot;);
+        when(bookMapper.selectById(1L)).thenReturn(dbBook);
+
+        // when：调用被测方法
+        BookVO vo = bookService.getById(1L);
+
+        // then：断言结果
+        assertThat(vo.getTitle()).isEqualTo(&quot;JVM实战&quot;);
+        verify(bookMapper, times(1)).selectById(1L);   // 验证交互：恰好调用一次
+    }
+
+    @Test
+    void getById_不存在_抛业务异常() {
+        when(bookMapper.selectById(999L)).thenReturn(null);
+
+        assertThatThrownBy(() -&gt; bookService.getById(999L))
+                .isInstanceOf(BizException.class)
+                .hasMessageContaining(&quot;图书不存在&quot;);
+    }
+
+    @Test
+    void create_重复ISBN_不落库() {
+        when(bookMapper.selectByIsbn(&quot;9787111&quot;)).thenReturn(new Book());
+
+        assertThatThrownBy(() -&gt; bookService.create(reqOf(&quot;9787111&quot;)))
+                .isInstanceOf(BizException.class);
+        verify(bookMapper, never()).insert(any(Book.class));    // 验证&quot;不该发生的事&quot;：没插入
+    }
+
+    @Test
+    void create_捕获参数验证组装逻辑() {
+        ArgumentCaptor&lt;Book&gt; captor = ArgumentCaptor.forClass(Book.class);
+        when(bookMapper.insert(any())).thenReturn(1);
+
+        bookService.create(reqOf(&quot;9787111&quot;));
+
+        verify(bookMapper).insert(captor.capture());             // 捕获传给 insert 的实体
+        assertThat(captor.getValue().getIsbn()).isEqualTo(&quot;9787111&quot;);   // 验证 DTO→Entity 转换
+    }
+}
+</code></pre>
+<p>Mockito 常用武器：<code>when().thenReturn()</code>（打桩返回）、<code>thenThrow()</code>（打桩抛异常）、<code>verify(mock, times(n)/never())</code>（验证交互）、<code>ArgumentCaptor</code>（捕获参数检查）、<code>any()/eq()</code>（参数匹配器）。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：Mock 的陷阱是&quot;Mock 得太嗨&quot;——把被测对象自己的逻辑也 Mock 了（测了个寂寞），或者测试断言的不是行为而是实现细节（<code>verify</code> 满天飞，重构一次全崩）。原则：<strong>Mock 边界（DB/网络/时间），断言行为（输入输出），少 verify 内部调用</strong>。</p>
+</blockquote>
+<hr>
+<h2>四、集成测试：@SpringBootTest 与 TestContainers</h2>
+<h3>4.1 @SpringBootTest：起真容器</h3>
+<pre><code class="language-java">@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc                              // 注入 MockMvc 直接打接口
+class BookControllerTest {
+    @Autowired MockMvc mockMvc;
+
+    @Test
+    void 新增图书_参数非法_返回400() throws Exception {
+        mockMvc.perform(post(&quot;/api/books&quot;)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(&quot;{\&quot;title\&quot;:\&quot;\&quot;}&quot;))          // 空标题
+                .andExpect(status().isBadRequest())            // 断言 HTTP 400
+                .andExpect(jsonPath(&quot;$.code&quot;).value(400));     // 断言响应体
+    }
+
+    @Test
+    void 查询图书_不存在_返回业务码() throws Exception {
+        mockMvc.perform(get(&quot;/api/books/99999&quot;))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(&quot;$.code&quot;).value(40404));
+    }
+}
+</code></pre>
+<p><strong>@Transactional 测试技巧</strong>：测试方法标 @Transactional，Spring 会在测试结束时<strong>自动回滚</strong>——每个用例都在干净数据上跑，互不污染：</p>
+<pre><code class="language-java">@SpringBootTest
+@Transactional                                    // 测试结束后数据自动回滚（Spring Test 的特殊处理）
+class BookServiceIntegrationTest {
+    @Autowired BookService bookService;
+
+    @Test
+    void create后能查到() {
+        BookVO vo = bookService.create(validReq());
+        assertThat(bookService.getById(vo.getId()).getTitle()).isNotBlank();
+        // 不用清理：测试结束全回滚
+    }
+}
+</code></pre>
+<p>性能提醒：@SpringBootTest 每个测试类都起新上下文（约 5~15 秒），上下文缓存机制下同配置类共享一个。<strong>别在单测里滥用它</strong>——金字塔底座还是纯 Mockito。</p>
+<h3>4.2 Repository 层：TestContainers 起真 MySQL</h3>
+<p>用 H2 内存库测 SQL？方言差异会让你&quot;测试全绿、上线报错&quot;。<strong>TestContainers 用 Docker 起一个真 MySQL</strong>：</p>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.testcontainers&lt;/groupId&gt;
+    &lt;artifactId&gt;mysql&lt;/artifactId&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.testcontainers&lt;/groupId&gt;
+    &lt;artifactId&gt;junit-jupiter&lt;/artifactId&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+</code></pre>
+<pre><code class="language-java">@SpringBootTest
+@Testcontainers
+class BookRepositoryIT {                            // 集成测试惯例用 IT 结尾（和单测分开跑）
+    @Container
+    static MySQLContainer&lt;?&gt; mysql = new MySQLContainer&lt;&gt;(&quot;mysql:8.0&quot;)
+            .withDatabaseName(&quot;library&quot;)
+            .withUsername(&quot;test&quot;).withPassword(&quot;test&quot;);
+
+    @DynamicPropertySource                          // 把容器地址动态注入 Spring 配置
+    static void props(DynamicPropertyRegistry registry) {
+        registry.add(&quot;spring.datasource.url&quot;, mysql::getJdbcUrl);
+        registry.add(&quot;spring.datasource.username&quot;, mysql::getUsername);
+        registry.add(&quot;spring.datasource.password&quot;, mysql::getPassword);
+    }
+
+    @Autowired BookMapper bookMapper;
+
+    @Test
+    void 逻辑删除_查询自动过滤() {
+        Book b = bookMapper.selectById(1L);
+        bookMapper.deleteById(1L);                  // 实际是 UPDATE deleted=1
+        assertThat(bookMapper.selectById(1L)).isNull();   // 真 MySQL 验证 @TableLogic 行为
+    }
+}
+</code></pre>
+<hr>
+<h2>五、覆盖率：指标不是目的</h2>
+<p>JaCoCo 接入（Maven 插件）后跑 <code>mvn verify</code>，<code>target/site/jacoco/index.html</code> 出报告：行覆盖/分支覆盖。然后是三个清醒认知：</p>
+<ol>
+<li><strong>行覆盖 100% ≠ 没 bug</strong>：覆盖只说明&quot;这行执行过&quot;，不说明&quot;断言对了&quot;。删掉所有断言的测试覆盖率照样涨；</li>
+<li><strong>覆盖率是发现工具不是 KPI</strong>：低覆盖率告诉你哪里没测（有价值）；拿覆盖率考核团队，得到的是为凑数写的无断言测试（有害）；</li>
+<li>务实目标：核心业务模块 70~80% 行覆盖 + 关键分支覆盖；工具类、配置类别强求。</li>
+</ol>
+<h3>TDD 一段（了解即可）</h3>
+<p>测试驱动开发的节奏：<strong>红（写一个失败的测试）→ 绿（最少代码让测试过）→ 重构（整理代码保持绿）</strong>。它适合逻辑清晰、输入输出明确的场景（算法、计费规则）；不适合探索性开发（需求都在变，测试跟着白写）。<strong>不必教条 TDD，但&quot;改代码前先补一个能复现 bug 的测试&quot;永远是对的。</strong></p>
+<h3>CI 里跑测试</h3>
+<pre><code class="language-yaml"># .github/workflows/ci.yml（节选）
+name: CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { java-version: &#39;17&#39;, distribution: &#39;temurin&#39; }
+      - run: mvn -B verify          # 测试不过，流水线红，禁止合码
+</code></pre>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：测试的最大价值在<strong>重构和升级时</strong>——敢不敢把老项目从 Boot 2 升到 3、敢不敢大改计费逻辑，全看测试网结得牢不牢。没测试的系统，每行代码都是&quot;祖传的不能动&quot;。</p>
+</blockquote>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>测试金字塔：70% 单元（快、隔离）+ 20% 集成（真依赖）+ 10% E2E（核心链路）；倒金字塔是反模式；</li>
+<li>值得测：业务逻辑、边界、bug 史；不值得测：getter/setter、框架代码；</li>
+<li>JUnit5 + AssertJ 流式断言 + Mockito 打桩/verify/Captor 是单测三件套；Mock 边界、断言行为、少 verify 细节；</li>
+<li>@SpringBootTest 测 Web 层与装配（MockMvc + jsonPath）；@Transactional 测试自动回滚保数据干净；</li>
+<li>TestContainers 起 Docker 真 MySQL 测 SQL，远胜 H2（方言差异）；</li>
+<li>覆盖率是发现工具不是 KPI；核心模块 70~80% 足够；改 bug 前先写复现测试。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）为什么单元测试要占金字塔的大头？&quot;倒金字塔&quot;会带来什么具体恶果？</li>
+<li>（概念）@Mock 和 @InjectMocks 分别做什么？如果被测类是构造器注入，Mockito 怎么把替身塞进去的（联系 IoC 篇）？</li>
+<li>（概念）为什么测试类的 @Transactional 结束后会回滚？这和生产里的事务行为一致吗？</li>
+<li>（动手）给图书系统的 DiscountCalculator/BookService 核心方法补至少 10 个单测：覆盖正常、边界（空、0、负数）、异常三类场景，全部用 Mockito 隔离 Mapper。</li>
+<li>（动手·进阶）用 TestContainers 给 BookMapper 写集成测试：验证逻辑删除、乐观锁扣库存（<code>UPDATE ... WHERE stock&gt;0</code> 影响行数）；再写一个 MockMvc 测试覆盖&quot;参数校验 400 → 业务异常 → 兜底 500&quot;三条全局异常路径，接入 JaCoCo 看覆盖率报告。</li>
+</ol>
+<blockquote>
+<p>下一篇预告：《日志、监控与上线部署》——实践篇收官：logback 生产级配置、TraceID 链路追踪、Actuator + Prometheus + Grafana 监控全家桶，最后用 Docker 把服务真正&quot;上线&quot;。让你的服务从&quot;盲盒&quot;变成&quot;透明鱼缸&quot;。</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/04-practice/04-async-mq.html"><span>← 上一篇</span><b>异步与消息：从 @Async 到 RocketMQ</b></a><a class="pn" href="/04-practice/06-logging-monitoring.html"><span>下一篇 →</span><b>日志、监控与上线部署</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

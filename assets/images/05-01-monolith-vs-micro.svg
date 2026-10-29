@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 420" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="860" height="420" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">单体 vs 微服务：一块巨石 vs 一片小镇</text>
+
+  <!-- monolith -->
+  <rect x="46" y="70" width="380" height="300" rx="14" fill="#FEF2F2" stroke="#DC2626" stroke-width="2"/>
+  <text x="236" y="98" text-anchor="middle" font-size="15" font-weight="700" fill="#B91C1C">单体 Monolith（一荣俱荣，一损俱损）</text>
+  <rect x="86" y="116" width="300" height="200" rx="10" fill="#FFFFFF" stroke="#FCA5A5"/>
+  <g font-size="12" text-anchor="middle">
+    <rect x="100" y="130" width="272" height="34" rx="6" fill="#F8FAFC" stroke="#E2E8F0"/><text x="236" y="152" fill="#475569">订单逻辑 + 商品逻辑 + 支付逻辑 + 积分逻辑……</text>
+    <rect x="100" y="172" width="130" height="34" rx="6" fill="#F8FAFC" stroke="#E2E8F0"/><text x="165" y="194" fill="#475569">共用一个库</text>
+    <rect x="242" y="172" width="130" height="34" rx="6" fill="#F8FAFC" stroke="#E2E8F0"/><text x="307" y="194" fill="#475569">共用一个进程</text>
+    <text x="236" y="240" fill="#B91C1C" font-weight="700">发版 = 整站重新部署</text>
+    <text x="236" y="264" fill="#B91C1C">一个模块 OOM → 全体陪葬</text>
+    <text x="236" y="288" fill="#B91C1C">想扩"商品"的量 → 只能整包扩</text>
+  </g>
+  <text x="236" y="346" text-anchor="middle" font-size="11" fill="#991B1B">痛点：发布互相拖累 / 故障全站传播 / 代码墙谁都不敢动</text>
+
+  <!-- micro -->
+  <rect x="460" y="70" width="360" height="300" rx="14" fill="#ECFDF5" stroke="#059669" stroke-width="2"/>
+  <text x="640" y="98" text-anchor="middle" font-size="15" font-weight="700" fill="#047857">微服务 Microservices（小镇模式）</text>
+  <!-- gateway -->
+  <rect x="560" y="114" width="160" height="34" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+  <text x="640" y="136" text-anchor="middle" font-size="12" fill="#065F46">Gateway 网关（统一入口）</text>
+  <g text-anchor="middle" font-size="11">
+    <rect x="480" y="176" width="90" height="44" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="525" y="196" fill="#065F46">订单服务</text><text x="525" y="212" fill="#64748B">独库+可独立扩</text>
+    <rect x="594" y="176" width="90" height="44" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="639" y="196" fill="#065F46">商品服务</text><text x="639" y="212" fill="#64748B">独库+可独立扩</text>
+    <rect x="708" y="176" width="90" height="44" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="753" y="196" fill="#065F46">支付服务</text><text x="753" y="212" fill="#64748B">独库+可独立扩</text>
+    <rect x="480" y="240" width="90" height="44" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="525" y="260" fill="#065F46">库存服务</text><text x="525" y="276" fill="#64748B">Nacos 注册</text>
+    <rect x="594" y="240" width="90" height="44" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="639" y="260" fill="#065F46">用户服务</text><text x="639" y="276" fill="#64748B">OpenFeign 互调</text>
+    <rect x="708" y="240" width="90" height="44" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="753" y="260" fill="#065F46">积分服务</text><text x="753" y="276" fill="#64748B">Sentinel 防雪崩</text>
+  </g>
+  <text x="640" y="316" text-anchor="middle" font-size="11" fill="#047852">独立部署 / 独立扩容 / 故障隔离（熔断兜底）</text>
+  <text x="640" y="336" text-anchor="middle" font-size="11" fill="#B45309">代价：分布式复杂性、运维成本、数据一致性难题</text>
+  <text x="640" y="356" text-anchor="middle" font-size="11" fill="#6D28D9">什么时候该拆？业务边界清晰 + 团队规模撑得起 + 有独立伸缩需求</text>
+
+  <rect x="46" y="384" width="774" height="24" rx="8" fill="#FFF7ED" stroke="#FDBA74"/>
+  <text x="62" y="401" font-size="12" fill="#9A3412">金句：微服务不是银弹——按技术分层拆服务是灾难，按业务限界上下文拆才是正道（DDD）。</text>
+</svg>

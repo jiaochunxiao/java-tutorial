@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>集合框架（下）：HashMap 源码炖着吃 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item active" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 集合框架（下）：HashMap 源码炖着吃</div>
+  <article>
+<h1>集合框架（下）：HashMap 源码炖着吃</h1>
+<p>上节课咱们画完了选型地图，这节课进后厨。</p>
+<p>我知道，一说&quot;读源码&quot;，不少同学腿就软了：那玩意儿是不是得十年功力才配看？打住！我先给你做个心理按摩——<strong>源码也是人写的，写源码的那哥们儿写的时候也得查文档、也会写注释、也怕后人看不懂</strong>。HashMap 的源码，注释比代码还多，Doug Lea 大爷生怕你看不明白，掰开揉碎地给你讲。而且读源码的正确姿势不是从第一行读到最后一行，而是<strong>带着问题去</strong>：<code>put</code> 一个元素到底发生了什么？容量为什么必须是 2 的幂？把这几个问题当线头，抽着抽着整个毛衣就解开了。</p>
+<p>HashMap 是 Java 集合框架的 C 位，没有之一。业务代码里出现频率最高，面试被盘得最狠，理解了它，HashSet、ConcurrentHashMap 都是买一送三。今天咱们把 ArrayList 先快速过一遍热身，然后主菜上 HashMap，小火慢炖，炖到脱骨。</p>
+<h2>一、热身菜：ArrayList 源码要点</h2>
+<p>ArrayList 的源码是清汤挂面，十分钟看完，但它有几个&quot;反直觉&quot;的知识点，面试很爱考。</p>
+<h3>核心字段与懒加载的真相</h3>
+<pre><code class="language-java">public class ArrayList&lt;E&gt; extends AbstractList&lt;E&gt;
+        implements List&lt;E&gt;, RandomAccess, ... {
+
+    private static final int DEFAULT_CAPACITY = 10;      // 默认容量 10
+    private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
+    transient Object[] elementData;   // 真正存元素的数组，transient 表示不参与默认序列化
+    private int size;                 // 元素个数，注意区分：size 是个数，length 是容量
+}
+</code></pre>
+<p><strong>默认容量 10 的真相</strong>：<code>new ArrayList&lt;&gt;()</code> 的时候，数组<strong>并没有真正分配长度 10</strong>，<code>elementData</code> 指向一个空数组 <code>{}</code>，容量是 0！直到第一次 <code>add</code>，才扩到 10。这叫<strong>懒加载（lazy initialization）</strong>——你不放元素，我就不占内存，主打一个勤俭持家。</p>
+<h3>add 与扩容：1.5 倍的精打细算</h3>
+<pre><code class="language-java">public boolean add(E e) {
+    ensureCapacityInternal(size + 1);  // 先确保装得下
+    elementData[size++] = e;           // 尾部赋值，size 后移
+    return true;
+}
+
+private void grow(int minCapacity) {
+    int oldCapacity = elementData.length;
+    int newCapacity = oldCapacity + (oldCapacity &gt;&gt; 1);  // 新容量 = 旧容量 * 1.5（右移一位即除2）
+    if (newCapacity - minCapacity &lt; 0)
+        newCapacity = minCapacity;    // 1.5 倍还不够（如 addAll 大批量），直接用需求值
+    ...
+    elementData = Arrays.copyOf(elementData, newCapacity); // 搬家：新数组 + System.arraycopy 拷贝
+}
+</code></pre>
+<p>三句话总结：<strong>add 前先问&quot;装得下吗&quot;，装不下就 1.5 倍扩容，扩容靠 <code>Arrays.copyOf</code> 整体搬家</strong>。所以随机访问 O(1)、尾部追加均摊 O(1)，但中间插入和删除要 <code>System.arraycopy</code> 搬移后面的元素，是 O(n)——这正好验证了上篇说的&quot;ArrayList 中间增删也是 O(n)&quot;。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：ArrayList 默认容量 10 是<strong>第一次 add 时才生效的懒加载</strong>；扩容 1.5 倍，靠 <code>Arrays.copyOf</code> 搬家。已知数据量时用 <code>new ArrayList&lt;&gt;(n)</code> 一次性给够，能省掉多次扩容拷贝——这就是上篇老鸟忠告的源码依据。</p>
+</blockquote>
+<h2>二、主菜上场：HashMap 核心字段</h2>
+<p><img src="/assets/images/01-08-hashmap-structure.svg" alt="HashMap 内部结构：数组定位、链表接冲突、树化保查询"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：HashMap 内部结构：数组定位、链表接冲突、树化保查询</p>
+</blockquote>
+<p>先认识几个关键角色，看不懂没关系，混个脸熟，下面走读流程时它们会轮番登场（JDK 8 源码）：</p>
+<pre><code class="language-java">public class HashMap&lt;K,V&gt; extends AbstractMap&lt;K,V&gt; implements Map&lt;K,V&gt;, ... {
+
+    static final int DEFAULT_INITIAL_CAPACITY = 1 &lt;&lt; 4;   // 默认初始容量 16，必须是 2 的幂
+    static final float DEFAULT_LOAD_FACTOR = 0.75f;       // 默认负载因子 0.75
+    static final int TREEIFY_THRESHOLD = 8;               // 链表树化阈值：链长到 8 尝试树化
+    static final int UNTREEIFY_THRESHOLD = 6;             // 红黑树退化阈值：拆分后树节点 &lt;= 6 退化回链表
+    static final int MIN_TREEIFY_CAPACITY = 64;           // 树化还要求表容量 &gt;= 64，否则先扩容
+
+    transient Node&lt;K,V&gt;[] table;   // 哈希桶数组，也叫哈希表，真正存数据的地方，长度是 2 的幂
+    transient int size;            // 键值对个数
+    int threshold;                 // 扩容阈值 = capacity * loadFactor，size 超过它就 resize
+    final float loadFactor;        // 负载因子
+
+    static class Node&lt;K,V&gt; implements Map.Entry&lt;K,V&gt; {
+        final int hash;            // key 的 hash，final：定位桶用的，不许变
+        final K key;
+        V value;
+        Node&lt;K,V&gt; next;            // 链表下一个节点（哈希冲突时拉链）
+    }
+}
+</code></pre>
+<p> HashMap 的整体长相：一个 <code>Node</code> 数组（table），每个槽位叫一个<strong>桶（bucket）</strong>；hash 冲突的元素在桶里用链表串起来（拉链法）；链太长（到 8）就长成红黑树。数组 + 链表 + 红黑树，三态合一。</p>
+<div class="mermaid">flowchart LR
+    subgraph HashMap["HashMap 内部结构（JDK 8+）"]
+        T["table 数组（长度为 2 的幂）"]
+        T --> B0["桶[0]<br/>null"]
+        T --> B1["桶[1]<br/>Node → Node → Node（链表）"]
+        T --> B2["桶[2]<br/>TreeNode 红黑树（链长达 8 且表容量 ≥ 64）"]
+        T --> B3["桶[3]<br/>Node"]
+    end
+</div>
+<h2>三、putVal 全流程走读：一次 put 的一生</h2>
+<p><code>map.put(key, value)</code> 背后是 <code>putVal</code> 方法，我把它翻译成人话，一步步走：</p>
+<pre><code class="language-java">// JDK 8 putVal 核心逻辑（有删减，注释是重点）
+final V putVal(int hash, K key, V value, boolean onlyIfAbsent, boolean evict) {
+    Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; p; int n, i;
+    if ((tab = table) == null || (n = tab.length) == 0)
+        n = (tab = resize()).length;               // ① 表还没建（懒加载！），先 resize 初始化
+    if ((p = tab[i = (n - 1) &amp; hash]) == null)     // ② 用 (n-1)&amp;hash 定位桶
+        tab[i] = newNode(hash, key, value, null);  //    桶是空的，直接放，收工
+    else {
+        Node&lt;K,V&gt; e; K k;
+        if (p.hash == hash &amp;&amp;
+            ((k = p.key) == key || (key != null &amp;&amp; key.equals(k))))
+            e = p;                                  // ③ 桶头就是同一个 key：准备覆盖 value
+        else if (p instanceof TreeNode)
+            e = ((TreeNode&lt;K,V&gt;)p).putTreeVal(this, tab, hash, key, value); // ④ 是红黑树：走树插入
+        else {
+            for (int binCount = 0; ; ++binCount) {  // ⑤ 是链表：从头到尾找
+                if ((e = p.next) == null) {
+                    p.next = newNode(hash, key, value, null); // 尾插！挂在链表末尾
+                    if (binCount &gt;= TREEIFY_THRESHOLD - 1)    // 链长达到 8
+                        treeifyBin(tab, hash);      //    尝试树化（表容量 &lt; 64 时优先扩容）
+                    break;
+                }
+                if (e.hash == hash &amp;&amp;
+                    ((k = e.key) == key || (key != null &amp;&amp; key.equals(k))))
+                    break;                           // ⑥ 链上找到了同 key：准备覆盖
+                p = e;
+            }
+        }
+        if (e != null) {                             // 覆盖逻辑：旧 value 返回，新 value 上位
+            V oldValue = e.value;
+            if (!onlyIfAbsent || oldValue == null)
+                e.value = value;
+            afterNodeAccess(e);                      // LinkedHashMap 的钩子（上篇 LRU 的伏笔）
+            return oldValue;
+        }
+    }
+    ++modCount;
+    if (++size &gt; threshold)                          // ⑦ 元素数超过阈值：扩容
+        resize();
+    afterNodeInsertion(evict);
+    return null;
+}
+</code></pre>
+<p>判断&quot;同一个 key&quot;的条件值得单独看：<code>hash 相等 &amp;&amp; （== 或 equals）</code>。先比 hash（快），再比引用（更快），最后才 equals（慢但准）。这也解释了为什么 key 的 hashCode 和 equals 必须配套——任何一环出问题，key 就认不出来。</p>
+<h3>扰动函数：为什么 hash 要右移 16 位？</h3>
+<p>定位桶用的是 <code>(n - 1) &amp; hash</code>，而 <code>putVal</code> 收到的 hash 并不是 key 的 <code>hashCode()</code>，而是先过了一道<strong>扰动函数（spreading）</strong>：</p>
+<pre><code class="language-java">static final int hash(Object key) {
+    int h;
+    return (key == null) ? 0 : (h = key.hashCode()) ^ (h &gt;&gt;&gt; 16);  // 高 16 位异或低 16 位
+}
+</code></pre>
+<p>为什么要异或一下？假设表长 16，<code>(n-1) &amp; hash</code> 只用到 hash 的<strong>低 4 位</strong>，高 28 位完全没参与！如果两个 key 的 hashCode 只有高位不同，低位相同，它们必然撞进同一个桶，冲突率飙升。扰动函数把高 16 位的信息&quot;掺&quot;进低 16 位，让高位也能影响定位，<strong>用一次异或的成本换冲突率下降</strong>，这是性价比极高的设计。</p>
+<p>顺便看到了：<code>key == null</code> 时 hash 为 0，所以 <strong>HashMap 允许一个 null key</strong>，它永远待在 0 号桶（n-1 &amp; 0 = 0）。</p>
+<h3>尾插法：JDK 8 对 JDK 7 的一次自我救赎</h3>
+<p>JDK 7 的 HashMap 在<strong>扩容时用头插法</strong>迁移链表：把旧桶链表逐个摘下来插到新桶头部，迁移完链表顺序<strong>反转</strong>。单线程没事，但两个线程同时 resize 时，A 线程挂起、B 线程完成了反转迁移，A 恢复后继续按&quot;反转前的记忆&quot;搬节点——指针指来指去可能形成<strong>环形链表</strong>。之后一次 <code>get</code> 遍历这个环，CPU 100% 死循环，服务假死。这就是 JDK 7 经典的&quot;扩容死循环&quot;事故。</p>
+<p>JDK 8 改成<strong>尾插法</strong>，迁移时保持节点原顺序，不再反转，链表成环的土壤就没了。（注意：JDK 8 的 HashMap 依然线程不安全，只是死循环这个具体病灶治了，下面第九节细说。）</p>
+<h3>树化阈值 8 与退化阈值 6：为什么偏偏是这俩数？</h3>
+<p>链表长度到 <strong>8</strong> 触发树化，扩容拆分后树节点降到 <strong>6</strong> 退化回链表。为什么不树化用 8、退化也用 8？为什么不 4、不 16？</p>
+<p>先看 8 的来历。理想哈希下节点分布服从泊松分布（源码注释里真给了概率表），一个桶里链长达到 8 的概率约为 <strong>0.00000006</strong>——两千万分之一。也就是说正常情况你根本见不到树，链长到 8 基本意味着 hash 质量出了问题（比如 key 的 hashCode 写得太烂），这时候才值得动用红黑树这个&quot;重型装备&quot;。红黑树节点（TreeNode）内存约是普通 Node 的两倍，不能轻易上。</p>
+<p>至于为什么退化用 6 不用 8：<strong>留缓冲带，防止抖动</strong>。如果阈值都是 8，一个桶里元素在 7、8 之间反复横跳（插一个删一个），链表和红黑树就会来回转换，每次都是 O(n) 甚至 O(log n) 的结构重建，性能抖成心电图。6 和 8 之间留 2 的缓冲，结构转换频率大幅下降。这种&quot;上下限错开&quot;的设计思想在工程里到处都是（比如 TCP 拥塞控制、消息积压告警），值得细细品。</p>
+<p>还有一个细节：链长到 8 时<strong>不一定真树化</strong>，<code>treeifyBin</code> 会先看表容量是否 &gt;= 64（<code>MIN_TREEIFY_CAPACITY</code>），不够就先扩容——容量小时冲突多半是因为桶太少，加桶比上树便宜。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：学员面试时回答&quot;链表长度到 8 就变成红黑树&quot;，面试官追问&quot;那容量是 16、链长 8 的时候呢？&quot;当场卡壳。完整答案要带条件：<strong>链长 8 且表容量 ≥ 64 才树化，容量不足优先扩容</strong>。半句真理和谬误只差半句。</p>
+</blockquote>
+<h2>四、容量为什么必须是 2 的幂：位运算的浪漫</h2>
+<p>定位桶那行 <code>tab[(n - 1) &amp; hash]</code> 是 HashMap 的灵魂。取模定位本能写法是 <code>hash % n</code>，为什么用 <code>(n - 1) &amp; hash</code>？</p>
+<p>因为<strong>当 n 是 2 的幂时，<code>hash % n == hash &amp; (n - 1)</code></strong>，而位运算比除法取模快得多。原理看二进制：n = 16 即 <code>10000</code>，n-1 = 15 即 <code>01111</code>，任何数 &amp; 01111 相当于把高位全清零、只留低 4 位——结果恰好落在 0~15，等价于取模。但这个等价<strong>只在 n 是 2 的幂时成立</strong>（否则 n-1 的二进制会出现 0 和 1 相间隔，与运算后结果分布不均匀）。所以 HashMap 内部有个贴心方法：</p>
+<pre><code class="language-java">// 不管你传什么容量，都向上取到最近的 2 的幂
+static final int tableSizeFor(int cap) {
+    int n = -1 &gt;&gt;&gt; Integer.numberOfLeadingZeros(cap - 1);
+    return (n &lt; 0) ? 1 : (n &gt;= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+}
+// 例如传 10 → 16，传 17 → 32，传 1000 → 1024
+</code></pre>
+<p>所以你 <code>new HashMap&lt;&gt;(10)</code>，实际容量是 16；<code>new HashMap&lt;&gt;(17)</code>，实际容量是 32。源码已经帮你把&quot;2 的幂&quot;焊死了，想传个奇怪的容量都传不进去（除非超过 MAXIMUM_CAPACITY 的边界情况）。</p>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：初始化 HashMap 时别想着&quot;传 10 就是 10&quot;。记住 <code>tableSizeFor</code> 会向上取 2 的幂，预估容量时按这个规则报数，代码意图和实际行为才能对上。</p>
+</blockquote>
+<h2>五、resize 扩容：高低位拆分的神来之笔</h2>
+<p>扩容由 <code>resize()</code> 负责，触发时机有两个：初始化空表，或 <code>size &gt; threshold</code>。流程是：新容量翻倍（旧容量 &lt;&lt; 1）、新阈值翻倍、开新数组，然后把旧桶里的节点搬过去。</p>
+<p>关键来了——搬节点时怎么算新位置？旧容量是 16，扩到 32 后，一个 hash 会被重新映射到哪？看源码里的核心逻辑（JDK 8，链表部分）：</p>
+<pre><code class="language-java">// resize 中链表迁移的核心（简化）：用 hash &amp; oldCap 判断去高位桶还是低位桶
+Node&lt;K,V&gt; loHead = null, loTail = null;   // 低位链：留在原索引位置
+Node&lt;K,V&gt; hiHead = null, hiTail = null;   // 高位链：去&quot;原索引 + oldCap&quot;位置
+do {
+    next = e.next;
+    if ((e.hash &amp; oldCap) == 0) {         // hash 在 oldCap 那一位（新增的最高位）是 0
+        // 挂到低位链，新位置 = 原索引（不变）
+        if (loTail == null) loHead = e; else loTail.next = e;
+        loTail = e;
+    } else {                              // 那一位是 1
+        // 挂到高位链，新位置 = 原索引 + oldCap
+        if (hiHead == null) hiHead = e; else hiTail.next = e;
+        hiTail = e;
+    }
+} while ((e = next) != null);
+</code></pre>
+<p>高明在哪？容量从 16 扩到 32 后，<code>(n-1) &amp; hash</code> 多用了一位（第 5 位）。<strong>每个节点的新位置只有两种可能：要么不动，要么移动 oldCap（16）个位置</strong>——完全取决于 hash 在新增那一位上是 0 还是 1。所以 JDK 8 的迁移<strong>不需要重新计算 hash</strong>，只需遍历链表把节点分成&quot;高&quot;、&quot;低&quot;两条链，一次链表遍历就完成搬家。JDK 7 则要逐个节点 rehash 重新定位，高下立判。</p>
+<p>顺便说，这也是退化阈值 6 出场的地方：一条长度 8 的链扩容拆分后，平均拆成两条长度 4 的链，树节点拆出的链若长度 ≤ 6 就退化回普通链表，内存能省则省。</p>
+<h2>六、loadFactor 0.75 与初始容量设置</h2>
+<p>负载因子（load factor）= 元素数 / 容量，代表&quot;桶装满的程度&quot;。0.75 是<strong>空间与时间的折中</strong>：调大了（如 1.0）空间利用率高，但冲突变多，链表变长，查询变慢；调小了（如 0.5）冲突少、查询快，但内存浪费多、扩容频繁。0.75 附近是官方给出的甜点值，配合泊松分布让树化基本不发生。没有特殊理由别动它。</p>
+<p>真正高频的实际问题是：<strong>预期存 1000 个元素，初始容量该设多少？</strong></p>
+<p>错误答案：<code>new HashMap&lt;&gt;(1000)</code>。因为 tableSizeFor 把容量取到 1024，阈值 = 1024 × 0.75 = 768 &lt; 1000，存到第 769 个就触发扩容——你精心设置的容量白给了。</p>
+<p>正确答案：让&quot;容量 × 0.75 ≥ 1000&quot;且结果向上取 2 的幂，即容量应取 2048（1024×0.75=768 不够；2048×0.75=1536 ≥ 1000）。或者偷懒写法：<code>new HashMap&lt;&gt;((int) (1000 / 0.75f) + 1)</code>，tableSizeFor 会帮你取整到 2048。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：预期存 N 个元素，推荐初始容量 = 大于 N/0.75 的最小 2 的幂。Guava 的 <code>Maps.newHashMapWithExpectedSize(N)</code> 和 JDK 19+ 的 <code>HashMap.newHashMap(N)</code> 内部就是这么算的，生产可以直接用。</p>
+</blockquote>
+<h2>七、HashMap 线程不安全的表现</h2>
+<p>&quot;HashMap 线程不安全&quot;不是一句空话，它有两种典型病灶：</p>
+<p><strong>病灶一：JDK 7 扩容死循环</strong>（前面尾插法一节已详述）——头插法 + 并发 resize 导致环形链表，get 时 CPU 飙满。JDK 8 改尾插后此病根治。</p>
+<p><strong>病灶二：数据覆盖（丢数据）</strong>，JDK 8 依然存在。两个线程同时 put，都算出定位到同一个空桶，线程 A 刚把 <code>tab[i]</code> 判空、还没来得及赋值就被挂起，线程 B 抢先完成了写入，A 恢复后直接 <code>tab[i] = newNode(...)</code>——<strong>B 的数据被 A 无声覆盖</strong>，没有任何异常，你的数据就这么没了。还有 size 的 <code>++</code> 非原子、迭代时 modCount 变化抛 CME 等并发毛病。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：某电商库存服务在秒杀场景用 HashMap 缓存商品计数，多线程并发 put，上线后偶发&quot;库存对不上&quot;，查了三天才发现是数据覆盖。换 ConcurrentHashMap 后天下太平。教训：<strong>并发写共享 Map，HashMap 连&quot;侥幸&quot;的资格都没有</strong>，而且数据覆盖是无声的，日志都不给你留。</p>
+</blockquote>
+<h2>八、ConcurrentHashMap 概览：点到为止</h2>
+<p>并发场景的正解是 <code>ConcurrentHashMap</code>。JDK 7 时代它用<strong>分段锁（Segment）</strong>，把整表切成 16 段，每段一把锁，并发度 16。JDK 8 大刀阔斧改革：</p>
+<ul>
+<li>抛弃 Segment，锁粒度细化到<strong>单个桶头节点</strong>：写操作时 <code>CAS</code> 尝试设置空桶（无竞争时完全无锁），桶非空则 <code>synchronized</code> 锁住<strong>桶头节点</strong>——不同桶的写操作互不影响，并发度大幅提升；</li>
+<li><code>size()</code> 用 <code>baseCount + CounterCell[]</code> 分散计数（借鉴 LongAdder 思想），避免计数也成为瓶颈；</li>
+<li>读操作全程无锁，依赖 <code>volatile</code> 保证可见性。</li>
+</ul>
+<p>一句话总结：<strong>JDK 8 的 ConcurrentHashMap = CAS 抢空桶 + synchronized 锁桶头 + volatile 可见性</strong>，细粒度到几乎&quot;谁也不挡谁&quot;。它的完整源码是并发编程的大菜，等咱们多线程系列开专栏再炖，今天先记结论。</p>
+<table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>HashMap</th>
+<th>Hashtable</th>
+<th>JDK 7 ConcurrentHashMap</th>
+<th>JDK 8+ ConcurrentHashMap</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>线程安全</td>
+<td>否</td>
+<td>是</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td>加锁策略</td>
+<td>无</td>
+<td>全表一把锁</td>
+<td>分段锁（16 段）</td>
+<td>CAS + synchronized 锁桶头</td>
+</tr>
+<tr>
+<td>null key/value</td>
+<td>允许</td>
+<td>不允许</td>
+<td>不允许</td>
+<td>不允许</td>
+</tr>
+<tr>
+<td>并发性能</td>
+<td>高（但会丢数据）</td>
+<td>极差</td>
+<td>中</td>
+<td>高</td>
+</tr>
+<tr>
+<td>推荐度</td>
+<td>单线程场景</td>
+<td>淘汰</td>
+<td>旧项目遗留</td>
+<td>并发场景首选</td>
+</tr>
+</tbody></table>
+<h2>九、HashMap 面试高频题清单</h2>
+<p>最后按惯例，把这章相关的面试高频题汇总一遍，每道题本文都有答案，自查一下：</p>
+<ol>
+<li><code>new ArrayList&lt;&gt;()</code> 时数组分配了吗？默认容量什么时候生效？（懒加载，第一次 add）</li>
+<li>ArrayList 扩容机制？为什么是 1.5 倍？（grow + 右移，平衡扩容频率与空间浪费）</li>
+<li>HashMap 的 put 流程？越细越好。（putVal 走读一节，①~⑦）</li>
+<li>为什么容量是 2 的幂？<code>tableSizeFor</code> 干嘛的？（位运算取模 + 向上取 2 的幂）</li>
+<li>扰动函数为什么右移 16 位异或？（高位参与低位运算，降冲突）</li>
+<li>链表什么时候树化？为什么阈值是 8 和 6？（泊松分布 8，缓冲带防抖动 6，且容量 ≥ 64）</li>
+<li>JDK 8 为什么改尾插？（JDK 7 头插并发扩容成环死循环）</li>
+<li>扩容时元素怎么迁移？（高低位拆分，hash &amp; oldCap 判定，不重算 hash）</li>
+<li>预期存 1000 个元素初始容量设多少？（2048，或 N/0.75 向上取 2 的幂）</li>
+<li>HashMap 线程不安全的具体表现？（JDK 7 成环；JDK 8 数据覆盖、size 非原子）</li>
+<li>ConcurrentHashMap JDK 8 怎么实现线程安全？（CAS + synchronized 锁桶头）</li>
+</ol>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：面试答 HashMap，按&quot;字段 → put 流程 → 扩容机制 → 线程安全&quot;的顺序讲，一层套一层，像剥洋葱。讲到任何一处能延伸到底层原理（比如从树化延伸到泊松分布），你就把&quot;背过&quot;和&quot;理解&quot;的界限亮出来了。</p>
+</blockquote>
+<h2>本篇小结</h2>
+<ul>
+<li>ArrayList 默认容量 10 是懒加载，第一次 add 才生效；扩容 1.5 倍，靠 Arrays.copyOf 搬家；</li>
+<li>HashMap = 数组 + 链表 + 红黑树，核心字段 table/size/threshold/loadFactor；</li>
+<li>put 流程：算扰动 hash → (n-1)&amp;hash 定桶 → 空桶直放 / 同 key 覆盖 / 链表尾插 / 树插入 → 超阈值扩容；</li>
+<li>扰动函数（hashCode 高 16 位异或低 16 位）让高位参与定位，降低冲突；</li>
+<li>链长 8 且容量 ≥ 64 才树化，退化阈值 6 留缓冲防结构抖动；</li>
+<li>容量必须 2 的幂，让 (n-1)&amp;hash 等价取模还更快，tableSizeFor 自动向上取整；</li>
+<li>扩容用高低位拆分迁移（hash &amp; oldCap），不重算 hash，一次遍历完成；</li>
+<li>预期存 N 个元素，初始容量取大于 N/0.75 的最小 2 的幂；并发场景换 ConcurrentHashMap（CAS + 锁桶头）。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li><strong>分析题</strong>：假设某个自定义类的 <code>hashCode()</code> 恒返回 42，把它大量实例放进 HashMap 会发生什么？哪个机制会出来兜底？性能表现如何？</li>
+<li><strong>推演题</strong>：HashMap 容量从 16 扩到 32 后，hash 值二进制为 <code>...10010</code> 的节点新位置下标是多少（相对原位置）？请用 <code>hash &amp; oldCap</code> 手工推演一遍。</li>
+<li><strong>概念题</strong>：为什么树化阈值 8、退化阈值 6 要错开？如果都用 8 会出现什么现象？请举一个生活中&quot;上下限错开&quot;的类似设计。</li>
+<li><strong>编程题</strong>：写代码验证 <code>tableSizeFor</code> 的行为：反射或断点观察 <code>new HashMap&lt;&gt;(10)</code>、<code>new HashMap&lt;&gt;(17)</code>、<code>new HashMap&lt;&gt;(1000)</code> 各自的真实容量，再写一个 <code>bestCapacity(int expected)</code> 方法，输入预期元素数，返回应设置的初始容量（大于 expected/0.75 的最小 2 的幂）。</li>
+<li><strong>实验题</strong>：开两个线程对一个共享 HashMap 各并发 put 1 万个不同的 key，结束后比较 <code>map.size()</code> 与期望值 2 万，观察数据丢失现象（多跑几次）；换 ConcurrentHashMap 重跑对比，并用文字解释丢数据的代码位置（putVal 的判空与赋值间隙）。</li>
+</ol>
+<p>下一篇预告：<strong>《异常处理：优雅地搞砸事情》</strong>——程序总会出错，区别在于高手炸得体面、菜鸟炸得难看。Throwable 家族树、finally 的千层套路、try-with-resources 的优雅退场，咱们下期见。</p>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/01-java-basics/07-collections-part1.html"><span>← 上一篇</span><b>集合框架（上）：容器选型地图</b></a><a class="pn" href="/01-java-basics/09-exceptions.html"><span>下一篇 →</span><b>异常处理：优雅地搞砸事情</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

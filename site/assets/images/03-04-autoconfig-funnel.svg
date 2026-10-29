@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 440" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="860" height="440" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">自动配置 = 一份候选清单 + 三道条件漏斗</text>
+  <text x="430" y="60" text-anchor="middle" font-size="12" fill="#64748B">加载 140+ 个配置类 ≠ 全部生效：条件不满足的直接跳过，等于没加载</text>
+
+  <!-- candidates -->
+  <rect x="230" y="80" width="400" height="52" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="430" y="102" text-anchor="middle" font-size="14" font-weight="700" fill="#1D4ED8">候选清单（AutoConfiguration.imports）</text>
+  <text x="430" y="122" text-anchor="middle" font-size="11" fill="#475569">140+ 个 XxxAutoConfiguration，来自各 jar 的 META-INF/spring/</text>
+  <line x1="430" y1="132" x2="430" y2="152" stroke="#475569" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- funnel -->
+  <path d="M 190 160 L 670 160 L 560 226 L 300 226 Z" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+  <text x="430" y="188" text-anchor="middle" font-size="13" font-weight="700" fill="#92400E">漏斗第一层：@ConditionalOnClass</text>
+  <text x="430" y="210" text-anchor="middle" font-size="11" fill="#92400E">classpath 里有指定类才通过（引了依赖才算数）</text>
+  <line x1="430" y1="226" x2="430" y2="246" stroke="#475569" stroke-width="2.5" marker-end="url(#arr)"/>
+  <path d="M 240 252 L 620 252 L 530 318 L 330 318 Z" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+  <text x="430" y="280" text-anchor="middle" font-size="13" font-weight="700" fill="#047857">第二层：@ConditionalOnProperty</text>
+  <text x="430" y="302" text-anchor="middle" font-size="11" fill="#047852">开关属性匹配（如 sms.enabled=true，可配缺省）</text>
+  <line x1="430" y1="318" x2="430" y2="338" stroke="#475569" stroke-width="2.5" marker-end="url(#arr)"/>
+  <path d="M 300 344 L 560 344 L 490 400 L 370 400 Z" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+  <text x="430" y="372" text-anchor="middle" font-size="13" font-weight="700" fill="#6D28D9">第三层：@ConditionalOnMissingBean</text>
+  <text x="430" y="392" text-anchor="middle" font-size="11" fill="#6D28D9">容器里没有同名/同类型 Bean 才注册（用户优先）</text>
+
+  <!-- side annotations -->
+  <g font-size="12" fill="#334155">
+    <rect x="690" y="180" width="150" height="120" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="704" y="206" font-weight="700" fill="#1E293B">被筛掉的</text>
+    <text x="704" y="228" fill="#64748B">没引依赖的、开关</text>
+    <text x="704" y="248" fill="#64748B">关掉的、用户自己</text>
+    <text x="704" y="268" fill="#64748B">配了的 → 跳过不注册</text>
+    <rect x="20" y="180" width="150" height="120" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="34" y="206" font-weight="700" fill="#1E293B">怎么验证？</text>
+    <text x="34" y="228" fill="#64748B">application.yml 加</text>
+    <text x="34" y="248" fill="#64748B">debug: true 启动，看</text>
+    <text x="34" y="268" fill="#64748B">Positive/Negative 报告</text>
+  </g>
+
+  <rect x="60" y="410" width="740" height="22" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="76" y="426" font-size="12" fill="#047852">漏斗底端流出的，才是真正注册进容器的 Bean——这就是"引依赖即生效"的全部秘密。</text>
+</svg>

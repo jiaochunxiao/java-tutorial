@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 400" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <rect width="860" height="400" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">8 大基本类型"排排坐"：按字节大小入座</text>
+  <text x="430" y="60" text-anchor="middle" font-size="12" fill="#64748B">方块越大 = 占用字节越多；红色数字为占用字节数</text>
+
+  <!-- row 1: integers -->
+  <text x="80" y="100" font-size="14" font-weight="700" fill="#1D4ED8">整数家族</text>
+  <g text-anchor="middle">
+    <rect x="150" y="80" width="120" height="54" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.5"/>
+    <text x="210" y="102" font-size="16" font-weight="700" fill="#1E3A8A">byte</text>
+    <text x="210" y="122" font-size="12" fill="#475569"><tspan fill="#DC2626" font-weight="700">1</tspan> 字节 · -128 ~ 127</text>
+
+    <rect x="290" y="80" width="120" height="54" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.5"/>
+    <text x="350" y="102" font-size="16" font-weight="700" fill="#1E3A8A">short</text>
+    <text x="350" y="122" font-size="12" fill="#475569"><tspan fill="#DC2626" font-weight="700">2</tspan> 字节 · ±3.2 万</text>
+
+    <rect x="430" y="72" width="140" height="70" rx="10" fill="#BFDBFE" stroke="#2563EB" stroke-width="2"/>
+    <text x="500" y="98" font-size="16" font-weight="700" fill="#1E3A8A">int ★主力</text>
+    <text x="500" y="118" font-size="12" fill="#475569"><tspan fill="#DC2626" font-weight="700">4</tspan> 字节 · ±21 亿</text>
+    <text x="500" y="134" font-size="11" fill="#1E40AF">日常默认选它</text>
+
+    <rect x="590" y="64" width="160" height="86" rx="10" fill="#93C5FD" stroke="#2563EB" stroke-width="2"/>
+    <text x="670" y="92" font-size="16" font-weight="700" fill="#1E3A8A">long</text>
+    <text x="670" y="112" font-size="12" fill="#475569"><tspan fill="#DC2626" font-weight="700">8</tspan> 字节 · 约 ±922 亿亿</text>
+    <text x="670" y="128" font-size="11" fill="#1E40AF">尾部记得加 L</text>
+  </g>
+  <text x="780" y="100" font-size="14" font-weight="700" fill="#6D28D9">字符</text>
+  <g text-anchor="middle">
+    <rect x="770" y="112" width="80" height="60" rx="10" fill="#EDE9FE" stroke="#7C3AED" stroke-width="1.5"/>
+    <text x="810" y="136" font-size="16" font-weight="700" fill="#4C1D95">char</text>
+    <text x="810" y="156" font-size="12" fill="#475569"><tspan fill="#DC2626" font-weight="700">2</tspan> 字节</text>
+    <text x="810" y="168" font-size="10" fill="#6D28D9">'A' → 65</text>
+  </g>
+
+  <!-- row 2: float / boolean -->
+  <text x="80" y="222" font-size="14" font-weight="700" fill="#047857">浮点家族</text>
+  <g text-anchor="middle">
+    <rect x="150" y="200" width="150" height="66" rx="10" fill="#D1FAE5" stroke="#059669" stroke-width="1.5"/>
+    <text x="225" y="224" font-size="16" font-weight="700" fill="#065F46">float</text>
+    <text x="225" y="244" font-size="12" fill="#475569"><tspan fill="#DC2626" font-weight="700">4</tspan> 字节 · 尾数 7 位</text>
+    <text x="225" y="260" font-size="11" fill="#047857">尾部记得加 f</text>
+
+    <rect x="330" y="192" width="170" height="82" rx="10" fill="#A7F3D0" stroke="#059669" stroke-width="2"/>
+    <text x="415" y="218" font-size="16" font-weight="700" fill="#065F46">double ★默认</text>
+    <text x="415" y="238" font-size="12" fill="#475569"><tspan fill="#DC2626" font-weight="700">8</tspan> 字节 · 尾数 15 位</text>
+    <text x="415" y="256" font-size="11" fill="#047857">⚠️ 存钱请用 BigDecimal</text>
+  </g>
+
+  <text x="600" y="222" font-size="14" font-weight="700" fill="#B45309">布尔</text>
+  <g text-anchor="middle">
+    <rect x="640" y="200" width="150" height="66" rx="10" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5"/>
+    <text x="715" y="224" font-size="16" font-weight="700" fill="#92400E">boolean</text>
+    <text x="715" y="244" font-size="12" fill="#475569">只有 true / false</text>
+    <text x="715" y="260" font-size="11" fill="#92400E">JVM 实现细节：常用 1 字节</text>
+  </g>
+
+  <!-- bottom memory strip -->
+  <rect x="60" y="292" width="740" height="84" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="76" y="318" font-size="13" font-weight="700" fill="#1E293B">一句话记忆：</text>
+  <text x="76" y="340" font-size="13" fill="#475569">整数 1-2-4-8（byte→short→int→long），小数 4-8（float→double），char 占 2 字节装一个字符，</text>
+  <text x="76" y="362" font-size="13" fill="#475569">boolean 只当开关用。默认值：除 boolean=false、char='\u0000' 外，其余全是 0。</text>
+</svg>

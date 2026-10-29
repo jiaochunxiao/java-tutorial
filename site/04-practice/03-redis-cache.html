@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>缓存实战：Redis 三板斧 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item active" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 缓存实战：Redis 三板斧</div>
+  <article>
+<h1>缓存实战：Redis 三板斧</h1>
+<p>先看一个&quot;书架&quot;类比：数据库是图书馆——书全但要排队借阅（慢）；缓存是自己书架——常用的几十本伸手就拿（快）。热门图书的详情页每次都去图书馆借？不现实。<strong>缓存的本质：用空间换时间，用副本换吞吐。</strong></p>
+<p>这篇把 Redis 缓存的实战知识一次配齐：Spring Boot 集成、缓存模式、缓存三大经典问题（穿透/击穿/雪崩）、缓存与数据库双写一致性、分布式锁。每一个都是生产环境真实搏斗过的主题。</p>
+<hr>
+<h2>一、Redis 速览与集成</h2>
+<h3>1.1 五大基础数据结构（选型是第一生产力）</h3>
+<table>
+<thead>
+<tr>
+<th>结构</th>
+<th>特点</th>
+<th>业务场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>String</td>
+<td>k-v，单值最大 512MB</td>
+<td>缓存对象 JSON、计数器、分布式锁</td>
+</tr>
+<tr>
+<td>Hash</td>
+<td>field-v 二级结构</td>
+<td>购物车（uid → {商品id: 数量}）、对象属性局部更新</td>
+</tr>
+<tr>
+<td>List</td>
+<td>双端列表</td>
+<td>消息列表、最新动态（lpush + lrange）</td>
+</tr>
+<tr>
+<td>Set</td>
+<td>无序去重</td>
+<td>标签、抽奖去重、共同好友（sinter 交集）</td>
+</tr>
+<tr>
+<td>ZSet</td>
+<td>带分数排序</td>
+<td>排行榜（zincrby + zrevrange）、延迟队列（分数存时间戳）</td>
+</tr>
+</tbody></table>
+<pre><code class="language-bash">docker run -d --name redis-demo -p 6379:6379 redis:7
+</code></pre>
+<h3>1.2 Spring Boot 集成</h3>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-data-redis&lt;/artifactId&gt;
+&lt;/dependency&gt;
+</code></pre>
+<pre><code class="language-yaml">spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2s                    # 超时：缓存挂了不能拖死主流程
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+</code></pre>
+<p><strong>第一个必踩的坑：RedisTemplate 序列化</strong>。默认用 JDK 序列化，存进去的 key 是一串乱码字节（<code>\xac\xed\x00\x05...</code>），redis-cli 里根本没法看。标准配置：</p>
+<pre><code class="language-java">@Configuration
+public class RedisConfig {
+    @Bean
+    public RedisTemplate&lt;String, Object&gt; redisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate&lt;String, Object&gt; template = new RedisTemplate&lt;&gt;();
+        template.setConnectionFactory(factory);
+
+        StringRedisSerializer keySerializer = new StringRedisSerializer();      // key 可读
+        GenericJackson2JsonRedisSerializer valueSerializer =
+                new GenericJackson2JsonRedisSerializer();                       // value 存 JSON（带 @class 类型信息）
+
+        template.setKeySerializer(keySerializer);
+        template.setHashKeySerializer(keySerializer);
+        template.setValueSerializer(valueSerializer);
+        template.setHashValueSerializer(valueSerializer);
+        return template;
+    }
+}
+</code></pre>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：<code>GenericJackson2JsonRedisSerializer</code> 会在 JSON 里塞 <code>@class</code> 字段记录类型，缓存的对象<strong>改包名/改类名后反序列化直接炸</strong>，而且路径变更后旧缓存全部失效报错。生产建议：key 统一加版本前缀（<code>book:v2:{id}</code>），改结构时换版本号，旧缓存自然过期淘汰。</p>
+</blockquote>
+<hr>
+<h2>二、缓存模式：Cache Aside 是主流</h2>
+<p><img src="/assets/images/04-03-cache-aside.svg" alt="Cache Aside 读写时序：为什么是&quot;更新库后删缓存&quot;"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：Cache Aside 读写时序：为什么是&quot;更新库后删缓存&quot;</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>读流程</th>
+<th>写流程</th>
+<th>点评</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Cache Aside（旁路缓存）</strong></td>
+<td>查缓存→未命中查库→回填</td>
+<td>更新库→<strong>删除缓存</strong></td>
+<td>主流：应用层控制，语义清晰</td>
+</tr>
+<tr>
+<td>Read/Write Through</td>
+<td>查缓存，缓存层代理读写库</td>
+<td>写缓存，缓存层同步写库</td>
+<td>缓存层能力要求高（少用）</td>
+</tr>
+<tr>
+<td>Write Behind（回写）</td>
+<td>同上</td>
+<td>只写缓存，异步批量刷库</td>
+<td>快但可能丢数据（Write Behind 又叫 Write Back，注意与 Write Through 区分）</td>
+</tr>
+</tbody></table>
+<p><strong>写流程为什么是&quot;删缓存&quot;而不是&quot;更新缓存&quot;？</strong> 两个理由：① 更新缓存容易有并发写乱序（A 先写库后写缓存、B 后写库先写缓存 → 缓存里是旧值）；② 很多缓存值是查询组装结果（多表聚合），更新单表就要重算整个缓存，浪费。<strong>删除 = 懒加载语义</strong>：下次读时再回填，永远算一次给一次。</p>
+<div class="mermaid">flowchart TD
+    A["读请求"] --> B{"缓存命中？"}
+    B -->|"命中"| C["返回缓存数据"]
+    B -->|"未命中"| D["查数据库"]
+    D --> E["回填缓存（设置 TTL）"]
+    E --> C
+
+    F["写请求"] --> G["更新数据库"]
+    G --> H["删除对应缓存"]
+    H --> I["下次读取自然回填"]
+
+    style C fill:#e8f5e9
+    style H fill:#ffe0b2
+</div>
+<h3>Spring Cache 注解版</h3>
+<pre><code class="language-java">@Service
+public class BookService {
+    @Cacheable(value = &quot;book&quot;, key = &quot;#id&quot;)          // 先查缓存，未命中执行方法并回填
+    public Book getById(Long id) { return bookMapper.selectById(id); }
+
+    @CacheEvict(value = &quot;book&quot;, key = &quot;#id&quot;)         // 删除缓存（配合更新库的操作）
+    public void update(Long id, BookUpdateRequest req) { ... }
+
+    @CachePut(value = &quot;book&quot;, key = &quot;#id&quot;)           // 方法必执行，返回值刷新缓存（少用）
+    public Book refresh(Long id) { ... }
+}
+</code></pre>
+<p>注解版简洁，但 TTL、随机过期、击穿防护这些精细活儿做不了——<strong>生产核心链路一般手写模板版</strong>，注解版用于内部系统。</p>
+<hr>
+<h2>三、缓存三大经典问题（本篇灵魂）</h2>
+<h3>3.1 缓存穿透：查&quot;根本不存在&quot;的数据</h3>
+<p><strong>现象</strong>：请求的 key 在缓存和数据库里<strong>都没有</strong>（恶意伪造 id=-1、遍历攻击）。每次都穿过缓存打到库，缓存形同虚设。</p>
+<div class="mermaid">sequenceDiagram
+    participant Attacker as 恶意请求 id=-1
+    participant Cache as Redis
+    participant DB as MySQL
+    loop 每次都穿透
+        Attacker->>Cache: GET book:-1
+        Cache-->>Attacker: null（不存在）
+        Attacker->>DB: SELECT ... id=-1
+        DB-->>Attacker: 空
+        Note over Cache: 没有缓存"不存在"这个事实 → 无限穿透
+    end
+</div>
+<p><strong>解法一：缓存空值</strong>——把&quot;不存在&quot;也缓存住：</p>
+<pre><code class="language-java">public Book getById(Long id) {
+    String key = &quot;book:&quot; + id;
+    String cached = redisTemplate.opsForValue().get(key);
+    if (cached != null) {
+        return &quot;NULL&quot;.equals(cached) ? null : JSON.parseObject(cached, Book.class);  // 空值标记
+    }
+    Book book = bookMapper.selectById(id);
+    if (book == null) {
+        redisTemplate.opsForValue().set(key, &quot;NULL&quot;, Duration.ofSeconds(60));  // 短 TTL 防占坑
+        return null;
+    }
+    redisTemplate.opsForValue().set(key, JSON.toJSONString(book), randomTtl());
+    return book;
+}
+</code></pre>
+<p><strong>解法二：布隆过滤器（Bloom Filter）</strong>——&quot;说不存在就一定不存在&quot;的概率结构：一排 bit + 多个哈希函数，插入时把多个位置标 1，查询时任一位为 0 则<strong>必然不存在</strong>。误判率可配置（如 1%）。适合 key 集合相对固定的场景（商品 id 全集），新增数据要同步添加进过滤器。</p>
+<h3>3.2 缓存击穿：热点 Key 过期的瞬间</h3>
+<p><strong>现象</strong>：某个<strong>爆款 key</strong>（如秒杀商品）过期的瞬间，成千上万并发同时未命中，齐刷刷冲向数据库——缓存被&quot;击穿&quot;了一个点。</p>
+<p><strong>解法一：互斥锁重建</strong>——只放一个请求去查库，其他人等：</p>
+<pre><code class="language-java">public Book getHotBook(Long id) {
+    String key = &quot;book:&quot; + id;
+    String cached = redisTemplate.opsForValue().get(key);
+    if (cached != null) return JSON.parseObject(cached, Book.class);
+
+    String lockKey = &quot;lock:rebuild:&quot; + id;
+    String token = UUID.randomUUID().toString();
+    try {
+        // SET NX EX：只有一个线程能设置成功 = 拿到锁
+        Boolean locked = redisTemplate.opsForValue()
+                .setIfAbsent(lockKey, token, Duration.ofSeconds(5));
+        if (Boolean.TRUE.equals(locked)) {
+            Book book = bookMapper.selectById(id);            // 双重检查：拿到锁先再看一眼缓存
+            redisTemplate.opsForValue().set(key, JSON.toJSONString(book), randomTtl());
+            return book;
+        }
+        Thread.sleep(50);                                      // 没抢到锁：稍等重试（或自旋）
+        return getHotBook(id);
+    } finally {
+        release(lockKey, token);                               // 见第四节：Lua 保证只删自己的锁
+    }
+}
+</code></pre>
+<p><strong>解法二：逻辑过期</strong>——key 永不过期，value 里带过期时间字段；发现&quot;逻辑过期&quot;就异步重建，旧值先顶着返回（牺牲一致性换可用性，热点场景标配）。</p>
+<h3>3.3 缓存雪崩：大面积同时失效 / Redis 挂了</h3>
+<p><strong>现象 A</strong>：大批 key 设置了相同 TTL，同一时刻集体过期，流量洪峰直灌数据库。<strong>解法：TTL 加随机值</strong>：</p>
+<pre><code class="language-java">private Duration randomTtl() {
+    return Duration.ofSeconds(1800 + ThreadLocalRandom.current().nextInt(600));  // 30~40 分钟随机
+}
+</code></pre>
+<p><strong>现象 B</strong>：Redis 实例/集群整体宕机。<strong>解法分层</strong>：① 高可用架构（哨兵/集群）；② 服务降级限流（熔断器兜底：数据库连接池设上限 + 网关限流）；③ 多级缓存（本地 Caffeine → Redis → DB）。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：三兄弟一句话区分——<strong>穿透是&quot;查不存在的数据&quot;（防：空值缓存/布隆）；击穿是&quot;热点单个过期&quot;（防：互斥重建/逻辑过期）；雪崩是&quot;集体过期或整体宕机&quot;（防：随机 TTL/高可用/限流）</strong>。面试必考，生产必备。</p>
+</blockquote>
+<hr>
+<h2>四、分布式锁：Redis 版实现与陷阱</h2>
+<p>单机锁（synchronized/Lock）管不了多实例部署（每个 JVM 各一把锁，等于没锁）。分布式锁把锁放到所有实例共享的 Redis 里：</p>
+<pre><code class="language-java">// 加锁的正确姿势：SET key token NX EX —— 原子的&quot;不存在才设置 + 过期时间&quot;
+Boolean locked = redisTemplate.opsForValue()
+        .setIfAbsent(&quot;lock:stock:&quot; + bookId, token, Duration.ofSeconds(10));
+
+// 释放锁必须用 Lua：保证&quot;判断是自己的锁 + 删除&quot;两步原子执行
+private static final String UNLOCK_LUA = &quot;&quot;&quot;
+        if redis.call(&#39;get&#39;, KEYS[1]) == ARGV[1] then
+            return redis.call(&#39;del&#39;, KEYS[1])
+        else
+            return 0
+        end
+        &quot;&quot;&quot;;
+
+public void release(String lockKey, String token) {
+    redisTemplate.execute(new DefaultRedisScript&lt;&gt;(UNLOCK_LUA, Long.class),
+            List.of(lockKey), token);
+}
+</code></pre>
+<p><strong>为什么这么讲究？</strong> 三个连环坑：</p>
+<ol>
+<li><strong>不加过期时间</strong>：拿锁的实例宕机，锁永远不释放，全员死等；</li>
+<li><strong>删除时不检查持有者</strong>：A 的锁超时自动释放，B 拿到锁，A 缓过来执行 DEL——把 B 的锁删了！所以 value 要存唯一 token，删前先验证；</li>
+<li><strong>验证+删除不是原子的</strong>：验证完准备删的瞬间锁又过期被别人拿了。Lua 脚本把两步合成原子的。</li>
+</ol>
+<p><strong>Redisson 现成方案</strong>（加上看门狗自动续期：业务没执行完，锁的 TTL 每 10 秒自动续，避免&quot;业务还没做完锁先过期&quot;）：</p>
+<pre><code class="language-java">RLock lock = redissonClient.getLock(&quot;lock:stock:&quot; + bookId);
+if (lock.tryLock(3, 30, TimeUnit.SECONDS)) {     // 最多等 3 秒，持锁 30 秒（有看门狗会自动续）
+    try { deductStock(bookId); }
+    finally { lock.unlock(); }                   // Redisson 内部处理好了 token 校验
+}
+</code></pre>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：Redis 分布式锁（主从异步复制）在极端场景可能两个客户端同时持锁（主节点加锁后没同步就宕机）。<strong>对正确性要求极高的场景（资金）用 ZooKeeper/ETCD 分布式锁，或用数据库乐观锁兜底</strong>——选型哲学见高手篇《分布式》。</p>
+</blockquote>
+<hr>
+<h2>五、缓存与数据库一致性</h2>
+<p>Cache Aside 的&quot;先更新库，再删缓存&quot;在并发下仍有小概率不一致：</p>
+<table>
+<thead>
+<tr>
+<th>时序</th>
+<th>现象</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>写请求更新库 → 删缓存</td>
+<td>主流方案：不一致窗口毫秒级，可接受</td>
+</tr>
+</tbody></table>
+<p><strong>为什么不是&quot;先删缓存，再更新库&quot;？</strong> 经典反例：删缓存后、更新库前，读请求未命中 → 读到<strong>旧库值</strong>回填缓存 → 更新库完成 → 缓存里永远是旧值。删缓存动作被&quot;白删&quot;了。</p>
+<p>进阶方案对比：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th align="center">一致性</th>
+<th align="center">复杂度</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>先更新库再删缓存</td>
+<td align="center">最终一致（秒级窗口）</td>
+<td align="center">低</td>
+<td>绝大多数场景</td>
+</tr>
+<tr>
+<td>延迟双删（更新库→删缓存→延迟几百 ms→再删一次）</td>
+<td align="center">更稳的最终一致</td>
+<td align="center">中</td>
+<td>读多写多、可接受短暂不一致</td>
+</tr>
+<tr>
+<td>binlog 订阅（Canal 监听 binlog 异步删缓存）</td>
+<td align="center">最终一致且与业务解耦</td>
+<td align="center">高</td>
+<td>大型系统、删除失败可重试</td>
+</tr>
+<tr>
+<td>分布式锁强一致</td>
+<td align="center">强</td>
+<td align="center">很高</td>
+<td>极少数金融场景（别轻易用）</td>
+</tr>
+</tbody></table>
+<p><strong>兜底底牌</strong>：缓存永远设置 TTL。哪怕删缓存失败（Redis 抖动），不一致最多活一个 TTL 周期。<strong>TTL 是一致性的最后一道防线。</strong></p>
+<hr>
+<h2>六、落地：图书查询接口加缓存</h2>
+<pre><code class="language-java">@Service
+@RequiredArgsConstructor
+public class BookCacheService {
+    private final StringRedisTemplate redis;
+    private final BookMapper bookMapper;
+
+    public Book getById(Long id) {
+        String key = &quot;book:v1:&quot; + id;
+        // 1. 查缓存
+        String cached = redis.opsForValue().get(key);
+        if (cached != null) {
+            return &quot;NULL&quot;.equals(cached) ? null : JSON.parseObject(cached, Book.class);
+        }
+        // 2. 查库
+        Book book = bookMapper.selectById(id);
+        // 3. 回填：空值短 TTL，实值随机 TTL（防雪崩）；热点可再叠击穿防护
+        if (book == null) {
+            redis.opsForValue().set(key, &quot;NULL&quot;, Duration.ofSeconds(60));
+        } else {
+            redis.opsForValue().set(key, JSON.toJSONString(book), randomTtl());
+        }
+        return book;
+    }
+
+    public void evict(Long id) { redis.delete(&quot;book:v1:&quot; + id); }   // 更新库之后调用
+}
+</code></pre>
+<p>监控两个指标别偷懒：<strong>缓存命中率</strong>（1 - 未命中数/总请求数，健康值 &gt; 90%）；<strong>大 Key/热 Key</strong>（单个 value 超过 10KB、单 key QPS 超过 5000 要预警，<code>redis-cli --bigkeys</code> 定期巡检）。</p>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>缓存选型从数据结构开始：String/Hash/List/Set/ZSet 各有主场；</li>
+<li>RedisTemplate 必配 JSON 序列化；key 带版本前缀应对结构变更；</li>
+<li>Cache Aside（读未命中回填/写后删缓存）是主流模式，&quot;删缓存&quot;优于&quot;更新缓存&quot;；</li>
+<li>三大问题：穿透（空值缓存/布隆）、击穿（互斥重建/逻辑过期）、雪崩（随机 TTL/高可用/限流）；</li>
+<li>分布式锁三要素：SET NX EX 原子加锁 + 唯一 token + Lua 原子释放；生产用 Redisson（看门狗续期）；强一致场景换 ZK；</li>
+<li>一致性：先更新库再删缓存 + TTL 兜底；高要求上延迟双删或 binlog 订阅。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）为什么写操作是&quot;删缓存&quot;而不是&quot;更新缓存&quot;？为什么&quot;先删缓存再更新库&quot;更危险？</li>
+<li>（概念）缓存穿透和击穿的解法为什么不同？（提示：一个防&quot;不存在的 key&quot;，一个防&quot;热点过期瞬间&quot;）</li>
+<li>（动手）给图书系统接 Redis：详情接口加 Cache Aside 缓存（含空值缓存与随机 TTL），更新/删除接口联动 evict；用压测对比加缓存前后 QPS（用上篇的 10 万条测试数据更有感觉）。</li>
+<li>（动手）模拟击穿：热门图书缓存过期瞬间用 50 并发请求冲击，观察数据库查询次数；再实现互斥锁重建版，对比两次的 DB 查询次数。</li>
+<li>（动手·进阶）用 Redisson 分布式锁重构借书扣库存接口，20 并发抢最后 1 本不再超卖；再思考：如果不用锁，只把扣减 SQL 改成 <code>UPDATE book SET stock = stock - 1 WHERE id=? AND stock &gt; 0</code> 并判断影响行数，是否也能解决？两种方案各有什么代价？</li>
+</ol>
+<blockquote>
+<p>下一篇预告：《异步与消息：从 @Async 到 RocketMQ》——下单要调库存、积分、短信三个下游，同步调用又慢又脆弱。线程池异步只是第一步，真正的解耦削峰神器是消息队列。可靠投递、幂等消费、延迟消息，一个不少。</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/04-practice/02-database.html"><span>← 上一篇</span><b>数据库实战：MySQL 与 MyBatis-Plus</b></a><a class="pn" href="/04-practice/04-async-mq.html"><span>下一篇 →</span><b>异步与消息：从 @Async 到 RocketMQ</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

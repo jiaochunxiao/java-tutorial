@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 440" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="860" height="440" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">JDK 动态代理 vs CGLIB：实现接口 vs 继承类</text>
+
+  <!-- JDK proxy -->
+  <rect x="46" y="70" width="380" height="320" rx="14" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="236" y="98" text-anchor="middle" font-size="15" font-weight="700" fill="#1D4ED8">JDK 动态代理（基于接口）</text>
+  <g text-anchor="middle" font-size="12">
+    <rect x="96" y="116" width="280" height="36" rx="8" fill="#FFFFFF" stroke="#93C5FD"/>
+    <text x="236" y="139" fill="#1E3A8A" font-family="monospace">interface UserService</text>
+    <line x1="236" y1="200" x2="236" y2="156" stroke="#475569" stroke-width="1.8" marker-end="url(#arr)"/>
+    <text x="248" y="182" fill="#475569" font-size="11">implements（虚线顶部）</text>
+    <rect x="86" y="202" width="300" height="52" rx="9" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+    <text x="236" y="224" fill="#92400E" font-weight="700">$Proxy0 extends Proxy implements UserService</text>
+    <text x="236" y="244" fill="#B45309" font-size="11">运行时生成；invoke() 里先增强再反射调真身</text>
+    <rect x="146" y="286" width="180" height="36" rx="8" fill="#FFFFFF" stroke="#93C5FD"/>
+    <text x="236" y="309" fill="#1E3A8A">UserServiceImpl（真身）</text>
+    <line x1="236" y1="286" x2="236" y2="258" stroke="#475569" stroke-width="1.6" marker-end="url(#arr)"/>
+    <text x="236" y="348" fill="#64748B" font-size="11">调用方 → $Proxy0 → InvocationHandler → 真身</text>
+  </g>
+
+  <!-- CGLIB -->
+  <rect x="460" y="70" width="380" height="320" rx="14" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+  <text x="650" y="98" text-anchor="middle" font-size="15" font-weight="700" fill="#047857">CGLIB（基于继承，Boot 2.x 默认）</text>
+  <g text-anchor="middle" font-size="12">
+    <rect x="510" y="116" width="280" height="36" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="650" y="139" fill="#065F46" font-family="monospace">class UserServiceImpl</text>
+    <line x1="650" y1="200" x2="650" y2="156" stroke="#475569" stroke-width="1.8" marker-end="url(#arr)"/>
+    <text x="662" y="182" fill="#475569" font-size="11">extends（继承，实线顶部）</text>
+    <rect x="500" y="202" width="300" height="52" rx="9" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+    <text x="650" y="224" fill="#92400E" font-weight="700">UserServiceImpl$$SpringCGLIB$$0（子类）</text>
+    <text x="650" y="244" fill="#B45309" font-size="11">覆写方法 → MethodInterceptor 先增强再 invokeSuper</text>
+    <rect x="530" y="286" width="240" height="60" rx="8" fill="#FEE2E2" stroke="#FCA5A5"/>
+    <text x="650" y="308" fill="#B91C1C" font-size="11">拦不到的：final 方法（覆写不了）</text>
+    <text x="650" y="328" fill="#B91C1C" font-size="11">private / static 方法（不进虚方法表）</text>
+    <text x="650" y="372" fill="#64748B" font-size="11">不需要接口，普通类直接代理</text>
+  </g>
+
+  <rect x="46" y="394" width="770" height="40" rx="8" fill="#FFF7ED" stroke="#FDBA74"/>
+  <text x="62" y="410" font-size="12" fill="#9A3412">核心提醒：代理与真身是两个对象！this 调内部方法不经过代理 → @Transactional/@Async 失效。</text>
+  <text x="62" y="428" font-size="12" fill="#9A3412">验证方法：bean.getClass() 打印，看有没有 $$SpringCGLIB$$ 后缀。</text>
+</svg>

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 440" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#059669"/>
+    </marker>
+  </defs>
+  <rect width="860" height="440" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">字符串常量池：同一份字面量，全局只有一份</text>
+
+  <!-- stack -->
+  <rect x="60" y="76" width="180" height="220" rx="12" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="150" y="102" text-anchor="middle" font-size="14" font-weight="700" fill="#1D4ED8">栈（main 栈帧）</text>
+  <rect x="80" y="118" width="140" height="36" rx="7" fill="#FFFFFF" stroke="#93C5FD"/>
+  <text x="150" y="141" text-anchor="middle" font-size="13" fill="#1E293B">s1 → 池地址</text>
+  <rect x="80" y="164" width="140" height="36" rx="7" fill="#FFFFFF" stroke="#93C5FD"/>
+  <text x="150" y="187" text-anchor="middle" font-size="13" fill="#1E293B">s2 → 池地址</text>
+  <rect x="80" y="210" width="140" height="36" rx="7" fill="#FFFFFF" stroke="#93C5FD"/>
+  <text x="150" y="233" text-anchor="middle" font-size="13" fill="#1E293B">s3 → 堆地址 ★</text>
+  <text x="150" y="272" text-anchor="middle" font-size="11" fill="#475569">s1 = "hello";</text>
+  <text x="150" y="288" text-anchor="middle" font-size="11" fill="#475569">s2 = "hello";</text>
+
+  <!-- pool -->
+  <rect x="330" y="76" width="220" height="140" rx="12" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+  <text x="440" y="102" text-anchor="middle" font-size="14" font-weight="700" fill="#047857">字符串常量池（堆里）</text>
+  <rect x="360" y="120" width="160" height="40" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+  <text x="440" y="145" text-anchor="middle" font-size="14" font-family="monospace" fill="#065F46">"hello"</text>
+  <text x="440" y="182" text-anchor="middle" font-size="11" fill="#475569">字面量第一次出现时入池，</text>
+  <text x="440" y="200" text-anchor="middle" font-size="11" fill="#475569">之后再出现直接复用</text>
+
+  <!-- heap new object -->
+  <rect x="330" y="244" width="220" height="120" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+  <text x="440" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#B45309">堆 · new String("hello")</text>
+  <rect x="354" y="286" width="172" height="34" rx="7" fill="#FFFFFF" stroke="#FCD34D"/>
+  <text x="440" y="308" text-anchor="middle" font-size="12" fill="#92400E">新对象（value 指向池中数据）</text>
+  <text x="440" y="346" text-anchor="middle" font-size="11" fill="#92400E">s3 = new String("hello") 造了"第二个壳"</text>
+
+  <!-- arrows -->
+  <line x1="246" y1="136" x2="326" y2="136" stroke="#059669" stroke-width="2" marker-end="url(#arrG)"/>
+  <line x1="246" y1="182" x2="326" y2="140" stroke="#059669" stroke-width="2" marker-end="url(#arrG)"/>
+  <line x1="246" y1="228" x2="326" y2="300" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- verdict box -->
+  <g text-anchor="middle" font-size="14" font-weight="700">
+    <rect x="620" y="96" width="212" height="70" rx="10" fill="#ECFDF5" stroke="#059669" stroke-width="1.5"/>
+    <text x="726" y="124" fill="#047857">s1 == s2 → true</text>
+    <text x="726" y="148" font-size="12" font-weight="400" fill="#475569">同一个池对象</text>
+    <rect x="620" y="186" width="212" height="70" rx="10" fill="#FEF2F2" stroke="#DC2626" stroke-width="1.5"/>
+    <text x="726" y="214" fill="#B91C1C">s1 == s3 → false</text>
+    <text x="726" y="238" font-size="12" font-weight="400" fill="#475569">一个是池、一个是堆壳</text>
+    <rect x="620" y="276" width="212" height="88" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="726" y="302" font-weight="700" fill="#1E293B">结论</text>
+    <text x="726" y="324" font-size="12" font-weight="400" fill="#475569">比较内容一律用 equals，</text>
+    <text x="726" y="344" font-size="12" font-weight="400" fill="#475569">== 只比"是不是同一个地址"</text>
+  </g>
+  <text x="430" y="416" text-anchor="middle" font-size="12" fill="#64748B">补充：字面量拼接在编译期折叠入池；变量拼接在运行期产生新对象（除非被 final 优化）——所以才有那道经典面试题。</text>
+</svg>

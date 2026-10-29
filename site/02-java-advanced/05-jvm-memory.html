@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JVM 内存结构：运行时数据区巡礼 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item active" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / JVM 内存结构：运行时数据区巡礼</div>
+  <article>
+<h1>JVM 内存结构：运行时数据区巡礼</h1>
+<p>各位同学，欢迎回到课堂。今天咱们干一件大事——组团参观 JVM 这栋大楼。你写了几年代码，天天往楼里塞对象，却可能从来没进门看过一眼：哪些房间是一个人独居的，哪些是几十个线程挤在一起合租的？哪间屋子永远不会挤爆？哪间屋子一爆就是凌晨三点的电话炸弹？</p>
+<p>我在培训行业带过的学员里，太多人对着 <code>OutOfMemoryError: Java heap space</code> 的告警截图一脸懵，最后使出职业生涯终极绝招——重启大法。重启当然能&quot;解决&quot;问题，就像水管漏水你把总闸一关，眼不见心不烦，可问题还蹲在原地等你。JVM 内存结构就是 OOM 时的救命地图：报错落在哪个区、哪个参数管哪块地盘、日志里那串英文在骂什么——看懂了它，你才能从&quot;重启工程师&quot;进化成&quot;排查工程师&quot;。</p>
+<p>好消息是，这块知识真不难，就是零件多。咱们按&quot;线程私有 → 线程共享 → 堆外&quot;的参观路线，把这栋楼挨个逛一遍。出发前先上个全景沙盘。</p>
+<h2>一、总览：JVM 大楼的两类户型</h2>
+<p><img src="/assets/images/02-05-jvm-runtime-areas.svg" alt="运行时数据区全景：左私有（栈/PC）右共享（堆/元空间）"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：运行时数据区全景：左私有（栈/PC）右共享（堆/元空间）</p>
+</blockquote>
+<p>按《Java 虚拟机规范》（JVMS）的划分，运行时数据区（Runtime Data Area）一共五块：程序计数器、虚拟机栈、本地方法栈、堆、方法区。前三块是&quot;一室户&quot;——线程私有（Thread Private），线程一出生就配一套，线程一走就收回，互不打扰；后两块是&quot;大平层&quot;——线程共享（Thread Shared），所有线程挤在一起用，跟大学公共自习室似的，谁都能进，东西堆多了就出事。</p>
+<div class="mermaid">flowchart TB
+    subgraph private["线程私有区（每个线程一套，随线程生灭）"]
+        PC["程序计数器<br/>字节码行号指示器<br/>唯一不会 OOM 的区域"]
+        VMS["虚拟机栈<br/>每个方法对应一个栈帧<br/>局部变量表 / 操作数栈 / 动态链接 / 返回地址"]
+        NMS["本地方法栈<br/>为 native 方法服务"]
+    end
+    subgraph shared["线程共享区（所有线程共用，随 JVM 生灭）"]
+        HEAP["堆 Heap<br/>新生代：Eden + Survivor0 + Survivor1 = 8:1:1<br/>老年代：Old / Tenured"]
+        METHOD["方法区<br/>类元信息 / 运行时常量池 / 静态变量<br/>JDK 8 起由元空间 Metaspace 实现，使用本地内存"]
+    end
+    DIRECT["直接内存 Direct Memory<br/>NIO 的堆外内存，严格说不属于运行时数据区，但 OOM 排查时经常有它的戏份"]
+    private --- shared
+    shared --- DIRECT
+</div>
+<p>注意最后那位&quot;编外人员&quot;直接内存：它不在规范划定的五大区里，但 NIO 用得飞起，出事时也经常是嫌疑人之一，所以一并带上看一眼，免得它搞突袭。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：程序计数器、虚拟机栈、本地方法栈是<strong>线程私有</strong>的；堆、方法区是<strong>线程共享</strong>的。这是面试第一问，也是后面一切排查分析的地图，请焊死在脑子里。</p>
+</blockquote>
+<h2>二、程序计数器：最小的房间，最稳的脾气</h2>
+<p>程序计数器（Program Counter Register，PC 寄存器）可以看作当前线程所执行字节码的行号指示器。字节码解释器工作时，就是靠改变这个计数器的值来选取下一条要执行的字节码指令，分支、循环、跳转、异常处理、线程恢复，全都依赖它。</p>
+<p>那为什么它是线程私有的？因为 CPU 在多线程之间来回切换（时间片轮转），切走之前必须记住&quot;这哥们儿演到第几幕了&quot;，切回来才能接着演。每个线程一个独立计数器，互不干扰，线程切换后才能恢复到正确的执行位置。</p>
+<p>它还有个荣耀头衔：<strong>整个 JVM 中唯一不会发生内存溢出（OutOfMemoryError，OOM）的区域</strong>。原因很朴素——《规范》里它的容量被固定为最小的存储单位，只存一个行号，想撑爆它都没有原材料。它就像大楼走廊尽头那个只挂一块门牌的小格子，房租都不用交。</p>
+<p>执行的是 native 方法时，计数器值为 undefined——本地方法不是字节码，没有行号可记。</p>
+<h2>三、虚拟机栈：方法的&quot;工位&quot;</h2>
+<p>虚拟机栈（Java Virtual Machine Stack）描述的是 Java 方法执行的线程内存模型：每个方法被调用，就同步创建一个栈帧（Stack Frame）；方法执行完毕（正常返回或抛异常），栈帧就出栈。栈帧的生命周期跟方法一模一样，堪称方法在 JVM 里的工位。</p>
+<h3>3.1 栈帧的四大件</h3>
+<p>每个栈帧内部有四个区域：</p>
+<ul>
+<li><strong>局部变量表（Local Variable Table）</strong>：存放方法参数和局部变量，以变量槽（Variable Slot）为单位。long 和 double 占两个槽，其余类型占一个。第 0 号槽默认放 <code>this</code>（实例方法的话）。</li>
+<li><strong>操作数栈（Operand Stack）</strong>：字节码指令的工作台。Java 是基于栈的执行引擎，算个 <code>1 + 2</code> 要先把 1、2 压栈，再执行 iadd 弹出相加、结果压回——像在算盘上扒拉珠子。</li>
+<li><strong>动态链接（Dynamic Linking）</strong>：指向运行时常量池中该方法所属的引用，把字节码里的符号引用在运行期解析成直接引用，多态就靠它。</li>
+<li><strong>方法返回地址（Return Address）</strong>：方法退出后回到调用者的哪个字节码偏移量继续执行。</li>
+</ul>
+<h3>3.2 跟着字节码走一遍 i++</h3>
+<p>光说不练假把式，咱们用 <code>javap -c</code> 看一个最简单的方法在栈里怎么跑：</p>
+<pre><code class="language-java">public class IncrementDemo {
+    public int compute() {
+        int i = 1;   // 局部变量 i，存放在局部变量表 1 号槽（0 号槽留给了 this）
+        i++;         // 自增
+        return i;    // 返回
+    }
+}
+</code></pre>
+<p>编译后 <code>javap -c IncrementDemo</code> 的输出（JDK 8）：</p>
+<pre><code class="language-text">public int compute();
+  Code:
+     0: iconst_1     // 把常量 1 压入操作数栈
+     1: istore_1     // 弹出栈顶，存入局部变量表 1 号槽：i = 1
+     2: iload_1      // 把 i 的值（1）加载到操作数栈
+     3: iconst_1     // 把常量 1 压入操作数栈
+     4: iadd         // 弹出栈顶两个 int 相加：1 + 1 = 2，结果压回栈
+     5: istore_1     // 弹出 2，存回 1 号槽：i = 2
+     6: iload_1      // 加载 i（2）到栈顶，作为返回值
+     7: ireturn      // 返回栈顶 int
+</code></pre>
+<p>看到没？所谓 <code>i++</code>，在栈里就是&quot;取出来、加一、放回去&quot;三步抖音神曲，操作数栈就是那个舞台。看懂这段，你就摸到字节码的门把手了——下一篇讲垃圾回收、下下篇讲类加载时还会反复用到这个视角。</p>
+<h3>3.3 栈溢出演示：没有出口的递归</h3>
+<p>栈的容量有限（<code>-Xss</code> 控制），方法调用太深，栈帧摞不下，就抛 <code>StackOverflowError</code>（SOF）。最经典的翻车现场——没有出口的递归：</p>
+<pre><code class="language-java">public class StackSOF {
+    private static long depth = 0;
+
+    public static void recursion() {
+        depth++;        // 每递归一层，栈里就多压一个栈帧
+        recursion();    // 没有出口的递归，就像只上不下的电梯
+    }
+
+    public static void main(String[] args) {
+        try {
+            recursion();
+        } catch (StackOverflowError e) {
+            System.out.println(&quot;栈深度约：&quot; + depth);   // -Xss 越大，这个数字越大
+            e.printStackTrace();                        // 异常栈会打印出一模一样的重复行
+        }
+    }
+}
+// 实验：分别用 -Xss256k 和 -Xss1m 跑一遍，对比栈深度
+</code></pre>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：有学员写 JSON 反序列化，后端返回了一种&quot;自己套自己&quot;的恶意嵌套结构，Jackson 默认递归解析，线上直接 <code>StackOverflowError</code>。查了半天代码没有任何明显递归——凶手在依赖库里。教训：SOF 不一定是你自己写的递归，也可能是复杂正则回溯、第三方库的深层解析，异常栈里重复出现哪个类的方法名，哪个就是凶手。</p>
+</blockquote>
+<h2>四、本地方法栈：一句话交代</h2>
+<p>本地方法栈（Native Method Stack）跟虚拟机栈是双胞胎，区别只有一点：它为本地（Native）方法服务，也就是那些 <code>native</code> 关键字修饰、由 C/C++ 实现的方法。HotSpot 里干脆直接把虚拟机栈和本地方法栈合二为一。深挖等学 JNI 的时候再说，今天一句话打发。</p>
+<h2>五、堆：对象的世界杯主场</h2>
+<p>堆（Heap）是 JVM 管理内存里最大的一块，几乎所有的对象实例和数组都在这里分配（逃逸分析导致的栈上分配是后话）。它是线程共享的，所以并发分配靠 TLAB（Thread Local Allocation Buffer，线程本地分配缓冲区）来减少竞争——相当于合租屋里每人先划一个抽屉，各塞各的，塞不下了再抢公共区域。</p>
+<h3>5.1 新生代与老年代：8:1:1 的黄金分割</h3>
+<p>堆内部按对象&quot;年龄&quot;分代：</p>
+<ul>
+<li><strong>新生代（Young Generation）</strong>：分为 Eden 区和两个 Survivor 区（S0、S1，也叫 From、To），默认比例 <strong>Eden : S0 : S1 = 8 : 1 : 1</strong>（由 <code>-XX:SurvivorRatio=8</code> 控制）。</li>
+<li><strong>老年代（Old Generation / Tenured）</strong>：存放熬过多次回收的&quot;中年对象&quot;和新年代比例默认约 2:1（<code>-Xmn</code> 设新生代大小，或 <code>-XX:NewRatio</code> 设比例）。</li>
+</ul>
+<p>为什么 Survivor 要两个而不是一个？因为回收算法用的是标记-复制：每次只用 Eden + 一个 Survivor，回收时把活着的对象复制到另一个空 Survivor，两块轮换着用，内存永远不碎。这篇先记住结论，算法细节下篇垃圾回收细聊。</p>
+<h3>5.2 对象的旅居路线：从摇篮到养老院</h3>
+<p>一个普通对象在堆里的一生：<strong>先在 Eden 出生 → 每次 Minor GC 后还活着就搬进 Survivor，年龄 +1 → 每熬过一次 GC 长一岁 → 到了 15 岁&quot;退休&quot;进老年代</strong>。年龄阈值由 <code>-XX:MaxTenuringThreshold=15</code> 控制（最大 15，因为对象头里年龄只有 4 个 bit，最大存 15）。</p>
+<div class="mermaid">flowchart LR
+    NEW["new 对象"] --> EDEN["Eden 区出生"]
+    EDEN -->|"Minor GC 后存活"| S0["Survivor 0<br/>年龄 = 1"]
+    S0 -->|"Minor GC 后存活<br/>两块 Survivor 轮换"| S1["Survivor 1<br/>年龄 + 1"]
+    S1 -->|"年龄达到 -XX:MaxTenuringThreshold 默认 15"| OLD["老年代养老"]
+    EDEN -->|"大对象直通<br/>-XX:PretenureSizeThreshold"| OLD
+    OLD -->|"Major GC / Full GC"| HEAVEN["回收入土"]
+</div>
+<h3>5.3 大对象直接进养老院</h3>
+<p>&quot;大对象&quot;指需要大量连续内存的对象（长字符串、大数组）。HotSpot 提供了 <code>-XX:PretenureSizeThreshold</code>（Serial 和 ParNew 收集器有效）：超过该值的对象不经过新生代，直接在老年代分配。道理很现实——大块头在 Eden 和 Survivor 之间来回复制太亏了，工位搬不动，直接分个办公室。</p>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：生产上我更建议<strong>在代码层面消灭大对象</strong>（分页查询代替一次性拉全表、流式读取代替整文件加载），而不是琢磨怎么给大对象安排养老。见过太多系统被一个 <code>SELECT *</code> 拉回来的 500MB List 干趴，参数调得再漂亮也架不住代码里塞大象。</p>
+</blockquote>
+<h2>六、方法区：从永久代到元空间</h2>
+<p>方法区（Method Area）存放类的元信息（Class 结构、字段、方法字节码）、运行时常量池、静态变量（JDK 7 起静态变量实际挪到了堆中）、JIT 编译后代码等。它逻辑上属于堆的一部分，但有个悠久的&quot;户口问题&quot;：</p>
+<ul>
+<li><strong>JDK 7 及以前</strong>：HotSpot 用**永久代（PermGen）**实现方法区——把方法区塞进堆里，受 <code>-XX:MaxPermSize</code> 管着。</li>
+<li><strong>JDK 8 起</strong>：永久代被移除，改为<strong>元空间（Metaspace）</strong>，使用<strong>本地内存（Native Memory）</strong>，默认上限是机器物理内存，用 <code>-XX:MetaspaceSize</code> / <code>-XX:MaxMetaspaceSize</code> 调节。</li>
+</ul>
+<p>为什么要干掉永久代？两个老痛点：一是<strong>大小难定</strong>，类加载多的应用（动态代理、脚本引擎、大量 JSP）动不动 <code>PermGen space</code> OOM，运维只能靠拍脑袋改参数；二是<strong>字符串常量池（String Pool）在 JDK 7 就已挪到堆</strong>，永久代越来越名不副实，GC 效率还低。元空间在本地内存上，想用多少用多少（当然仍建议设上限，别放飞自我）。</p>
+<p>**运行时常量池（Runtime Constant Pool）**是方法区的一部分：class 文件里的常量池（存放字面量与符号引用）在类加载后进入运行时常量池。它相比 class 文件常量池更&quot;活&quot;——最著名的例子就是 <code>String.intern()</code>，JDK 7 起字符串常量池在堆中，<code>intern()</code> 会把首次遇到的字符串引用收进去。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：某系统上线三个月，某天凌晨突然挂掉，日志赫然 <code>java.lang.OutOfMemoryError: Metaspace</code>。排查发现是重构后 Groovy 脚本引擎每次执行都用新的 <code>GroovyClassLoader</code> 加载脚本，类元数据只增不减。修复方式：脚本引擎单例复用 + 设置 <code>-XX:MaxMetaspaceSize=512m</code> 兜底。元空间 OOM 的第一嫌疑人永远是&quot;动态生成类的框架&quot;：CGLIB、Groovy、反射代理。</p>
+</blockquote>
+<h2>七、直接内存：NIO 的自留地</h2>
+<p>直接内存（Direct Memory）不是运行时数据区的一部分，也不受堆大小限制，而是通过 <code>ByteBuffer.allocateDirect()</code> 向操作系统申请的堆外内存，由 <code>-XX:MaxDirectMemorySize</code> 限制（默认约等于 <code>-Xmx</code>）。</p>
+<p>Doug Lea 当年推动 NIO 引入它，理由简单粗暴：JDK 1.4 之前，基于流的 IO 要把数据从内核缓冲区拷到用户态的 Java 堆里，读文件、发网络都得&quot;拷两次&quot;；而堆外内存可以被操作系统直接访问，省掉了一次堆内外来回复制，对高吞吐 IO 场景（Netty 的零拷贝、RPC 框架的网络缓冲区）是巨大提升。</p>
+<p>代价是：堆外内存的分配与回收成本更高，且不受 GC 直接管理，通常靠 Cleaner（幻象引用机制）在引用被回收后释放。所以 Netty 才搞了内存池（PooledDirectByteBuf）自己管理，这是后话。</p>
+<h2>八、亲手炸一遍：各区 OOM 演示</h2>
+<p>学 JVM 不动手，等于学游泳不沾水。下面两个实验建议你一定亲手跑一遍，感受一下&quot;亲手炸掉 JVM&quot;的快乐。</p>
+<h3>8.1 堆 OOM：只进不出的 List</h3>
+<pre><code class="language-java">import java.util.ArrayList;
+import java.util.List;
+
+public class HeapOOM {
+    public static void main(String[] args) {
+        List&lt;byte[]&gt; list = new ArrayList&lt;&gt;();
+        int i = 0;
+        while (true) {
+            list.add(new byte[1024 * 1024]);   // 每轮塞 1MB，引用一直持有，GC 无法回收
+            System.out.println(&quot;已分配 &quot; + (++i) + &quot; MB&quot;);
+        }
+    }
+}
+// JVM 参数：-Xms16m -Xmx16m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/
+// 期望结果：java.lang.OutOfMemoryError: Java heap space
+// 加上 HeapDump 参数，OOM 时自动留下一份&quot;现场尸体&quot;（hprof 文件），下一章排查用得上
+</code></pre>
+<h3>8.2 元空间 OOM：CGLIB 类工厂狂飙</h3>
+<pre><code class="language-java">// 依赖：org.springframework.cglib 或 net.sf.cglib:cglib:3.3.0
+import org.springframework.cglib.proxy.Enhancer;
+import org.springframework.cglib.proxy.MethodInterceptor;
+
+public class MetaspaceOOM {
+    public static void main(String[] args) {
+        int i = 0;
+        try {
+            while (true) {
+                Enhancer enhancer = new Enhancer();
+                enhancer.setSuperclass(MetaspaceOOM.class);
+                enhancer.setUseCache(false);   // 关闭缓存，逼 CGLIB 每次都生成新代理类
+                enhancer.setCallback((MethodInterceptor) (obj, method, a, proxy) -&gt;
+                        proxy.invokeSuper(obj, a));
+                enhancer.create();             // 每个代理类都是一份新的类元数据，堆进元空间
+                i++;
+            }
+        } catch (Throwable e) {
+            System.out.println(&quot;生成了 &quot; + i + &quot; 个代理类后，元空间阵亡&quot;);
+            e.printStackTrace();
+        }
+    }
+}
+// JVM 参数：-XX:MaxMetaspaceSize=10m
+// 期望结果：java.lang.OutOfMemoryError: Metaspace
+</code></pre>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：OOM 报错信息的&quot;尾巴&quot;就是案发现场地址——<code>Java heap space</code> 查堆、<code>Metaspace</code> 查动态类、<code>unable to create new native thread</code> 查线程数、<code>Direct buffer memory</code> 查堆外。先看地址，再定排查路线。</p>
+</blockquote>
+<h2>九、常用内存参数速查表</h2>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+<th>生产建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-Xms</code></td>
+<td>初始堆大小</td>
+<td>与 -Xmx 设成一样，避免运行期扩容抖动</td>
+</tr>
+<tr>
+<td><code>-Xmx</code></td>
+<td>最大堆大小</td>
+<td>一般设容器内存的 50%~70%，给元空间/栈/直接内存留活路</td>
+</tr>
+<tr>
+<td><code>-Xmn</code></td>
+<td>新生代大小</td>
+<td>按&quot;老年代存活对象 2~3 倍&quot;原则反推，别拍脑袋</td>
+</tr>
+<tr>
+<td><code>-Xss</code></td>
+<td>单线程栈大小</td>
+<td>默认 1m，深层递归场景才需要调大，通常不动</td>
+</tr>
+<tr>
+<td><code>-XX:SurvivorRatio=8</code></td>
+<td>Eden 与单个 Survivor 之比</td>
+<td>默认 8，即 8:1:1</td>
+</tr>
+<tr>
+<td><code>-XX:MaxTenuringThreshold=15</code></td>
+<td>晋升老年代年龄阈值</td>
+<td>默认 15，一般不动</td>
+</tr>
+<tr>
+<td><code>-XX:MetaspaceSize</code></td>
+<td>元空间初始触发 GC 阈值</td>
+<td>建议 256m 起，避免启动期频繁 Full GC</td>
+</tr>
+<tr>
+<td><code>-XX:MaxMetaspaceSize</code></td>
+<td>元空间上限</td>
+<td>务必设置！默认无上限，放飞等于裸奔</td>
+</tr>
+<tr>
+<td><code>-XX:MaxDirectMemorySize</code></td>
+<td>直接内存上限</td>
+<td>Netty 系应用重点关照</td>
+</tr>
+</tbody></table>
+<h2>十、堆 vs 栈：终极对比（面试必考）</h2>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>虚拟机栈</th>
+<th>堆</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>存放内容</td>
+<td>栈帧（局部变量表、操作数栈等）</td>
+<td>对象实例、数组</td>
+</tr>
+<tr>
+<td>线程归属</td>
+<td>线程私有</td>
+<td>线程共享</td>
+</tr>
+<tr>
+<td>生命周期</td>
+<td>随方法调用/返回，随线程生灭</td>
+<td>随 JVM 生灭</td>
+</tr>
+<tr>
+<td>内存错误</td>
+<td>StackOverflowError（也可能 OOM）</td>
+<td>OutOfMemoryError</td>
+</tr>
+<tr>
+<td>分配效率</td>
+<td>快（移动栈指针即可）</td>
+<td>相对慢（需分配与 GC 配合）</td>
+</tr>
+<tr>
+<td>碎片问题</td>
+<td>无（栈帧连续进出）</td>
+<td>有（靠 GC 算法治理）</td>
+</tr>
+<tr>
+<td>核心参数</td>
+<td><code>-Xss</code></td>
+<td><code>-Xms</code> / <code>-Xmx</code> / <code>-Xmn</code></td>
+</tr>
+</tbody></table>
+<p>一句话记忆：<strong>栈管运行（方法的执行上下文），堆管存储（对象本身）</strong>。基本类型变量的值在栈的局部变量表里，但它引用的对象（<code>new</code> 出来的那位）住在堆里——&quot;变量在栈，对象在堆&quot;。</p>
+<h2>本篇小结</h2>
+<ul>
+<li>运行时数据区五件套：程序计数器、虚拟机栈、本地方法栈线程私有；堆、方法区线程共享。</li>
+<li>程序计数器是唯一不会 OOM 的区域，因为容量固定且极小。</li>
+<li>栈帧四件套：局部变量表、操作数栈、动态链接、返回地址；方法调用深度过大抛 StackOverflowError。</li>
+<li>堆分新生代（Eden:S0:S1 = 8:1:1）与老年代；对象默认在 Eden 出生，熬到 15 岁进老年代。</li>
+<li>大对象可越过新生代直接进老年代，避免 Survivor 之间反复拷贝。</li>
+<li>JDK 8 起永久代被元空间取代，元空间使用本地内存，必须设 MaxMetaspaceSize 上限。</li>
+<li>直接内存是 NIO 的堆外内存，省一次拷贝但要小心泄漏，常见于 Netty 场景。</li>
+<li>OOM 报错尾巴就是案发现场：heap space / Metaspace / native thread / direct buffer。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>为什么程序计数器必须是线程私有的？如果共享会发生什么？</li>
+<li>方法区内存不足时，JDK 8 之前和之后的报错信息分别是什么？参数分别怎么设？</li>
+<li>一个 20MB 的字节数组（<code>-Xmx256m</code>，新生代 85MB），会在哪里分配？为什么？</li>
+<li>【动手实验】把 StackSOF 示例分别在 <code>-Xss128k</code>、<code>-Xss512k</code>、<code>-Xss1m</code> 下跑三遍，记录栈深度并解释规律；再把 <code>recursion()</code> 改成带出口的递归，观察栈深度的上限行为。</li>
+<li>【动手实验】运行 HeapOOM，加上 <code>-XX:+HeapDumpOnOutOfMemoryError</code>，用 <code>jhat</code> 或下一章要讲的 MAT 打开 hprof 文件，找到占用最大的对象——提前体验一次&quot;验尸&quot;。</li>
+</ol>
+<p>下一篇预告：对象在堆里生老病死，可谁负责&quot;收尸&quot;？下一篇《垃圾回收：对象的生与死》，咱们聊聊 GC 怎么判定一个对象该死、又怎么死得体面——从引用计数的老骗局，一路讲到 G1 的 Region 世界。</p>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/02-java-advanced/04-juc-toolbox.html"><span>← 上一篇</span><b>并发工具箱：JUC 全家桶</b></a><a class="pn" href="/02-java-advanced/06-garbage-collection.html"><span>下一篇 →</span><b>垃圾回收：对象的生与死</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

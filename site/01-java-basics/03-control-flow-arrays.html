@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>流程控制与数组：程序的岔路口 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item active" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 流程控制与数组：程序的岔路口</div>
+  <article>
+<h1>流程控制与数组：程序的岔路口</h1>
+<p><img src="/assets/images/01-03-array-memory.svg" alt="数组内存布局：栈上存引用（钥匙），堆上放数据（柜子）"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：数组内存布局：栈上存引用（钥匙），堆上放数据（柜子）</p>
+</blockquote>
+<p>你有没有想过，为什么导航软件从来不慌？前方明明有无数个路口——直行、左转、掉头、进服务区，它总能根据路况做出选择：堵了就绕，封了就换，一路把你&quot;控制&quot;到终点。程序也是一样：直线走的代码只是&quot;计算器&quot;，会拐弯的代码才是&quot;程序&quot;。拐弯靠什么？靠流程控制（control flow）。</p>
+<p>如果说变量和运算符是程序的&quot;食材&quot;，那流程控制就是&quot;颠勺的手法&quot;：什么时候大火（条件判断）、什么时候翻炒（循环）、什么时候出锅（跳转）。而数组，则是后厨那一排贴了编号的储物格——一排同样大小、连续摆放、统一管理的空间。</p>
+<p>这一篇信息量不小：if 与 switch 的爱恨情仇、三大循环的选型之道、九九乘法表的祖传手艺，还有 Arrays 工具类里那个坑了无数人的 asList。深呼吸，我们出发。</p>
+<h2>一、if/else：程序的第一岔路口</h2>
+<p>if（如果）是所有语言里最经典的分支：条件成立走这条路，不成立走那条。直接上成绩分级的例子：</p>
+<pre><code class="language-java">int score = 86;
+
+if (score &gt;= 90) {
+    System.out.println(&quot;优秀&quot;);
+} else if (score &gt;= 80) {        // else if 可以串无数个，从上往下依次判断
+    System.out.println(&quot;良好&quot;);   // 命中一个分支后，后面的全部跳过
+} else if (score &gt;= 60) {
+    System.out.println(&quot;及格&quot;);
+} else {
+    System.out.println(&quot;下次一定&quot;);
+}
+</code></pre>
+<p>if 家族没什么难的，但有两个高频翻车点必须点名。第一个是把 <code>==</code> 写成 <code>=</code>：<code>if (isVip = true)</code> 是赋值，条件永远为 true，属于&quot;看着人畜无害实则后患无穷&quot;的写法，惯用解法是布尔变量直接写 <code>if (isVip)</code>，连 == 都省了。第二个是&quot;悬空 else&quot;：多层 if 不加大括号时，else 默认配对离它最近的那个 if，而不是你缩进暗示的那个——所以铁律是：<strong>哪怕只有一行，也把大括号写上</strong>。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：一位学员的会员判断逻辑 <code>if (level = 3)</code>，编译不报错（因为 int 赋值表达式有值），运行时所有人都是 VIP3 待遇，优惠多发了三万块才被发现。一个符号，一部惊悚片。</p>
+</blockquote>
+<h2>二、switch 的三十年进化：从啰嗦大叔到优雅绅士</h2>
+<p>当一个变量要对多个离散值做判断（比如菜单 1/2/3/4），if-else 串一长串就很啰嗦，这时 switch 登场。先看传统写法，再对比 Java 14 之后的箭头新语法，一场三十年的进化尽收眼底：</p>
+<pre><code class="language-java">int menu = 2;
+
+// ---------- 传统 switch：case + break，忘写 break 就&quot;穿透&quot; ----------
+switch (menu) {
+    case 1:
+        System.out.println(&quot;查询余额&quot;);
+        break;                   // 不写 break 会&quot;穿透&quot;到下一个 case 继续执行
+    case 2:
+        System.out.println(&quot;转账&quot;);
+        break;
+    case 3:
+        System.out.println(&quot;退出&quot;);
+        break;
+    default:
+        System.out.println(&quot;输入有误&quot;);
+}
+
+// ---------- 箭头语法（Java 14+）：天然无穿透，还支持多值合并 ----------
+switch (menu) {
+    case 1 -&gt; System.out.println(&quot;查询余额&quot;);
+    case 2 -&gt; System.out.println(&quot;转账&quot;);
+    case 3, 4 -&gt; System.out.println(&quot;退出或返回&quot;); // 多个值共用一个分支
+    default -&gt; System.out.println(&quot;输入有误&quot;);
+}
+
+// ---------- switch 表达式：switch 直接&quot;有返回值&quot;，多行分支用 yield ----------
+String result = switch (menu) {
+    case 1, 2 -&gt; &quot;业务办理&quot;;
+    case 3 -&gt; {
+        System.out.println(&quot;做一些额外处理...&quot;);
+        yield &quot;已退出&quot;;           // yield：分支有多行语句时用它交出返回值
+    }
+    default -&gt; &quot;输入有误&quot;;
+};
+System.out.println(result);       // 业务办理
+</code></pre>
+<p>传统 switch 最大的坑就是<strong>穿透（fall-through）</strong>：case 后面不写 break，执行完这个分支会&quot;滑&quot;到下一个 case 继续执行。历史上确实有少数场景故意利用穿透（比如 1 到 5 都走同一逻辑），但 99% 的穿透都是忘了写 break 的 bug。菜单选了 2，结果转账完直接退出了——用户一脸懵，程序员两行泪。而箭头语法从根上拆除了这颗地雷：天然无穿透、多值一行合并，switch 还升级成了&quot;表达式&quot;——自己就有返回值，分支里有多行语句时用 yield 交出结果。</p>
+<p>新旧两种写法的对比一目了然：</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>传统 switch</th>
+<th>箭头 switch（Java 14+）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>穿透风险</td>
+<td>忘 break 就穿透，bug 高发</td>
+<td>天然无穿透</td>
+</tr>
+<tr>
+<td>多值分支</td>
+<td>需要利用穿透实现</td>
+<td><code>case 1, 2 -&gt;</code> 一行搞定</td>
+</tr>
+<tr>
+<td>能否返回值</td>
+<td>不能，只是语句</td>
+<td>可以，是表达式，支持 yield</td>
+</tr>
+<tr>
+<td>冒号/箭头</td>
+<td>冒号 + break</td>
+<td>箭头，无需 break</td>
+</tr>
+</tbody></table>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：新项目、新代码一律用箭头语法，把&quot;忘写 break&quot;这个历史遗留地雷永久拆除。另外从 Java 17 开始 switch 还支持模式匹配，能直接按类型分支，属于&quot;高级武器&quot;，后面讲密封类和记录类时再展开。</p>
+</blockquote>
+<h2>三、三大循环：for、while、do-while 的工种分工</h2>
+<p>程序界有三大循环工种，长得像，分工却很明确。先看对比表，再逐个上代码：</p>
+<table>
+<thead>
+<tr>
+<th>循环</th>
+<th>判断时机</th>
+<th>典型场景</th>
+<th>一句话人设</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>for</td>
+<td>先判断后执行</td>
+<td>循环次数明确已知</td>
+<td>有明确工期的合同工</td>
+</tr>
+<tr>
+<td>while</td>
+<td>先判断后执行</td>
+<td>次数未知，只看条件</td>
+<td>干到老板喊停的计件工</td>
+</tr>
+<tr>
+<td>do-while</td>
+<td>先执行后判断</td>
+<td>至少要执行一次</td>
+<td>先斩后奏的莽夫</td>
+</tr>
+</tbody></table>
+<p>次数已知用 for（遍历 1 到 100 求和）；次数未知用 while（用户不断输入，直到输入 0 停止）；至少执行一次用 do-while（先问用户要不要继续，再决定下轮）：</p>
+<pre><code class="language-java">// for：已知跑 100 圈
+int sum = 0;
+for (int i = 1; i &lt;= 100; i++) { // 初始化; 条件; 步进，分号分隔，三段都可按需省略
+    sum += i;
+}
+System.out.println(sum); // 5050
+
+// while：不知道用户什么时候输入 0
+Scanner sc = new Scanner(System.in);
+System.out.print(&quot;请输入数字（0 结束）：&quot;);
+int n = sc.nextInt();
+while (n != 0) {                  // 条件不成立就退出
+    System.out.println(&quot;你输入了：&quot; + n);
+    System.out.print(&quot;请继续输入（0 结束）：&quot;);
+    n = sc.nextInt();             // 千万记得更新条件变量，否则原地转圈到天荒地老
+}
+
+// do-while：至少问一次
+int choice;
+do {
+    System.out.println(&quot;1. 开始游戏  2. 退出&quot;);
+    choice = sc.nextInt();
+} while (choice != 1 &amp;&amp; choice != 2); // 不管三七二十一先执行一轮
+</code></pre>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：两个工程习惯。第一，for 循环内部尽量不要修改循环变量 i（初学者爱在循环里 i++ 又 i--，人为制造死循环）；第二，while 循环务必确认条件变量会被更新。判断循环写对没有，就问自己一句话：**这个循环靠什么停下来？**答不上来，它八成停不下来。</p>
+</blockquote>
+<h2>四、break、continue 与带标签的跳转</h2>
+<p>循环里还有两位&quot;交通警察&quot;：break 直接终止整个循环，continue 只跳过本轮、马上进入下一轮。单层循环它们轻车熟路，但嵌套循环里 break 默认只能跳出&quot;最内层&quot;——想在二维数组里找到目标值后里外两层一起停，还得请出<strong>带标签的跳转</strong>。三段代码连着看：</p>
+<pre><code class="language-java">// ---------- break：找到第一个能被 7 整除的三位数就收工 ----------
+for (int i = 100; i &lt; 1000; i++) {
+    if (i % 7 == 0) {
+        System.out.println(i); // 105
+        break;                 // 找到即停，后面的 895 个数看都不看
+    }
+}
+
+// ---------- continue：打印 1~10 中的奇数 ----------
+for (int i = 1; i &lt;= 10; i++) {
+    if (i % 2 == 0) {
+        continue;              // 偶数跳过本轮，回到 i++ 进入下一轮
+    }
+    System.out.print(i + &quot; &quot;); // 1 3 5 7 9
+}
+
+// ---------- 带标签的 break：双层循环一次性全退 ----------
+int[][] grid = {{3, 8}, {15, 42}, {7, 9}};
+int target = 42;
+
+outer:                                  // 标签：给外层循环起个名字，写在循环前面
+for (int i = 0; i &lt; grid.length; i++) {
+    for (int j = 0; j &lt; grid[i].length; j++) {
+        if (grid[i][j] == target) {
+            System.out.println(&quot;找到 &quot; + target + &quot;，位置 [&quot; + i + &quot;][&quot; + j + &quot;]&quot;);
+            break outer;                // 直接冲出外层循环，双层全停
+        }
+    }
+}
+</code></pre>
+<p>标签 goto 的名声不好，很多语言直接禁了它，但 Java 只保留了 break/continue + 标签这种极受限的形式，专门救嵌套循环的场。用的时候克制一点，一层标签是良药，层层标签是毒药。</p>
+<h2>五、经典案例实战：九九乘法表与水仙花数</h2>
+<p>学循环不练乘法表，等于吃火锅不蘸料。九九乘法表是嵌套循环的入门仪式：</p>
+<pre><code class="language-java">for (int i = 1; i &lt;= 9; i++) {          // 外层控制行
+    for (int j = 1; j &lt;= i; j++) {      // 内层控制列，注意条件 j &lt;= i：第 i 行只打 i 个
+        System.out.print(j + &quot;×&quot; + i + &quot;=&quot; + (i * j) + &quot;\t&quot;); // \t 制表符对齐
+    }
+    System.out.println();               // 每打完一行换行
+}
+</code></pre>
+<p>第二个祖传案例是水仙花数（narcissistic number）：三位数中等于&quot;各位数字立方和&quot;的数，比如 153 = 1³ + 5³ + 3³。核心是&quot;拆位&quot;三板斧——除法取高位、取模取低位：</p>
+<pre><code class="language-java">for (int num = 100; num &lt;= 999; num++) {
+    int hundreds = num / 100;        // 百位：除以 100 取整
+    int tens = num / 10 % 10;        // 十位：先砍掉百位，再取个位
+    int units = num % 10;            // 个位：对 10 取模
+    if (hundreds * hundreds * hundreds
+            + tens * tens * tens
+            + units * units * units == num) {
+        System.out.println(num + &quot; 是水仙花数&quot;); // 153、370、371、407
+    }
+}
+</code></pre>
+<p>&quot;拆位&quot;这个手法后面到处都是：拆手机号、拆身份证、做数字加密，请务必练到肌肉记忆。</p>
+<h2>六、死循环不是罪：while(true) 的正当用途</h2>
+<p>很多人一听死循环就色变，其实 <code>while (true)</code> 在工程里是堂堂正正的写法——只要它有体面的出口。服务器等连接、游戏主循环、消息轮询，本质都是&quot;一直转，直到被命令停止&quot;：</p>
+<pre><code class="language-java">// 简易菜单：反复服务，直到用户选择退出
+while (true) {
+    showMenu();
+    int choice = sc.nextInt();
+    if (choice == 0) {
+        System.out.println(&quot;欢迎下次光临&quot;);
+        break;                      // 唯一的出口：体面退出
+    }
+    handle(choice);                 // 处理业务
+}
+</code></pre>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：写 while(true) 前先想清楚两件事：出口在哪（break / return / 外部中断）？循环体会不会把 CPU 打满（无 IO 等待的空转会 100% 占核，轮询场景记得 sleep 片刻）。没有出口的死循环上生产，等于给服务器判了无期徒刑。</p>
+</blockquote>
+<h2>七、数组：一排连续编号的储物柜</h2>
+<p>现在请你存 100 个学生的成绩。按前面的写法，要声明 score1 到 score100 一百个变量——写完你的手和编译器至少有一个会先疯。数组（array）就是解药：同类型数据、固定长度、连续内存、下标访问。</p>
+<p>数组的声明和初始化有三种姿势：</p>
+<pre><code class="language-java">int[] scores1 = {90, 75, 88, 62};          // 静态初始化：声明同时给值，最常用
+int[] scores2 = new int[5];                // 动态初始化：只定长度，元素自动给默认值
+int[] scores3;                             // 先声明
+scores3 = new int[]{100, 66};              // 后分配，注意此时 new int[] 里要写全
+</code></pre>
+<p>四个必知细节：第一，<strong>下标从 0 开始</strong>，<code>scores1[0]</code> 是 90，最后一个元素下标是 <code>length - 1</code>——下标本质是&quot;相对于首地址的偏移量&quot;，首元素偏移为 0，这是历史传统也是效率选择；第二，<code>length</code> 是数组的<strong>属性</strong>（不带括号），而字符串的 <code>length()</code> 是方法（带括号），这俩天天有人搞混；第三，动态初始化的默认值沿用类型默认值：int 是 0、double 是 0.0、boolean 是 false、引用类型是 null；第四，遍历首选增强 for（for-each），拿不到下标但代码干净：</p>
+<pre><code class="language-java">for (int s : scores1) {   // 把每个元素依次取出来交给 s
+    System.out.print(s + &quot; &quot;);
+}
+</code></pre>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：两个连环坑。坑一：循环条件写成 <code>i &lt;= arr.length</code>，最后一个元素下标是 length-1，这个 &lt;= 让程序直接抛 ArrayIndexOutOfBoundsException（数组越界），新手调试一小时、真相就一个字符。坑二：想用 for-each 给数组元素统一乘 2，写 <code>for (int s : arr) s = s * 2;</code>——毫无效果，因为 s 只是元素的<strong>副本</strong>，改副本不惊动原件。要修改元素，老老实实用带下标的普通 for。</p>
+</blockquote>
+<h2>八、数组内存布局：一维与二维</h2>
+<p>一维数组在内存里是&quot;栈上的引用指向堆上的一排连续空间&quot;，上一篇画过。二维数组更有意思：Java 的二维数组本质是**&quot;数组的数组&quot;**——外层是一个数组，里面装的不是 int，而是三个&quot;内层数组的引用&quot;：</p>
+<div class="mermaid">flowchart LR
+    subgraph STACK["栈"]
+        M["int[][] matrix<br/>地址 0x33"]
+    end
+    subgraph HEAP["堆"]
+        R["外层数组 length=3<br/>装着三个引用"]
+        A0["内层 [0, 0, 0, 0]"]
+        A1["内层 [0, 0, 0, 0]"]
+        A2["内层 [0, 0, 0, 0]"]
+    end
+    M --> R
+    R --> A0
+    R --> A1
+    R --> A2
+</div>
+<p>正因为&quot;内层也是独立数组&quot;，Java 天然支持<strong>锯齿数组</strong>（不规则数组）——每一行长度可以不同：</p>
+<pre><code class="language-java">int[][] jagged = new int[3][];  // 只定行数，内层先留空
+jagged[0] = new int[2];         // 第 0 行 2 列
+jagged[1] = new int[5];         // 第 1 行 5 列
+jagged[2] = new int[1];         // 第 2 行 1 列
+</code></pre>
+<p>这个设计在存&quot;参差不齐&quot;的数据（比如每章词数不同的文本）时非常省内存。理解了二维数组的真面目，你也就理解了为什么 <code>matrix.length</code> 是行数、<code>matrix[i].length</code> 是第 i 行的列数。</p>
+<h2>九、Arrays 工具类：数组的瑞士军刀</h2>
+<p>java.util.Arrays 是 JDK 送的数组工具箱，几个高频方法一次讲透，重点讲最后那个坑：</p>
+<pre><code class="language-java">int[] arr = {5, 2, 9, 1, 7};
+
+System.out.println(Arrays.toString(arr)); // [5, 2, 9, 1, 7]：直接打印数组名只会得到地址，toString 才是人看的
+
+Arrays.sort(arr);                         // 升序排序，底层对 int 是双轴快排，效率在线
+System.out.println(Arrays.toString(arr)); // [1, 2, 5, 7, 9]
+
+int idx = Arrays.binarySearch(arr, 7);    // 二分查找：返回下标 3
+int miss = Arrays.binarySearch(arr, 8);   // 找不到：返回 -(插入点) - 1，即 -5
+                                         // 注意：二分查找必须先排序，否则结果不可信
+
+int[] part = Arrays.copyOf(arr, 3);       // 复制前 3 个元素，长度可扩可缩，扩出来的部分补默认值
+int[] range = Arrays.copyOfRange(arr, 1, 4); // 复制下标 [1, 4) 的片段，含头不含尾
+
+Arrays.fill(arr, 0);                      // 全部填充为 0，重置数组时好用
+</code></pre>
+<p>最后是重点关照对象 asList：</p>
+<pre><code class="language-java">List&lt;Integer&gt; list = Arrays.asList(1, 2, 3);
+list.set(0, 99);        // 可以：修改元素没问题
+list.add(4);            // 抛 UnsupportedOperationException！
+list.remove(0);         // 同样炸！
+</code></pre>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：<code>Arrays.asList</code> 返回的不是 java.util.ArrayList，而是 Arrays 内部一个<strong>定长</strong>的 List 视图——它背后直接引用原数组，长度被焊死，add/remove 一律抛 UnsupportedOperationException。另一个暗坑：传基本类型数组 <code>Arrays.asList(new int[]{1,2,3})</code>，它会整个数组当成<strong>一个元素</strong>，得到的 List 大小是 1。想要能增删的真正列表：<code>new ArrayList&lt;&gt;(Arrays.asList(1, 2, 3))</code>，或者一步到位 <code>List.of(1, 2, 3)</code>（不可变列表）。</p>
+</blockquote>
+<h2>十、数组 vs 集合：谁才是正宫</h2>
+<p>学完数组，马上有人问：既然有集合（ArrayList 之流），还要数组干嘛？看对比表：</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>数组</th>
+<th>集合（如 ArrayList）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>长度</td>
+<td>定长，创建即焊死</td>
+<td>动态扩容，随便加</td>
+</tr>
+<tr>
+<td>存储类型</td>
+<td>基本类型 + 引用类型都行</td>
+<td>只能引用类型（泛型，基本类型靠自动装箱）</td>
+</tr>
+<tr>
+<td>效率</td>
+<td>连续内存，读写极快</td>
+<td>有封装开销，但足够快</td>
+</tr>
+<tr>
+<td>方法</td>
+<td>只有 length 属性，工具靠 Arrays</td>
+<td>add/remove/contains 等丰富 API 一条龙</td>
+</tr>
+<tr>
+<td>典型场景</td>
+<td>定长数据、底层开发、性能敏感场景</td>
+<td>业务开发中绝大多数动态数据管理</td>
+</tr>
+</tbody></table>
+<p>一句话选型：<strong>长度固定、追求极致性能、或写底层框架，用数组；长度不定、业务为主，用集合</strong>。集合的底层就是数组——ArrayList 增加了&quot;自动扩容&quot;的包装，扩容的秘密（1.5 倍增长、数组拷贝搬家）等我们讲到集合篇再拆。你可以把两者的关系理解成&quot;毛坯房&quot;和&quot;精装房&quot;：毛坯房（数组）什么都要自己动手，但空间利用率高、想怎么改怎么改；精装房（集合）拎包入住、设施齐全，代价是物业费（封装开销）和装修限制（只能存引用类型）。绝大多数业务开发者住精装房就够了，但看懂毛坯房的管线走向，出了问题你才知道找谁。</p>
+<p>多说一句越界异常的&quot;变体&quot;：除了 <code>&lt;=</code> 写错，还有一种常见姿势是循环里数组被并发修改，或者下标来自外部输入没做校验——<code>arr[input]</code> 这种写法等于把方向盘交给用户。工程上凡是拿外部数据当下标，先做一次范围检查：<code>if (index &gt;= 0 &amp;&amp; index &lt; arr.length)</code>，三秒钟的谨慎，换半夜不报警。</p>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：业务开发里 90% 的场景用集合，但数组必须先学扎实——因为集合是数组造的，不懂原材料就谈不懂数据结构。面试里&quot;ArrayList 底层是什么&quot;的标准答案，正是&quot;Object 数组&quot;。</p>
+</blockquote>
+<h2>本篇小结</h2>
+<ul>
+<li>if-else 适合区间和复杂条件，switch 适合对离散值的分派；</li>
+<li>箭头 switch（Java 14+）天然无穿透、支持多值分支，新代码的首选；yield 用于多行分支返回值；</li>
+<li>for 次数已知、while 次数未知、do-while 至少执行一次；写循环先想好&quot;靠什么停下来&quot;；</li>
+<li>break 终止整层循环，continue 跳过本轮；嵌套循环全退用&quot;标签 + break&quot;；</li>
+<li>数组：定长、连续内存、下标从 0 开始，length 是属性不是方法；二维数组是&quot;数组的数组&quot;，支持锯齿数组；</li>
+<li>越界异常 ArrayIndexOutOfBoundsException 多半是 <code>&lt;=</code> 写错或下标减一忘了；</li>
+<li>Arrays.asList 返回定长视图，不能增删；binarySearch 前必须先 sort；</li>
+<li>数组胜在定长高效，集合胜在动态和 API，业务开发优先集合。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>传统 switch 的&quot;穿透&quot;是怎么回事？箭头语法为什么能从根源上避免这个坑？</li>
+<li>for、while、do-while 分别适合什么场景？请各举一个生活中的类比。</li>
+<li><code>Arrays.binarySearch(arr, key)</code> 找不到时返回什么？为什么这样设计（提示：这个返回值怎么反推插入位置）？</li>
+<li>【编程题】统计成绩：从控制台录入 10 个学生成绩存入数组，用循环求最高分、最低分、平均分，再用 Arrays.sort 排序后正序和倒序各打印一遍，最后统计高于平均分的人数。</li>
+<li>【编程题·选做】打印杨辉三角（打印 8 行即可）。提示：每行首尾是 1，中间元素等于上一行相邻两数之和，二维数组 or 滚动一维数组皆可。</li>
+</ol>
+<p>下一篇预告：到目前为止我们写的都是&quot;过程式&quot;代码——变量一堆、方法一排，项目一大就乱成一锅粥。是时候请出 Java 的灵魂了——下一篇《面向对象（上）：封装、继承、多态三巨头》，我们从&quot;做一盘红烧肉&quot;聊起，看看三巨头如何把散乱的代码调教得服服帖帖。不见不散！</p>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/01-java-basics/02-data-types.html"><span>← 上一篇</span><b>变量与数据类型：8 大基本类型排排坐</b></a><a class="pn" href="/01-java-basics/04-oop-part1.html"><span>下一篇 →</span><b>面向对象（上）：封装、继承、多态三巨头</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

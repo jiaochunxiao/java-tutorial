@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设计模式：高频模式实战 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item active" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 设计模式：高频模式实战</div>
+  <article>
+<h1>设计模式：高频模式实战</h1>
+<p>每次讲设计模式，总有两个灵魂问题：<strong>&quot;学这个有什么用？背 23 种吗？&quot;</strong> 和 <strong>&quot;学了之后到处套，被同事打怎么办？&quot;</strong></p>
+<p>我的答案一直是：设计模式不是知识点，是**&quot;变化的方向&quot;**——当你的代码未来可能朝某个方向变化时，前辈们留下的这些结构能让变化&quot;局部化&quot;，改一处而不动全身。你不需要背 23 种（GoF 原版里有些模式在现代语言里已经被语法本身消化了，比如命令模式被 Lambda 大幅简化），你需要的是：<strong>吃透高频的那几个，并且知道 Spring/JDK 源码里它们长什么样。</strong> 这样下次读框架源码，你会不断拍大腿：&quot;哦！原来这就是策略模式！&quot;</p>
+<p>进阶篇收官之作，咱们用设计模式把前面学的面向对象、反射、并发串起来。</p>
+<hr>
+<h2>一、开胃菜：设计原则快速回顾</h2>
+<p>23 种模式是&quot;招式&quot;，七大原则才是&quot;内功&quot;。招式会忘，内功不会：</p>
+<table>
+<thead>
+<tr>
+<th>原则</th>
+<th>一句话</th>
+<th>反面教材</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单一职责（SRP）</td>
+<td>一个类只干一件事</td>
+<td><code>UserService</code> 里既有登录逻辑又有发邮件逻辑</td>
+</tr>
+<tr>
+<td>开闭原则（OCP）</td>
+<td>对扩展开放，对修改关闭</td>
+<td>加一种支付方式要改 <code>if-else</code> 十处代码</td>
+</tr>
+<tr>
+<td>里氏替换（LSP）</td>
+<td>子类必须能无痛替换父类</td>
+<td>子类重写方法时抛出父类不会抛的异常/直接返回 null</td>
+</tr>
+<tr>
+<td>接口隔离（ISP）</td>
+<td>接口要小而专</td>
+<td>一个&quot;万能接口&quot;有 20 个方法，实现类被迫写一堆空方法</td>
+</tr>
+<tr>
+<td>依赖倒置（DIP）</td>
+<td>依赖抽象不依赖实现</td>
+<td>Controller 直接 <code>new MysqlUserDao()</code></td>
+</tr>
+<tr>
+<td>迪米特法则</td>
+<td>只和直接朋友说话</td>
+<td>订单服务一路 <code>a.getB().getC().getD()</code> 深挖别人隐私</td>
+</tr>
+<tr>
+<td>合成复用</td>
+<td>优先组合而非继承</td>
+<td>为了复用 <code>ArrayList</code> 的能力去继承它</td>
+</tr>
+</tbody></table>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：所有设计模式都是这七条原则的具体落地。读源码时看到&quot;奇怪&quot;的结构，往这几条原则上想，八成能想通。</p>
+</blockquote>
+<hr>
+<h2>二、七大高频模式逐一击破</h2>
+<p><img src="/assets/images/02-10-patterns-in-spring.svg" alt="设计模式在 Spring 容器里的真实出场位置"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：设计模式在 Spring 容器里的真实出场位置</p>
+</blockquote>
+<h3>2.1 单例模式：一个类只有一个实例</h3>
+<p><strong>为什么</strong>：有些对象创建昂贵（配置中心）、或天然只应有一份（线程池管理器、Spring 上下文）。</p>
+<pre><code class="language-java">// 推荐写法①：静态内部类（懒加载 + JVM 类加载机制天然保证线程安全）
+public class ConfigHolder {
+    private ConfigHolder() {}                       // 私有构造，堵死外部 new
+    private static class Holder {
+        static final ConfigHolder INSTANCE = new ConfigHolder();  // 内部类首次使用才加载
+    }
+    public static ConfigHolder getInstance() { return Holder.INSTANCE; }
+}
+
+// 推荐写法②：枚举（《Effective Java》钦定，天然防反射、防反序列化破坏）
+public enum Registry {
+    INSTANCE;
+    public void register(String key, String value) { /* ... */ }
+}
+</code></pre>
+<p><strong>Spring 里的出场</strong>：Spring 容器中的 Bean 默认就是单例（scope=singleton）——但注意，<strong>Spring 的单例是&quot;容器级&quot;的</strong>（一个 ApplicationContext 一份），和 GoF 的&quot;类加载器级&quot;单例不是一回事。这也是面试爱考的细节。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：手写 DCL 单例忘记 volatile（并发篇讲过的&quot;半成品对象&quot;问题）；或者以为加了 private 构造器就万无一失——反射 <code>setAccessible(true)</code> 照样能 new 出第二个实例，只有枚举真正防住。</p>
+</blockquote>
+<h3>2.2 工厂模式：把 new 的活儿交给专业的人</h3>
+<p><strong>为什么</strong>：直接 <code>new</code> 让调用方依赖具体类；对象创建逻辑复杂或需要按条件挑选实现时，<code>new</code> 会污染业务代码。</p>
+<pre><code class="language-java">// 简单工厂：一个静态方法按参数造对象（严格说不是 GoF 模式，但最常用）
+public class PaymentFactory {
+    public static Payment create(String channel) {
+        return switch (channel) {
+            case &quot;alipay&quot; -&gt; new AlipayPayment();
+            case &quot;wechat&quot; -&gt; new WechatPayment();
+            case &quot;unionpay&quot; -&gt; new UnionPayPayment();
+            default -&gt; throw new IllegalArgumentException(&quot;未知渠道：&quot; + channel);
+        };
+    }
+}
+
+// 工厂方法：每个产品配一个工厂，符合开闭原则（加产品只需加类，不改老代码）
+public interface PaymentFactory { Payment create(); }
+public class AlipayFactory implements PaymentFactory {
+    public Payment create() { return new AlipayPayment(); }
+}
+</code></pre>
+<p><strong>JDK/Spring 里的出场</strong>：<code>LoggerFactory.getLogger()</code>、<code>Calendar.getInstance()</code>；Spring 的 <code>FactoryBean</code>（.getObject() 决定注册进容器的到底是什么对象——MyBatis 的 Mapper 接口没有实现类却能被注入，靠的就是 MapperFactoryBean 动态造代理）。</p>
+<h3>2.3 策略模式：消灭 if-else 地狱</h3>
+<p><strong>为什么</strong>：同一件事有多种做法，if-else 会让每加一种做法都去改老方法（违反开闭），而且方法越长越难测。</p>
+<pre><code class="language-java">// 重构前：支付服务里的一坨
+public PayResult pay(String channel, Order order) {
+    if (&quot;alipay&quot;.equals(channel)) {
+        // 30 行支付宝逻辑
+    } else if (&quot;wechat&quot;.equals(channel)) {
+        // 30 行微信逻辑
+    } else if (&quot;unionpay&quot;.equals(channel)) {
+        // 30 行银联逻辑
+    }
+    // 明年加&quot;数字人民币&quot;，还得回来改这个方法……
+}
+
+// 重构后：每个策略自成一类，统一接口
+public interface PaymentStrategy {
+    PayResult pay(Order order);
+    String channel();                        // 标明自己负责哪个渠道
+}
+
+@Component
+public class PaymentService {
+    private final Map&lt;String, PaymentStrategy&gt; strategyMap;   // Spring 注入魔法
+
+    // 构造器注入 List&lt;PaymentStrategy&gt;，Spring 会把所有实现类打包送来
+    // 再按 channel() 分组成 Map，运行时 O(1) 定位策略
+    public PaymentService(List&lt;PaymentStrategy&gt; strategies) {
+        this.strategyMap = strategies.stream()
+                .collect(Collectors.toMap(PaymentStrategy::channel, Function.identity()));
+    }
+
+    public PayResult pay(String channel, Order order) {
+        PaymentStrategy strategy = strategyMap.get(channel);
+        if (strategy == null) throw new BizException(&quot;不支持的支付渠道：&quot; + channel);
+        return strategy.pay(order);          // 新增渠道 = 加一个类，这里零修改
+    }
+}
+</code></pre>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：Spring + 策略模式的组合（注入 List/Map 自动装配所有实现）是业务开发最实用的重构手法，没有之一。任何&quot;按类型走不同逻辑&quot;的 switch，都值得想想能不能这么拆。</p>
+</blockquote>
+<h3>2.4 模板方法：父类定流程，子类填空</h3>
+<p><strong>为什么</strong>：多个子类做同一件事，流程骨架相同，只有个别步骤不同——把骨架提到父类，子类只实现差异点。</p>
+<pre><code class="language-java">public abstract class AbstractDataImporter {          // 模板类
+    // 模板方法：流程固定，final 防止子类改流程
+    public final ImportReport importFile(String path) {
+        byte[] raw = readFile(path);                  // 通用步骤：父类实现
+        List&lt;String&gt; rows = parse(raw);               // 差异步骤：子类实现
+        validate(rows);                               // 差异步骤：子类实现
+        return save(rows);                            // 通用步骤：父类实现（含事务、日志）
+    }
+
+    private byte[] readFile(String path) { /* 通用读文件 */ return null; }
+    protected abstract List&lt;String&gt; parse(byte[] raw);       // 钩子：子类填空
+    protected void validate(List&lt;String&gt; rows) {}            // 钩子方法：可选实现（默认放行）
+    private ImportReport save(List&lt;String&gt; rows) { /* 通用入库 */ return null; }
+}
+
+public class CsvImporter extends AbstractDataImporter {
+    @Override protected List&lt;String&gt; parse(byte[] raw) { /* CSV 解析 */ return null; }
+}
+</code></pre>
+<p><strong>Spring 里的出场</strong>（多到离谱）：<code>JdbcTemplate</code>（callback 填充 SQL 与行映射，CRUD 流程它包了）、<code>AbstractList</code>、<code>refresh()</code> 容器刷新流程里留的十几个可覆写方法、<code>ThreadPoolExecutor.beforeExecute/afterExecute</code> 钩子。<strong>AQS 也是教科书级模板方法</strong>：acquire 流程固定，tryAcquire 留给子类——并发篇讲过了，串起来了没？</p>
+<h3>2.5 责任链：一个请求，层层过关</h3>
+<p><strong>为什么</strong>：请求需要经过多个处理环节（校验→鉴权→限流→业务），且环节顺序/增删要灵活。if 嵌套写死的&quot;流水线&quot;没法动态调整。</p>
+<pre><code class="language-java">public abstract class OrderHandler {
+    private OrderHandler next;                          // 指向下一个处理者
+
+    public OrderHandler setNext(OrderHandler next) {    // 链式设置，返回 next 方便 .setNext().setNext()
+        this.next = next;
+        return next;
+    }
+
+    public final void handle(Order order) {
+        if (doHandle(order) &amp;&amp; next != null) {          // 本关通过才放行下一关
+            next.handle(order);
+        }
+    }
+    protected abstract boolean doHandle(Order order);
+}
+
+// 组装链条
+OrderHandler chain = new StockCheckHandler();
+chain.setNext(new PriceCheckHandler())
+     .setNext(new RiskControlHandler());
+chain.handle(order);
+</code></pre>
+<p><strong>框架里的出场</strong>：Servlet 的 <code>Filter</code>（doFilter 里调 chain.doFilter 放行）、Spring MVC 的 <code>HandlerInterceptor</code>、<strong>Netty 的 Pipeline</strong>（数据进出流经一串 Handler，是责任链最极致的形态）、Sentinel 的 ProcessorChain。</p>
+<h3>2.6 代理模式：给你找个&quot;替身&quot;</h3>
+<p><strong>为什么</strong>：想在不动目标类代码的前提下，给方法加前后逻辑（日志、事务、权限、监控）——代理持有目标对象，调用前后做手脚。</p>
+<pre><code class="language-java">// JDK 动态代理（基于接口）：运行时生成 $Proxy0
+public class TimeLogProxy implements InvocationHandler {
+    private final Object target;
+    public TimeLogProxy(Object target) { this.target = target; }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        long start = System.currentTimeMillis();
+        try {
+            return method.invoke(target, args);            // 真正调用目标方法
+        } finally {
+            System.out.println(method.getName() + &quot; 耗时 &quot;
+                    + (System.currentTimeMillis() - start) + &quot;ms&quot;);
+        }
+    }
+}
+
+UserService proxy = (UserService) Proxy.newProxyInstance(
+        UserService.class.getClassLoader(),
+        new Class[]{UserService.class},
+        new TimeLogProxy(new UserServiceImpl()));
+proxy.getUser(1L);   // 走的是代理，自动带上耗时统计
+</code></pre>
+<p><strong>Spring 里的出场</strong>：整个 Spring AOP（@Transactional、@Async、@Cacheable 的底座）。JDK 动态代理要求目标实现接口；CGLIB 靠生成子类，final 类/方法无法代理。这块的细节在 Spring 原理篇《AOP》专门展开，这里先记住：<strong>你每天用的注解魔法，本质都是代理模式。</strong></p>
+<h3>2.7 观察者模式：有事广播，别挨个通知</h3>
+<p><strong>为什么</strong>：一个事件发生（下单成功），多个关心方要响应（发短信、加积分、清购物车），如果下单代码直接调用三个服务，耦合就焊死了——以后每加一个响应方都改下单代码。观察者让发布方只管&quot;喊一嗓子&quot;，谁爱听谁订阅。</p>
+<pre><code class="language-java">// 手写版：JDK 自带 Observable 已过时，用 Spring 事件更香
+public class OrderCreatedEvent extends ApplicationEvent {
+    private final String orderNo;
+    public OrderCreatedEvent(Object source, String orderNo) {
+        super(source); this.orderNo = orderNo;
+    }
+    public String getOrderNo() { return orderNo; }
+}
+
+@Component
+public class OrderService {
+    private final ApplicationEventPublisher publisher;       // 发布器
+    public OrderService(ApplicationEventPublisher publisher) { this.publisher = publisher; }
+
+    @Transactional
+    public void createOrder(Order order) {
+        save(order);                                          // 只管核心逻辑
+        publisher.publishEvent(new OrderCreatedEvent(this, order.getOrderNo()));  // 喊一嗓子
+    }
+}
+
+@Component
+public class SmsListener {
+    @EventListener                                            // 订阅：谁关心谁监听
+    public void onOrderCreated(OrderCreatedEvent event) {
+        System.out.println(&quot;发短信：&quot; + event.getOrderNo());
+    }
+}
+
+@Component
+public class PointsListener {
+    @EventListener
+    @Async                                                    // 异步监听，不拖慢主流程
+    public void addPoints(OrderCreatedEvent event) {
+        System.out.println(&quot;加积分：&quot; + event.getOrderNo());
+    }
+}
+</code></pre>
+<p><strong>框架里的出场</strong>：Spring 事件机制（如上）、GUI 编程的一切点击监听、<strong>MQ 本质就是&quot;跨进程的观察者模式&quot;</strong>（发布订阅模型的分布式版）。</p>
+<hr>
+<h2>三、模式关系图与误用警告</h2>
+<div class="mermaid">flowchart TD
+    subgraph 创建型["创建型：对象怎么来"]
+        S1["单例"] --- S2["工厂"]
+    end
+    subgroup[""]
+    subgraph 结构型["结构型：对象怎么组装"]
+        T1["代理<br/>(AOP底座)"]
+    end
+    subgraph 行为型["行为型：对象怎么协作"]
+        B1["策略"] --- B2["模板方法"] --- B3["责任链"] --- B4["观察者"]
+    end
+    S2 -->|"产品实现统一接口"| B1
+    T1 -->|"代理包裹策略"| B1
+    B4 -->|"跨进程版即MQ"| MQ["消息中间件"]
+</div>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录（误用警告）</strong>：见过把只有两个分支的 if 改成四个类加一个工厂的，美其名曰&quot;策略模式&quot;——同事 review 时血压直接拉满。<strong>模式的收益要在&quot;变化真的发生&quot;时才兑现</strong>：当前逻辑稳定、分支就两三个，if-else 就是最好的设计。设计模式是为了可维护性，不是为了炫技；<strong>过度设计比没有设计更难维护</strong>。</p>
+</blockquote>
+<p>学习路径建议：不要捧着模式书从 A 背到 Z，去读 Spring/JDK 源码——JdbcTemplate 是模板方法、AOP 是代理、<code>addFirst/addLast</code> 的 Netty Pipeline 是责任链、<code>ApplicationEvent</code> 是观察者、<code>FactoryBean</code> 是工厂……<strong>在真实代码里认出它们一次，胜过背书十遍。</strong></p>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>模式是&quot;变化的方向&quot;，七大原则（尤其开闭、依赖倒置）是内功；</li>
+<li>单例推荐静态内部类/枚举，注意 Spring 单例是容器级的；</li>
+<li>策略模式 + Spring 的 List/Map 注入是消灭 if-else 的最强组合；</li>
+<li>模板方法&quot;父类定流程子类填空&quot;，Spring 里到处都是（JdbcTemplate/AQS）；</li>
+<li>责任链（Filter/Interceptor/Pipeline）、代理（AOP 底座）、观察者（Spring 事件/MQ）各有真实出场；</li>
+<li>最大的坑是过度设计：分支少且稳定时，if-else 就是最好的设计。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）Spring 的 singleton Bean 和 GoF 单例模式有什么区别？</li>
+<li>（概念）为什么&quot;注入 List<Strategy>&quot;能自动收集所有实现类？背后是 Spring 的什么机制？</li>
+<li>（概念）模板方法和策略模式都为了&quot;复用与变化分离&quot;，它们的本质区别是什么？（提示：算法骨架 vs 完整算法的替换）</li>
+<li>（动手）把一段&quot;满 100 减 20、满 300 减 80、新用户再打 9 折&quot;的 if-else 优惠计算，重构成策略模式 + 组合。</li>
+<li>（动手·进阶）用 JDK 动态代理写一个 <code>@Metric</code> 注解 + 代理工厂：任何接口方法被调用时自动打印方法名、参数、耗时；再用 Spring 的 List 注入方式把&quot;订单服务三种物流渠道&quot;重构成策略模式并写单测验证。</li>
+</ol>
+<blockquote>
+<p>进阶篇到此收官！接下来开启新篇章——<strong>Spring Boot 原理篇</strong>。第一篇《Spring IoC：控制反转的前世今生》：为什么说&quot;new 一个对象&quot;这个动作，正在毁掉你的项目？咱们从&quot;没有 Spring 的黑暗时代&quot;讲起。</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/02-java-advanced/09-network-programming.html"><span>← 上一篇</span><b>网络编程：从 Socket 到 HTTP</b></a><a class="pn" href="/03-spring-boot/01-spring-ioc.html"><span>下一篇 →</span><b>Spring IoC：控制反转的前世今生</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

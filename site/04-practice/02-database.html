@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据库实战：MySQL 与 MyBatis-Plus · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item active" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 数据库实战：MySQL 与 MyBatis-Plus</div>
+  <article>
+<h1>数据库实战：MySQL 与 MyBatis-Plus</h1>
+<p>上篇结尾，咱们的图书系统还是个&quot;内存版 demo&quot;——重启一次数据全没。这篇把它落到真正的 MySQL 上：建表、接 MyBatis-Plus、写 CRUD、配分页，然后是本篇的精华——<strong>慢 SQL 的诊断与优化</strong>。</p>
+<p>数据库是后端工程师的&quot;必修生死场&quot;。一个说法很真实：<strong>80% 的接口性能问题，最后都定位到数据库；80% 的数据库问题，最后都定位到索引和写法</strong>。explain 这个技能，学会了就是分水岭。</p>
+<hr>
+<h2>一、环境准备与建表规范</h2>
+<p>一条 Docker 命令起 MySQL（8.x）：</p>
+<pre><code class="language-bash">docker run -d --name mysql-demo \
+  -e MYSQL_ROOT_PASSWORD=root123 \
+  -e MYSQL_DATABASE=library \
+  -p 3306:3306 mysql:8.0
+</code></pre>
+<p>建表 DDL（好表从一个规范的 DDL 开始）：</p>
+<pre><code class="language-sql">CREATE TABLE `book` (
+    `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT &#39;主键&#39;,
+    `title`       VARCHAR(100) NOT NULL DEFAULT &#39;&#39;     COMMENT &#39;书名&#39;,
+    `author`      VARCHAR(50)  NOT NULL DEFAULT &#39;&#39;     COMMENT &#39;作者&#39;,
+    `price`       DECIMAL(10,2) NOT NULL DEFAULT 0.00  COMMENT &#39;价格（DECIMAL 而非浮点，基础篇的债再还一次）&#39;,
+    `isbn`        VARCHAR(20)  NOT NULL DEFAULT &#39;&#39;     COMMENT &#39;ISBN&#39;,
+    `stock`       INT          NOT NULL DEFAULT 0      COMMENT &#39;库存&#39;,
+    `deleted`     TINYINT      NOT NULL DEFAULT 0      COMMENT &#39;逻辑删除：0 在册 1 已删&#39;,
+    `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT &#39;创建时间&#39;,
+    `update_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;更新时间&#39;,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_isbn` (`isbn`),                     -- 业务唯一约束交给数据库兜底
+    KEY `idx_author` (`author`)                        -- 高频查询字段建二级索引
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT=&#39;图书表&#39;;
+</code></pre>
+<p>建表规范几条铁律：</p>
+<ul>
+<li>字符集 <strong>utf8mb4</strong>（utf8 在 MySQL 是残缺的 3 字节版，存不了 emoji，血泪教训遍布全网）；</li>
+<li>字段尽量 <code>NOT NULL DEFAULT</code>：NULL 参与比较和索引统计有无数坑（<code>!=</code> 查不到 NULL、<code>count(字段)</code> 忽略 NULL）；</li>
+<li>每表必备 <code>create_time</code>/<code>update_time</code>（数据库层自动维护）；</li>
+<li>唯一约束用唯一索引，别只靠应用层校验（并发下应用层校验必有漏网之鱼）。</li>
+</ul>
+<hr>
+<h2>二、集成 MyBatis-Plus：CRUD 三种姿势</h2>
+<h3>2.1 依赖与配置</h3>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;com.baomidou&lt;/groupId&gt;
+    &lt;artifactId&gt;mybatis-plus-boot-starter&lt;/artifactId&gt;
+    &lt;version&gt;3.5.5&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.mysql&lt;/groupId&gt;
+    &lt;artifactId&gt;mysql-connector-j&lt;/artifactId&gt;
+&lt;/dependency&gt;
+</code></pre>
+<pre><code class="language-yaml">spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/library?useUnicode=true&amp;characterEncoding=utf8mb4&amp;serverTimezone=Asia/Shanghai
+    username: root
+    password: root123
+    hikari:                          # Boot 默认连接池，值得调的几个参数
+      maximum-pool-size: 20          # 默认 10；不是越大越好（见下文公式）
+      minimum-idle: 5
+      connection-timeout: 3000       # 拿不到连接 3 秒就报错，快速暴露问题
+      max-lifetime: 1800000
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl   # 开发期打印 SQL，上线关掉
+  global-config:
+    db-config:
+      logic-delete-field: deleted    # 全局逻辑删除字段
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+</code></pre>
+<p>主类加 <code>@MapperScan(&quot;com.demo.library.mapper&quot;)</code>（原理篇提过：为每个 Mapper 接口生成动态代理注册进容器）。</p>
+<h3>2.2 姿势一：BaseMapper 内置方法（零 SQL）</h3>
+<pre><code class="language-java">@Data
+@TableName(&quot;book&quot;)                                   // 对应表名
+public class Book {
+    @TableId(type = IdType.AUTO)                     // 主键自增
+    private Long id;
+    private String title;
+    private String author;
+    private BigDecimal price;
+    private String isbn;
+    private Integer stock;
+    @TableLogic                                      // 逻辑删除字段（配合全局配置）
+    private Integer deleted;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
+}
+
+public interface BookMapper extends BaseMapper&lt;Book&gt; { }   // 继承即得十几个 CRUD 方法
+</code></pre>
+<p>insert/selectById/updateById/deleteById 直接可用，且 deleteById 自动变成 <code>UPDATE book SET deleted=1 WHERE id=? AND deleted=0</code>（逻辑删除）。</p>
+<h3>2.3 姿势二：条件构造器 Wrapper（推荐 LambdaQueryWrapper）</h3>
+<pre><code class="language-java">// Lambda 版：字段引用编译期检查，重构改字段名不会漏
+List&lt;Book&gt; books = bookMapper.selectList(
+        new LambdaQueryWrapper&lt;Book&gt;()
+                .like(Book::getTitle, &quot;Java&quot;)          // title LIKE &#39;%Java%&#39;
+                .ge(Book::getStock, 1)                 // stock &gt;= 1
+                .orderByDesc(Book::getCreateTime)     // ORDER BY create_time DESC
+                .last(&quot;LIMIT 10&quot;));                    // 兜底限制（少用，破坏整洁）
+
+// 更新示例：所有 &quot;老版Java&quot; 的书降价 20%
+bookMapper.update(null,
+        new LambdaUpdateWrapper&lt;Book&gt;()
+                .eq(Book::getTitle, &quot;老版Java&quot;)
+                .set(Book::getPrice, new BigDecimal(&quot;79.00&quot;)));
+</code></pre>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：用字符串列名的 <code>QueryWrapper&lt;Book&gt;().eq(&quot;title&quot;, ...)</code> 在重构把字段改名后不会报编译错误，运行时才炸。<strong>一律用 Lambda 版</strong>，让编译器看住你。</p>
+</blockquote>
+<h3>2.4 姿势三：自定义 XML（复杂 SQL 的主场）</h3>
+<pre><code class="language-java">// Mapper 接口方法
+List&lt;Book&gt; selectBorrowedByUser(@Param(&quot;userId&quot;) Long userId, @Param(&quot;days&quot;) int days);
+</code></pre>
+<pre><code class="language-xml">&lt;!-- resources/mapper/BookMapper.xml --&gt;
+&lt;select id=&quot;selectBorrowedByUser&quot; resultType=&quot;com.demo.library.domain.Book&quot;&gt;
+    SELECT b.* FROM book b
+    JOIN borrow_record br ON br.book_id = b.id
+    WHERE br.user_id = #{userId}
+      AND br.borrow_time &amp;gt; DATE_SUB(NOW(), INTERVAL #{days} DAY)   &lt;!-- 动态天数 --&gt;
+    &lt;if test=&quot;days &gt; 90&quot;&gt;                                              &lt;!-- 动态标签：条件拼接 --&gt;
+        AND b.stock &amp;gt; 0
+    &lt;/if&gt;
+&lt;/select&gt;
+</code></pre>
+<p>三种姿势选型：<strong>内置方法 &gt; Wrapper &gt; XML</strong>——能简单的绝不复杂，但报表、多表 JOIN、窗口函数这些硬骨头，老老实实写 XML（或注解 SQL），别用 Wrapper 硬拼（可读性为负数）。</p>
+<h3>2.5 分页：插件一行配置</h3>
+<pre><code class="language-java">@Configuration
+public class MybatisPlusConfig {
+    @Bean
+    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        return interceptor;                       // 没有它，分页参数被静默忽略（全表查！经典坑）
+    }
+}
+
+// Service 里
+Page&lt;Book&gt; page = bookMapper.selectPage(
+        new Page&lt;&gt;(pageNo, pageSize),             // 第几页、每页几条
+        new LambdaQueryWrapper&lt;Book&gt;().orderByDesc(Book::getId));
+long total = page.getTotal();                     // 插件自动发 COUNT 语句
+List&lt;Book&gt; records = page.getRecords();
+</code></pre>
+<h3>2.6 字段自动填充</h3>
+<p>create_time/update_time 已交给数据库 DEFAULT，但更通用的做法（比如填充操作人）用 <code>MetaObjectHandler</code>：</p>
+<pre><code class="language-java">@Component
+public class AuditMetaHandler implements MetaObjectHandler {
+    @Override
+    public void insertFill(MetaObject metaObject) {
+        this.strictInsertFill(metaObject, &quot;createTime&quot;, LocalDateTime.class, LocalDateTime.now());
+    }
+    @Override
+    public void updateFill(MetaObject metaObject) {
+        this.strictUpdateFill(metaObject, &quot;updateTime&quot;, LocalDateTime.class, LocalDateTime.now());
+    }
+}
+// 实体字段上标 @TableField(fill = FieldFill.INSERT / INSERT_UPDATE)
+</code></pre>
+<hr>
+<h2>三、连接池：HikariCP 不是默认即最优，但接近</h2>
+<p>HikariCP 是 Boot 默认连接池（快是有原理的：FastList 替换 ArrayList、ConcurrentBag 无锁借还）。<strong>池子大小公式</strong>（PostgreSQL 官方经验，MySQL 同理）：</p>
+<blockquote class="tip-expert">
+<p>池大小 ≈ CPU 核数 × (1 + 平均等待时间/平均计算时间) ≈ 核数 × 2~4</p>
+</blockquote>
+<p>反直觉真相：<strong>连接池不是越大越好</strong>。MySQL 每个连接是一个线程、内存开销可观，200 个连接在 8 核机器上只会加剧上下文切换。绝大多数业务 10~20 够用。</p>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：连接池参数要用监控验证，别抄网上&quot;最佳配置&quot;——盯两个指标：<code>active</code>（活跃连接，长期贴着 max 说明池小了或 SQL 太慢）和 <code>pending</code>（等连接的线程，&gt;0 用户已经在排队，此时先查慢 SQL 而不是急着扩池）。<strong>池不够用，九成是 SQL 慢导致连接还不了，治本在第四节。</strong></p>
+</blockquote>
+<hr>
+<h2>四、慢 SQL 治理四板斧（本篇精华）</h2>
+<p>流程先行，斧斧相扣：</p>
+<div class="mermaid">flowchart LR
+    A["① 找到慢 SQL<br/>slow_query_log"] --> B["② explain 分析<br/>type/key/rows/Extra"]
+    B --> C["③ 索引优化<br/>最左前缀 / 避开失效"]
+    C --> D["④ SQL 改写<br/>去 SELECT * / 治深分页"]
+    D -->|"改完回归验证"| A
+    style A fill:#e1f5fe
+    style D fill:#e8f5e9
+</div>
+<h3>4.1 第一斧：找到慢 SQL</h3>
+<pre><code class="language-sql">-- 开启慢查询日志：执行超过 1 秒的记录下来
+SET GLOBAL slow_query_log = ON;
+SET GLOBAL long_query_time = 1;
+-- 日志位置用 SHOW VARIABLES LIKE &#39;slow_query_log_file&#39; 查看
+</code></pre>
+<h3>4.2 第二斧：explain 执行计划（必杀技）</h3>
+<p><img src="/assets/images/04-02-btree-index.svg" alt="B+ 树：范围查询快、深分页慢的结构性原因"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：B+ 树：范围查询快、深分页慢的结构性原因</p>
+</blockquote>
+<p>在 SQL 前加 explain，重点看这几列：</p>
+<pre><code class="language-sql">EXPLAIN SELECT * FROM book WHERE author = &#39;周志明&#39; AND title LIKE &#39;%Java%&#39;;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>看什么</th>
+<th>好 → 坏</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>type</strong></td>
+<td>访问类型</td>
+<td>system &gt; const &gt; eq_ref &gt; <strong>ref</strong> &gt; range &gt; index &gt; <strong>ALL（全表扫描！）</strong></td>
+</tr>
+<tr>
+<td><strong>key</strong></td>
+<td>实际用的索引</td>
+<td>NULL = 没用上索引</td>
+</tr>
+<tr>
+<td><strong>rows</strong></td>
+<td>预估扫描行数</td>
+<td>越少越好</td>
+</tr>
+<tr>
+<td><strong>Extra</strong></td>
+<td>附加信息</td>
+<td>Using index（覆盖索引，好）；Using filesort（额外排序，警惕）；Using temporary（临时表，警惕）</td>
+</tr>
+</tbody></table>
+<h3>4.3 第三斧：索引优化</h3>
+<p><strong>联合索引最左前缀原则</strong>：索引 <code>(a, b, c)</code> 相当于建了 <code>(a)</code>、<code>(a,b)</code>、<code>(a,b,c)</code> 三个索引——查询条件必须从最左列开始连续命中：</p>
+<pre><code class="language-sql">INDEX idx_a_b_c (a, b, c)
+WHERE a = 1 AND b = 2 AND c = 3   -- ✅ 全命中
+WHERE a = 1 AND b = 2             -- ✅ 命中 a,b
+WHERE b = 2 AND c = 3             -- ❌ 一列都不命中（没有 a）
+WHERE a = 1 AND c = 3             -- ⚠️ 只命中 a（c 用不上索引，中间断了 b）
+</code></pre>
+<p><strong>索引失效十大高频场景</strong>（每个都值得实测一遍）：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>反例</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>对索引列做函数/运算</td>
+<td><code>WHERE YEAR(create_time) = 2025</code></td>
+<td>索引存原始值，函数后的结果无索引</td>
+</tr>
+<tr>
+<td>隐式类型转换</td>
+<td>字段是 VARCHAR 却写 <code>WHERE isbn = 9787111</code>（数字）</td>
+<td>等价于给列套 CAST 函数</td>
+</tr>
+<tr>
+<td>前导模糊</td>
+<td><code>WHERE title LIKE &#39;%Java&#39;</code></td>
+<td>B+ 树按前缀排序，前导 % 无法定位</td>
+</tr>
+<tr>
+<td>OR 连接非索引列</td>
+<td><code>WHERE author=&#39;x&#39; OR stock=1</code>（stock 无索引）</td>
+<td>有一侧全扫则整体退化</td>
+</tr>
+<tr>
+<td>不等于/NOT IN</td>
+<td><code>WHERE stock &lt;&gt; 0</code></td>
+<td>无法利用有序性，优化器常弃用</td>
+</tr>
+<tr>
+<td>违反最左前缀</td>
+<td>见上</td>
+<td>联合索引结构决定</td>
+</tr>
+<tr>
+<td>索引列上 IS NOT NULL</td>
+<td>视数据分布</td>
+<td>NULL 行少时反向选择代价高</td>
+</tr>
+<tr>
+<td>优化器觉得不划算</td>
+<td>回表代价 &gt; 全表扫（选择性差的列，如性别）</td>
+<td>统计信息驱动</td>
+</tr>
+</tbody></table>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：<code>LIKE &#39;%xx&#39;</code> 不是绝对不能用——当<strong>只有这一种查询方式</strong>且数据量可控时，全扫也可接受；数据量大了再上 ES 或倒排。<strong>优化是权衡，不是教条。</strong></p>
+</blockquote>
+<h3>4.4 第四斧：SQL 改写</h3>
+<p><strong>SELECT * 的代价</strong>：拉全部列（网络+内存）、破坏覆盖索引可能。明确列名，让 <code>INDEX(a,b) + SELECT a,b</code> 有机会 Using index（不回表）。</p>
+<p><strong>深分页问题</strong>——<code>LIMIT 1000000, 20</code> 为什么慢？MySQL 要取出前 1000020 行、丢掉前 100 万行。两种解法：</p>
+<pre><code class="language-sql">-- 解法① 延迟关联：先用覆盖索引定位 20 个主键，再回表取整行
+SELECT b.* FROM book b
+JOIN (SELECT id FROM book ORDER BY id LIMIT 1000000, 20) t ON b.id = t.id;
+
+-- 解法② 书签/游标（推荐，但要求翻页连续、记录上次位置）：记住上一页最后一条的 id
+SELECT * FROM book WHERE id &gt; #{lastId} ORDER BY id LIMIT 20;   -- 永远只扫 20 行
+</code></pre>
+<h3>4.5 事务与批量写入的坑</h3>
+<p>原理篇讲过事务传播，这里补两个数据层实战坑：</p>
+<pre><code class="language-java">// ❌ 坑一：循环单条 insert —— 1 万次网络往返 + 1 万个事务
+for (Book b : books) { bookMapper.insert(b); }
+
+// ✅ MyBatis-Plus 批量（重写 insert 为多 values，配 rewriteBatchedStatements=true 效果更佳）
+ServiceImpl.saveBatch(books, 500);        // 每批 500 条
+
+// ❌ 坑二：大事务（@Transactional 方法里包含 RPC/发短信）
+// 数据库连接被独占几分钟，连接池耗尽，全站请求排队 —— 事务里只放 DB 操作！
+</code></pre>
+<hr>
+<h2>五、多环境配置</h2>
+<pre><code class="language-yaml"># application.yml（公共）
+spring:
+  profiles:
+    active: dev
+
+# application-dev.yml / application-prod.yml 各自维护数据源
+# 启动时切换：java -jar app.jar --spring.profiles.active=prod
+# 敏感信息（生产密码）用环境变量注入，别提交进 Git！
+spring:
+  datasource:
+    password: ${DB_PASSWORD:root123}
+</code></pre>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>建表铁律：utf8mb4、NOT NULL DEFAULT、必备时间字段、唯一约束用唯一索引；</li>
+<li>MyBatis-Plus 三种姿势按复杂度递进：BaseMapper（零 SQL）→ LambdaQueryWrapper（编译期安全）→ XML（复杂 SQL）；分页必须配 PaginationInnerInterceptor；</li>
+<li>逻辑删除 @TableLogic + 全局配置；审计字段 MetaObjectHandler 自动填充；</li>
+<li>HikariCP 池大小经验公式 ≈ 核数×(1+等待/计算)，连接池不是越大越好；</li>
+<li>慢 SQL 四板斧：慢日志定位 → explain 看关键列（type/key/rows/Extra）→ 索引优化（最左前缀、避开失效场景）→ SQL 改写（延迟关联、游标分页）；</li>
+<li>批量写入用 saveBatch 分批；事务方法里禁放 RPC/通知等慢操作。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）为什么 <code>WHERE YEAR(create_time)=2025</code> 用不上索引？改成范围查询怎么写？</li>
+<li>（概念）<code>LIMIT 1000000,20</code> 的两种优化方案各适合什么场景？游标分页的限制是什么？</li>
+<li>（动手）把上篇的内存 BookRepository 替换为 MyBatis-Plus 实现，接口行为保持不变（对外无感知，这就是分层架构的回报）；跑通全部 curl。</li>
+<li>（动手）建 10 万条测试数据，实测三组查询的耗时并用 explain 验证：<code>LIKE &#39;Java%&#39;</code> vs <code>LIKE &#39;%Java&#39;</code>；有索引 vs 隐式类型转换（isbn 传数字）；深分页直接 LIMIT vs 延迟关联 vs 游标。</li>
+<li>（动手·进阶）实现&quot;借书&quot;事务方法：校验库存、扣库存、插借阅记录三步一个事务（@Transactional(rollbackFor=Exception.class)），并用并发测试（20 线程同时借最后 1 本）验证库存不会超卖——如果超卖了，想想哪里出了问题（提示：扣减语句的写法）。</li>
+</ol>
+<blockquote>
+<p>下一篇预告：《缓存实战：Redis 三板斧》——数据库扛不住读压力了怎么办？缓存穿透/击穿/雪崩三大经典问题逐个击破，再拿下分布式锁与缓存一致性这两个面试必考、生产必用的硬核话题。</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/04-practice/01-restful-api.html"><span>← 上一篇</span><b>从零搭建一个 RESTful API 服务</b></a><a class="pn" href="/04-practice/03-redis-cache.html"><span>下一篇 →</span><b>缓存实战：Redis 三板斧</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

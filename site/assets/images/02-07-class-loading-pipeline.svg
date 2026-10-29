@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 400" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="860" height="400" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">类的生命周期：一条七站流水线</text>
+  <text x="430" y="60" text-anchor="middle" font-size="12" fill="#64748B">前四站是"启动期"，只有初始化这站由代码触发（new / getstatic / 反射 / main 类……）</text>
+
+  <!-- pipeline stations -->
+  <g text-anchor="middle">
+    <g transform="translate(56,96)">
+      <rect width="100" height="76" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.5"/>
+      <text x="50" y="30" font-size="14" font-weight="700" fill="#1D4ED8">① 加载</text>
+      <text x="50" y="52" font-size="11" fill="#475569">读字节流</text>
+      <text x="50" y="68" font-size="11" fill="#475569">生成 Class 对象</text>
+    </g>
+    <line x1="158" y1="134" x2="176" y2="134" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <g transform="translate(178,96)">
+      <rect width="100" height="76" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.5"/>
+      <text x="50" y="30" font-size="14" font-weight="700" fill="#1D4ED8">② 验证</text>
+      <text x="50" y="52" font-size="11" fill="#475569">安检：格式/语义</text>
+      <text x="50" y="68" font-size="11" fill="#475569">字节码不能乱来</text>
+    </g>
+    <line x1="280" y1="134" x2="298" y2="134" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <g transform="translate(300,96)">
+      <rect width="100" height="76" rx="10" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+      <text x="50" y="30" font-size="14" font-weight="700" fill="#B45309">③ 准备 ★</text>
+      <text x="50" y="52" font-size="11" fill="#92400E">静态变量分配</text>
+      <text x="50" y="68" font-size="11" fill="#B91C1C">并赋零值（不是 1！）</text>
+    </g>
+    <line x1="402" y1="134" x2="420" y2="134" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <g transform="translate(422,96)">
+      <rect width="100" height="76" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.5"/>
+      <text x="50" y="30" font-size="14" font-weight="700" fill="#1D4ED8">④ 解析</text>
+      <text x="50" y="52" font-size="11" fill="#475569">符号引用 →</text>
+      <text x="50" y="68" font-size="11" fill="#475569">直接引用（真地址）</text>
+    </g>
+    <line x1="524" y1="134" x2="542" y2="134" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <g transform="translate(544,96)">
+      <rect width="100" height="76" rx="10" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+      <text x="50" y="30" font-size="14" font-weight="700" fill="#047857">⑤ 初始化</text>
+      <text x="50" y="52" font-size="11" fill="#065F46">执行 &lt;clinit&gt;</text>
+      <text x="50" y="68" font-size="11" fill="#B91C1C">此刻 a 才 = 1</text>
+    </g>
+    <line x1="646" y1="134" x2="664" y2="134" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <g transform="translate(666,96)">
+      <rect width="90" height="76" rx="10" fill="#D1FAE5" stroke="#059669" stroke-width="1.5"/>
+      <text x="45" y="30" font-size="14" font-weight="700" fill="#047857">⑥ 使用</text>
+      <text x="45" y="52" font-size="11" fill="#475569">正常干活</text>
+    </g>
+    <g transform="translate(766,96)">
+      <rect width="80" height="76" rx="10" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.5"/>
+      <text x="40" y="30" font-size="14" font-weight="700" fill="#475569">⑦ 卸载</text>
+      <text x="40" y="52" font-size="11" fill="#94A3B8">类加载器</text>
+      <text x="40" y="68" font-size="11" fill="#94A3B8">被回收才行</text>
+    </g>
+  </g>
+
+  <!-- detail: preparation zero value -->
+  <rect x="60" y="210" width="420" height="150" rx="12" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="80" y="238" font-size="14" font-weight="700" fill="#1E293B">③ 准备阶段最容易考的细节</text>
+  <g font-size="13" font-family="monospace" fill="#334155">
+    <text x="80" y="268">static int a = 1;</text>
+    <text x="80" y="292">static final int B = 2;</text>
+    <text x="80" y="316">static User u = new User();</text>
+  </g>
+  <g font-size="12" fill="#475569">
+    <text x="330" y="268">准备期 a = 0，初始化才 = 1</text>
+    <text x="330" y="292">常量例外：准备期直接 = 2（ConstantValue）</text>
+    <text x="330" y="316">准备期 u = null（new 要等初始化执行）</text>
+  </g>
+
+  <!-- passive reference -->
+  <rect x="500" y="210" width="330" height="150" rx="12" fill="#FFF7ED" stroke="#FDBA74"/>
+  <text x="520" y="238" font-size="14" font-weight="700" fill="#9A3412">不会触发初始化的"被动引用"</text>
+  <g font-size="12" fill="#92400E">
+    <text x="520" y="266">· 用子类引用父类的静态字段 → 只初始化父类</text>
+    <text x="520" y="292">· 定义类数组：MyClass[] arr → 不初始化 MyClass</text>
+    <text x="520" y="318">· 引用编译期常量（final）→ 连类都不用加载</text>
+    <text x="520" y="344">面试：说出这三条，"类何时初始化"这题就闭环了</text>
+  </g>
+</svg>

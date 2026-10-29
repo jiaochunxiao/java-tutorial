@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 420" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#DC2626"/>
+    </marker>
+  </defs>
+  <rect width="860" height="420" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">try-catch-finally 的两条执行路径</text>
+
+  <!-- happy path -->
+  <rect x="50" y="66" width="380" height="310" rx="14" fill="#ECFDF5" stroke="#059669" stroke-width="2"/>
+  <text x="240" y="94" text-anchor="middle" font-size="15" font-weight="700" fill="#047857">路径 A：try 一切正常</text>
+  <g font-size="13" text-anchor="middle">
+    <rect x="140" y="112" width="200" height="40" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="240" y="137" fill="#065F46">① try 块执行完毕</text>
+    <line x1="240" y1="152" x2="240" y2="176" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="120" y="180" width="240" height="40" rx="8" fill="#FEF3C7" stroke="#FCD34D"/>
+    <text x="240" y="205" fill="#92400E">③ finally 必然执行（收尾清理）</text>
+    <line x1="240" y1="220" x2="240" y2="244" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="120" y="248" width="240" height="40" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="240" y="273" fill="#065F46">④ 方法正常返回</text>
+    <text x="240" y="322" font-size="12" fill="#475569">注意：try 里 return 时，先记下返回值，</text>
+    <text x="240" y="342" font-size="12" fill="#475569">再执行 finally，再真正返回</text>
+  </g>
+
+  <!-- exception path -->
+  <rect x="470" y="66" width="380" height="310" rx="14" fill="#FEF2F2" stroke="#DC2626" stroke-width="2"/>
+  <text x="660" y="94" text-anchor="middle" font-size="15" font-weight="700" fill="#B91C1C">路径 B：try 抛出异常</text>
+  <g font-size="13" text-anchor="middle">
+    <rect x="560" y="112" width="200" height="40" rx="8" fill="#FFFFFF" stroke="#FCA5A5"/>
+    <text x="660" y="137" fill="#B91C1C">① try 中途抛异常（跳过剩余代码）</text>
+    <line x1="660" y1="152" x2="660" y2="176" stroke="#DC2626" stroke-width="2" marker-end="url(#arrR)"/>
+    <rect x="550" y="180" width="220" height="40" rx="8" fill="#FFFFFF" stroke="#FCA5A5"/>
+    <text x="660" y="205" fill="#B91C1C">② catch 捕获并处理</text>
+    <line x1="660" y1="220" x2="660" y2="244" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="550" y="248" width="220" height="40" rx="8" fill="#FEF3C7" stroke="#FCD34D"/>
+    <text x="660" y="273" fill="#92400E">③ finally 依然必然执行</text>
+    <line x1="660" y1="288" x2="660" y2="312" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="530" y="316" width="260" height="40" rx="8" fill="#FFFFFF" stroke="#FCA5A5"/>
+    <text x="660" y="341" fill="#B91C1C">④ 继续向下 / 或 catch 里再抛则上抛</text>
+  </g>
+
+  <rect x="50" y="372" width="800" height="42" rx="8" fill="#FFF7ED" stroke="#FDBA74"/>
+  <text x="66" y="388" font-size="12" fill="#9A3412">例外清单：finally 只在 System.exit()、JVM 崩溃、线程被杀死时被跳过；</text>
+  <text x="66" y="406" font-size="12" fill="#9A3412">finally 里写 return 会吞掉 try/catch 的返回值与异常——严禁这样写！</text>
+</svg>

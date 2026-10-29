@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 440" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="860" height="440" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">集合框架全景图：两大展厅，先认门牌再进馆</text>
+
+  <!-- Collection hall -->
+  <rect x="50" y="66" width="380" height="330" rx="14" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="240" y="96" text-anchor="middle" font-size="16" font-weight="700" fill="#1D4ED8">Collection 展厅 · 单个元素</text>
+  <g font-size="13">
+    <rect x="72" y="114" width="336" height="80" rx="10" fill="#FFFFFF" stroke="#93C5FD"/>
+    <text x="88" y="138" font-weight="700" fill="#1E3A8A">List · 有序可重复</text>
+    <text x="88" y="158" fill="#475569">ArrayList（数组，随机访问 O(1)）★</text>
+    <text x="88" y="176" fill="#475569">LinkedList（双向链表，头尾增删快）/ Vector（古董）</text>
+
+    <rect x="72" y="204" width="336" height="80" rx="10" fill="#FFFFFF" stroke="#93C5FD"/>
+    <text x="88" y="228" font-weight="700" fill="#1E3A8A">Set · 不重复</text>
+    <text x="88" y="248" fill="#475569">HashSet（哈希，无序）★</text>
+    <text x="88" y="266" fill="#475569">LinkedHashSet（保插入序）/ TreeSet（自动排序）</text>
+
+    <rect x="72" y="294" width="336" height="80" rx="10" fill="#FFFFFF" stroke="#93C5FD"/>
+    <text x="88" y="318" font-weight="700" fill="#1E3A8A">Queue / Deque · 排队</text>
+    <text x="88" y="338" fill="#475569">ArrayDeque（栈/队列两用，替代 Stack）</text>
+    <text x="88" y="356" fill="#475569">PriorityQueue（优先级）/ BlockingQueue（并发）</text>
+  </g>
+
+  <!-- Map hall -->
+  <rect x="470" y="66" width="340" height="330" rx="14" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+  <text x="640" y="96" text-anchor="middle" font-size="16" font-weight="700" fill="#047857">Map 展厅 · 键值对</text>
+  <g font-size="13">
+    <rect x="492" y="120" width="296" height="76" rx="10" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="508" y="144" font-weight="700" fill="#065F46">HashMap ★（无序，日常默认）</text>
+    <text x="508" y="164" fill="#475569">JDK 8：数组 + 链表 + 红黑树</text>
+    <text x="508" y="182" fill="#475569">并发场景换 ConcurrentHashMap</text>
+
+    <rect x="492" y="208" width="296" height="70" rx="10" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="508" y="232" font-weight="700" fill="#065F46">LinkedHashMap（保插入序）</text>
+    <text x="508" y="252" fill="#475569">accessOrder=true 可做 LRU 缓存</text>
+
+    <rect x="492" y="290" width="296" height="70" rx="10" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="508" y="314" font-weight="700" fill="#065F46">TreeMap（按 key 排序）</text>
+    <text x="508" y="334" fill="#475569">红黑树，范围查询 firstKey/tailMap</text>
+
+    <text x="640" y="382" text-anchor="middle" fill="#64748B" font-size="12">⚠️ Hashtable：古董，别再用了</text>
+  </g>
+
+  <text x="430" y="424" text-anchor="middle" font-size="12" fill="#64748B">选型速记：要下标找 List，要去重找 Set，要排队找 Queue，要 key 找 value 找 Map——四选一，再进对应展厅挑具体实现。</text>
+</svg>

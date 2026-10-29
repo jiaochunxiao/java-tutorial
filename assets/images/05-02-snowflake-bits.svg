@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 380" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <rect width="860" height="380" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">雪花算法 Snowflake：64 位 ID 的"分字段施工图"</text>
+
+  <!-- bit ruler -->
+  <g text-anchor="middle" font-size="12">
+    <rect x="66" y="90" width="60" height="56" rx="8" fill="#FEE2E2" stroke="#FCA5A5" stroke-width="2"/>
+    <text x="96" y="114" fill="#B91C1C" font-weight="700">1 位</text>
+    <text x="96" y="134" fill="#991B1B">符号位</text>
+
+    <rect x="130" y="90" width="340" height="56" rx="8" fill="#DBEAFE" stroke="#93C5FD" stroke-width="2"/>
+    <text x="300" y="114" fill="#1D4ED8" font-weight="700">41 位 · 时间戳（毫秒差值）</text>
+    <text x="300" y="134" fill="#1E40AF">可用约 69 年，从自定义纪元起算</text>
+
+    <rect x="474" y="90" width="160" height="56" rx="8" fill="#D1FAE5" stroke="#6EE7B7" stroke-width="2"/>
+    <text x="554" y="114" fill="#047857" font-weight="700">10 位 · 机器 ID</text>
+    <text x="554" y="134" fill="#047852">1024 个节点</text>
+
+    <rect x="638" y="90" width="156" height="56" rx="8" fill="#FEF3C7" stroke="#FCD34D" stroke-width="2"/>
+    <text x="716" y="114" fill="#B45309" font-weight="700">12 位 · 序列号</text>
+    <text x="716" y="134" fill="#92400E">同毫秒 0~4095</text>
+  </g>
+
+  <!-- annotations -->
+  <g font-size="12" fill="#334155">
+    <line x1="96" y1="146" x2="96" y2="180" stroke="#CBD5E1" stroke-width="1.4"/>
+    <text x="96" y="198" text-anchor="middle" fill="#64748B">恒为 0</text>
+    <line x1="300" y1="146" x2="300" y2="180" stroke="#CBD5E1" stroke-width="1.4"/>
+    <text x="300" y="198" text-anchor="middle" fill="#1E40AF">69 年后才轮到"纪元迁移"问题</text>
+    <line x1="554" y1="146" x2="554" y2="180" stroke="#CBD5E1" stroke-width="1.4"/>
+    <text x="554" y="198" text-anchor="middle" fill="#047852">workerId 配重了 → 出重复 ID！</text>
+    <line x1="716" y1="146" x2="716" y2="180" stroke="#CBD5E1" stroke-width="1.4"/>
+    <text x="740" y="216" text-anchor="middle" fill="#B45309">单机单毫秒上限 4096 个</text>
+  </g>
+
+  <!-- trend + issues -->
+  <rect x="66" y="228" width="360" height="120" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="82" y="254" font-size="13" font-weight="700" fill="#1E293B">为什么不用 UUID 当主键？</text>
+  <text x="82" y="280" font-size="12" fill="#475569">UUID 无序 → InnoDB 按主键有序存，</text>
+  <text x="82" y="300" font-size="12" fill="#475569">随机插入导致页分裂、缓存命中率差；</text>
+  <text x="82" y="324" font-size="12" fill="#475569">雪花 ID 趋势递增，索引友好且短（64 bit）。</text>
+
+  <rect x="452" y="228" width="342" height="120" rx="10" fill="#FFF7ED" stroke="#FDBA74"/>
+  <text x="468" y="254" font-size="13" font-weight="700" fill="#9A3412">经典坑：时钟回拨</text>
+  <text x="468" y="280" font-size="12" fill="#92400E">机器时间被调回过去 → 可能生成重复 ID。</text>
+  <text x="468" y="304" font-size="12" fill="#92400E">对策：小回拨自旋等待、记录最后时间戳、</text>
+  <text x="468" y="324" font-size="12" fill="#92400E">大回拨报警拒绝服务（Leaf/UidGenerator 已内置）。</text>
+
+  <text x="430" y="368" text-anchor="middle" font-size="12" fill="#64748B">结构即文档：拿到一个雪花 ID，位运算一拆，生成时间、哪台机器、当毫秒第几个，全都能反推出来。</text>
+</svg>

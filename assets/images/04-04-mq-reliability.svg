@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 420" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="860" height="420" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">消息可靠性三道关卡：发送 → 存储 → 消费</text>
+
+  <!-- main row: producer / broker / consumer -->
+  <rect x="46" y="66" width="200" height="130" rx="12" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="146" y="94" text-anchor="middle" font-size="14" font-weight="700" fill="#1D4ED8">生产者</text>
+  <text x="146" y="120" text-anchor="middle" font-size="11.5" fill="#475569">syncSend 等确认</text>
+  <text x="146" y="140" text-anchor="middle" font-size="11.5" fill="#475569">失败自动重试</text>
+  <text x="146" y="168" text-anchor="middle" font-size="11" fill="#B45309">极端兜底：本地消息表</text>
+
+  <line x1="246" y1="131" x2="316" y2="131" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="320" y="66" width="220" height="130" rx="12" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+  <text x="430" y="94" text-anchor="middle" font-size="14" font-weight="700" fill="#6D28D9">Broker 存储</text>
+  <text x="430" y="120" text-anchor="middle" font-size="11.5" fill="#475569">同步刷盘：落盘才 ACK</text>
+  <text x="430" y="140" text-anchor="middle" font-size="11.5" fill="#475569">主从同步复制：机房容灾</text>
+  <text x="430" y="168" text-anchor="middle" font-size="11" fill="#6D28D9">性能优先可退异步刷盘</text>
+
+  <line x1="540" y1="131" x2="610" y2="131" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="614" y="66" width="200" height="130" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+  <text x="714" y="94" text-anchor="middle" font-size="14" font-weight="700" fill="#B45309">消费者</text>
+  <text x="714" y="120" text-anchor="middle" font-size="11.5" fill="#475569">方法正常返回 = ACK</text>
+  <text x="714" y="140" text-anchor="middle" font-size="11.5" fill="#475569">抛异常 = 自动重试 16 次</text>
+  <text x="714" y="168" text-anchor="middle" font-size="11" fill="#92400E">⚠️ catch 吞异常 = 丢消息</text>
+
+  <!-- checkpoint labels row -->
+  <g font-size="12" text-anchor="middle">
+    <rect x="56" y="212" width="180" height="58" rx="9" fill="#ECFDF5" stroke="#059669" stroke-width="1.5"/>
+    <text x="146" y="234" font-weight="700" fill="#047857">关卡① 发送不丢</text>
+    <text x="146" y="256" font-size="11" fill="#475569">拿到 Broker ACK 才算成功</text>
+
+    <rect x="330" y="212" width="200" height="58" rx="9" fill="#ECFDF5" stroke="#059669" stroke-width="1.5"/>
+    <text x="430" y="234" font-weight="700" fill="#047857">关卡② 存储不丢</text>
+    <text x="430" y="256" font-size="11" fill="#475569">断电/宕机，磁盘和从节点还在</text>
+
+    <rect x="624" y="212" width="180" height="58" rx="9" fill="#ECFDF5" stroke="#059669" stroke-width="1.5"/>
+    <text x="714" y="234" font-weight="700" fill="#047857">关卡③ 消费不丢</text>
+    <text x="714" y="256" font-size="11" fill="#475569">看方法返回值，不看心情</text>
+  </g>
+
+  <!-- DLQ box -->
+  <rect x="120" y="292" width="620" height="86" rx="12" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="140" y="318" font-size="13" font-weight="700" fill="#1E293B">重试 16 次仍失败 → 死信队列 DLQ（%DLQ%消费组名），人工/定时任务介入</text>
+  <text x="140" y="342" font-size="12" fill="#475569">重试必然造成重复 → 消费端必须幂等：Redis setnx 挡量 + 数据库唯一索引兜底</text>
+  <text x="140" y="364" font-size="12" fill="#64748B">三段各自设防，链条才不漏水；任何一段"想当然"，丢的消息都找不回来。</text>
+</svg>

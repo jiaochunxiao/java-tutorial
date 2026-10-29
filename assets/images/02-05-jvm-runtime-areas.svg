@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 480" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="860" height="480" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">JVM 运行时数据区：左"私有"，右"共享"</text>
+
+  <!-- thread private -->
+  <rect x="46" y="64" width="360" height="300" rx="14" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="226" y="92" text-anchor="middle" font-size="15" font-weight="700" fill="#1D4ED8">线程私有区（每个线程一份）</text>
+  <g font-size="12" text-anchor="middle">
+    <rect x="66" y="108" width="160" height="72" rx="10" fill="#FFFFFF" stroke="#93C5FD"/>
+    <text x="146" y="132" font-weight="700" fill="#1E3A8A">程序计数器</text>
+    <text x="146" y="152" fill="#475569">记录执行到哪行字节码</text>
+    <text x="146" y="170" fill="#065F46">唯一不会 OOM 的区</text>
+    <rect x="236" y="108" width="160" height="72" rx="10" fill="#FFFFFF" stroke="#93C5FD"/>
+    <text x="316" y="132" font-weight="700" fill="#1E3A8A">虚拟机栈</text>
+    <text x="316" y="152" fill="#475569">栈帧：局部变量表/操作数栈</text>
+    <text x="316" y="170" fill="#B91C1C">深递归 → StackOverflowError</text>
+    <rect x="66" y="196" width="330" height="52" rx="10" fill="#FFFFFF" stroke="#93C5FD"/>
+    <text x="231" y="218" font-weight="700" fill="#1E3A8A">本地方法栈</text>
+    <text x="231" y="238" fill="#475569">给 native 方法（C 实现）用，一句话带过</text>
+    <rect x="66" y="260" width="330" height="88" rx="10" fill="#FFF7ED" stroke="#FDBA74"/>
+    <text x="231" y="284" font-weight="700" fill="#9A3412">一个栈帧的一生</text>
+    <text x="231" y="306" fill="#475569">方法调用 → 栈帧入栈 → 执行 → 出栈</text>
+    <text x="231" y="326" fill="#475569">-Xss 控制栈大小（默认约 1MB）</text>
+  </g>
+
+  <!-- shared -->
+  <rect x="440" y="64" width="374" height="300" rx="14" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+  <text x="627" y="92" text-anchor="middle" font-size="15" font-weight="700" fill="#047857">线程共享区（全 JVM 一份）</text>
+  <g text-anchor="middle">
+    <rect x="460" y="108" width="334" height="150" rx="10" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="627" y="132" font-size="14" font-weight="700" fill="#065F46">堆 Heap · 对象的主场</text>
+    <rect x="478" y="144" width="180" height="46" rx="8" fill="#FEF3C7" stroke="#FCD34D"/>
+    <text x="568" y="164" font-size="12" fill="#92400E">新生代（-Xmn）</text>
+    <text x="568" y="182" font-size="11" fill="#B45309">Eden : S0 : S1 = 8 : 1 : 1</text>
+    <rect x="672" y="144" width="106" height="46" rx="8" fill="#EDE9FE" stroke="#C4B5FD"/>
+    <text x="725" y="164" font-size="12" fill="#5B21B6">老年代 Old</text>
+    <text x="725" y="182" font-size="11" fill="#6D28D9">15 岁晋级</text>
+    <text x="627" y="242" font-size="11" fill="#64748B">-Xms 初始 -Xmx 上限；生产惯例两者设成一样，避免抖动</text>
+  </g>
+  <g text-anchor="middle">
+    <rect x="460" y="272" width="334" height="76" rx="10" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="627" y="296" font-size="14" font-weight="700" fill="#065F46">方法区（JDK 8+ = 元空间 Metaspace）</text>
+    <text x="627" y="318" font-size="12" fill="#475569">类元信息、运行时常量池</text>
+    <text x="627" y="338" font-size="11" fill="#B45309">用本地内存！动态生成类过多 → Metaspace OOM</text>
+  </g>
+
+  <!-- direct memory -->
+  <rect x="46" y="382" width="768" height="66" rx="10" fill="#FDF2F8" stroke="#F472B6"/>
+  <text x="66" y="408" font-size="13" font-weight="700" fill="#BE185D">直接内存（Direct Memory · 不属于运行时数据区，但常一起考）</text>
+  <text x="66" y="432" font-size="12" fill="#9D174D">NIO 的堆外内存：省去"堆 ↔ 内核"的来回复制，网络/文件 IO 快；受 -XX:MaxDirectMemorySize 约束，失控也会 OOM</text>
+</svg>

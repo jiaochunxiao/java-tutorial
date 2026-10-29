@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>系列总览 · 学习路线 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home active" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列</div>
+  <article>
+<h1>🚀 从零到Java技术专家：一条不打瞎忙仗的进阶之路</h1>
+<p><img src="/assets/images/series-cover.svg" alt="Java 从零到专家系列封面"></p>
+<blockquote>
+<p>&quot;Hello World 只要一行，Hello Expert 要好几年。但方向对了，每一步都算数。&quot;</p>
+</blockquote>
+<p>你好，我是这个系列的作者——一个在 IT 培训教育行业深耕十余年的 Java 老兵。这些年被学员问得最多的问题不是&quot;这个知识点怎么学&quot;，而是：</p>
+<ul>
+<li>&quot;Java 要学的东西太多了，到底先学哪个后学哪个？&quot;</li>
+<li>&quot;看完教程还是不会写项目，怎么办？&quot;</li>
+<li>&quot;学 Spring Boot 一定要先啃完 JVM 吗？&quot;</li>
+</ul>
+<p>这些问题背后其实是同一个诉求：<strong>要一张靠谱的地图，而不是一堆散落的知识点。</strong> 这个系列就是那张地图，外加沿途的详细导游词。</p>
+<hr>
+<h2>一、这个系列是给谁的？</h2>
+<table>
+<thead>
+<tr>
+<th>读者画像</th>
+<th>你会得到什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>🌱 零基础 / 转行小白</td>
+<td>从 Hello World 到面向对象的完整入门路径，不再&quot;收藏等于学会&quot;</td>
+</tr>
+<tr>
+<td>🎓 学过语法、做不出项目的&quot;半吊子&quot;</td>
+<td>集合、并发、JVM 的原理深挖，补上&quot;知其所以然&quot;的断层</td>
+</tr>
+<tr>
+<td>🔧 天天写 CRUD 的业务工程师</td>
+<td>Spring Boot 源码级原理 + 生产级实践，从&quot;会用&quot;到&quot;会修&quot;</td>
+</tr>
+<tr>
+<td>🏔️ 想冲击高级/架构岗的工程师</td>
+<td>微服务、分布式、性能优化的系统方法论 + 成长心法</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>二、学习路线总览</h2>
+<p>先上全景图。整个系列分五个阶段，环环相扣：<strong>基础打底 → 进阶练内功 → 框架懂原理 → 实践出真知 → 架构见天地</strong>。</p>
+<div class="mermaid">flowchart LR
+    A["📖 第一阶段<br/>Java 基础篇<br/>（10 篇）"] --> B["⚡ 第二阶段<br/>Java 进阶篇<br/>（10 篇）"]
+    B --> C["🌸 第三阶段<br/>Spring Boot 原理篇<br/>（6 篇）"]
+    C --> D["🛠️ 第四阶段<br/>应用实践篇<br/>（6 篇）"]
+    D --> E["🏔️ 第五阶段<br/>高手进阶篇<br/>（4 篇）"]
+
+    A -.->|语法 / OOP / 集合 / 异常| A1["能独立写出<br/>控制台小程序"]
+    B -.->|并发 / JVM / 网络 / 设计模式| B1["能看懂源码<br/>能排查线上问题"]
+    C -.->|IoC / AOP / 自动配置 / 启动流程| C1["知其然更知其所以然"]
+    D -.->|API / 数据库 / 缓存 / MQ / 部署| D1["能独立交付<br/>生产级服务"]
+    E -.->|微服务 / 分布式 / 性能 / 成长| E1["具备架构师视角"]
+</div>
+<h3>五阶段速览</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>核心目标</th>
+<th align="center">篇数</th>
+<th align="center">建议周期</th>
+<th>阶段验收标准（自测）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>① 基础篇</td>
+<td>掌握 Java 语法与面向对象思想，玩转核心类库</td>
+<td align="center">10</td>
+<td align="center">4~6 周</td>
+<td>不查资料能实现一个控制台版&quot;学生管理系统&quot;（含增删改查 + 集合存储 + 异常处理）</td>
+</tr>
+<tr>
+<td>② 进阶篇</td>
+<td>吃透并发与 JVM，具备源码阅读能力和问题排查能力</td>
+<td align="center">10</td>
+<td align="center">6~8 周</td>
+<td>能手写线程安全的单例；能独立排查一次 OOM / CPU 飙高的模拟案例</td>
+</tr>
+<tr>
+<td>③ Spring Boot 原理篇</td>
+<td>理解 IoC/AOP/自动配置/启动流程，告别&quot;配置搬运工&quot;</td>
+<td align="center">6</td>
+<td align="center">3~4 周</td>
+<td>能给别人讲清楚 <code>@SpringBootApplication</code> 启动后发生了什么；能写一个自定义 Starter</td>
+</tr>
+<tr>
+<td>④ 应用实践篇</td>
+<td>完整走一遍企业级服务的开发、测试、部署、监控全流程</td>
+<td align="center">6</td>
+<td align="center">4~5 周</td>
+<td>独立交付一个带缓存、消息、监控的 RESTful 服务并部署上线</td>
+</tr>
+<tr>
+<td>⑤ 高手进阶篇</td>
+<td>建立分布式与架构思维，形成自己的技术成长方法论</td>
+<td align="center">4</td>
+<td align="center">4 周+</td>
+<td>能设计一个中小型微服务系统的拆分方案，并说清楚每个技术选型的 trade-off</td>
+</tr>
+</tbody></table>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：周期仅供参考，按每天 1.5~2 小时有效学习时间估算。<strong>宁慢勿假</strong>——每篇的&quot;动手练习&quot;必须真的动手，看会的都是幻觉。</p>
+</blockquote>
+<hr>
+<h2>三、完整文章目录</h2>
+<h3>📖 第一阶段：Java 基础篇（<code>01-java-basics/</code>）</h3>
+<blockquote>
+<p>目标：把语法练成肌肉记忆，把面向对象刻进 DNA。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>文章</th>
+<th>核心内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>01</td>
+<td><a href="01-java-basics/01-hello-java.md">Hello Java：从一杯咖啡到一个世界</a></td>
+<td>JVM/JDK/JRE 三兄弟、跨平台原理、Hello World 逐行解剖、开发环境搭建</td>
+</tr>
+<tr>
+<td>02</td>
+<td><a href="01-java-basics/02-data-types.md">变量与数据类型：8 大基本类型排排坐</a></td>
+<td>基本类型 vs 引用类型、自动装箱拆箱的坑、运算符陷阱、浮点数为什么不算钱</td>
+</tr>
+<tr>
+<td>03</td>
+<td><a href="01-java-basics/03-control-flow-arrays.md">流程控制与数组：程序的岔路口</a></td>
+<td>if/switch/for/while、switch 的进化史、数组内存布局、Arrays 工具类</td>
+</tr>
+<tr>
+<td>04</td>
+<td><a href="01-java-basics/04-oop-part1.md">面向对象（上）：封装、继承、多态三巨头</a></td>
+<td>类与对象、构造器、封装思想、继承的得与失、多态的运行时绑定、Object 方法</td>
+</tr>
+<tr>
+<td>05</td>
+<td><a href="01-java-basics/05-oop-part2.md">面向对象（下）：接口、抽象类与内部类的爱恨情仇</a></td>
+<td>抽象类 vs 接口、函数式接口与 Lambda、内部类家族、面向对象设计原则入门</td>
+</tr>
+<tr>
+<td>06</td>
+<td><a href="01-java-basics/06-string-deep-dive.md">String 全解析：最熟悉的陌生人</a></td>
+<td>不可变性、字符串常量池、<code>+</code> 拼接的真相、StringBuilder、equals 与 ==</td>
+</tr>
+<tr>
+<td>07</td>
+<td><a href="01-java-basics/07-collections-part1.md">集合框架（上）：容器选型地图</a></td>
+<td>Collection 与 Map 两大体系、List/Set/Queue/Map 全家对比、选型决策树</td>
+</tr>
+<tr>
+<td>08</td>
+<td><a href="01-java-basics/08-collections-part2.md">集合框架（下）：HashMap 源码炖着吃</a></td>
+<td>ArrayList 扩容、HashMap 的 put 全流程、哈希冲突、树化、ConcurrentHashMap 概览</td>
+</tr>
+<tr>
+<td>09</td>
+<td><a href="01-java-basics/09-exceptions.md">异常处理：优雅地搞砸事情</a></td>
+<td>异常体系树、try-catch-finally 执行细节、try-with-resources、异常最佳实践</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="01-java-basics/10-generics-reflection.md">泛型与反射：类型的编译期与运行时</a></td>
+<td>泛型擦除、通配符 PECS、Class 对象、反射 API、框架为什么离不开反射</td>
+</tr>
+</tbody></table>
+<h3>⚡ 第二阶段：Java 进阶篇（<code>02-java-advanced/</code>）</h3>
+<blockquote>
+<p>目标：并发与 JVM 是 Java 工程师的分水岭，也是面试的修罗场。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>文章</th>
+<th>核心内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>01</td>
+<td><a href="02-java-advanced/01-thread-basics.md">多线程（一）：万物皆可 Thread</a></td>
+<td>进程与线程、Thread 的创建方式、线程生命周期、线程安全问题入门、synchronized 初见</td>
+</tr>
+<tr>
+<td>02</td>
+<td><a href="02-java-advanced/02-jmm-volatile.md">多线程（二）：JMM、volatile 与锁升级</a></td>
+<td>Java 内存模型、happens-before、volatile 三板斧、synchronized 锁升级、CAS 与 ABA</td>
+</tr>
+<tr>
+<td>03</td>
+<td><a href="02-java-advanced/03-aqs-threadpool.md">多线程（三）：AQS、显式锁与线程池</a></td>
+<td>AQS 设计思想、ReentrantLock、线程池七大参数与执行流程、拒绝策略、ThreadLocal</td>
+</tr>
+<tr>
+<td>04</td>
+<td><a href="02-java-advanced/04-juc-toolbox.md">并发工具箱：JUC 全家桶</a></td>
+<td>CountDownLatch/CyclicBarrier/Semaphore、BlockingQueue、CompletableFuture、并发容器</td>
+</tr>
+<tr>
+<td>05</td>
+<td><a href="02-java-advanced/05-jvm-memory.md">JVM 内存结构：运行时数据区巡礼</a></td>
+<td>程序计数器、虚拟机栈、本地方法栈、堆、方法区（元空间）、栈帧与局部变量表、OOM 演示</td>
+</tr>
+<tr>
+<td>06</td>
+<td><a href="02-java-advanced/06-garbage-collection.md">垃圾回收：对象的生与死</a></td>
+<td>可达性分析、引用类型、三大 GC 算法、分代思想、CMS/G1/ZGC 演进</td>
+</tr>
+<tr>
+<td>07</td>
+<td><a href="02-java-advanced/07-class-loading.md">类加载机制：双亲委派与字节码</a></td>
+<td>类加载过程、双亲委派模型、破坏双亲委派的场景、字节码初探、SPI 与线程上下文类加载器</td>
+</tr>
+<tr>
+<td>08</td>
+<td><a href="02-java-advanced/08-jvm-tuning.md">JVM 调优实战：工具箱与真实案例</a></td>
+<td>jps/jstat/jmap/jstack、Arthas、MAT、GC 日志解读、OOM 与 CPU 100% 排查实录</td>
+</tr>
+<tr>
+<td>09</td>
+<td><a href="02-java-advanced/09-network-programming.md">网络编程：从 Socket 到 HTTP</a></td>
+<td>TCP/UDP、BIO 编程模型、NIO 三大件、HTTP 协议要点、Netty 入门</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="02-java-advanced/10-design-patterns.md">设计模式：高频模式实战</a></td>
+<td>单例/工厂/策略/模板方法/责任链/代理/观察者，每个模式配 Spring 源码中的真实出场</td>
+</tr>
+</tbody></table>
+<h3>🌸 第三阶段：Spring Boot 原理篇（<code>03-spring-boot/</code>）</h3>
+<blockquote>
+<p>目标：不只当&quot;注解程序员&quot;，把框架的黑盒拆开看个明白。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>文章</th>
+<th>核心内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>01</td>
+<td><a href="03-spring-boot/01-spring-ioc.md">Spring IoC：控制反转的前世今生</a></td>
+<td>为什么需要 IoC、BeanFactory vs ApplicationContext、BeanDefinition、容器启动脉络</td>
+</tr>
+<tr>
+<td>02</td>
+<td><a href="03-spring-boot/02-bean-lifecycle.md">Bean 生命周期与循环依赖</a></td>
+<td>实例化→属性填充→初始化→销毁全流程、BeanPostProcessor、三级缓存解决循环依赖</td>
+</tr>
+<tr>
+<td>03</td>
+<td><a href="03-spring-boot/03-spring-aop.md">Spring AOP：动态代理的魔法</a></td>
+<td>JDK 动态代理 vs CGLIB、切点/通知/切面、AOP 失效的坑、手写迷你 AOP</td>
+</tr>
+<tr>
+<td>04</td>
+<td><a href="03-spring-boot/04-auto-configuration.md">Spring Boot 自动配置：@SpringBootApplication 拆解</a></td>
+<td>@EnableAutoConfiguration 原理、条件注解、Starter 机制、手写自定义 Starter</td>
+</tr>
+<tr>
+<td>05</td>
+<td><a href="03-spring-boot/05-boot-startup.md">Spring Boot 启动流程：从 main 到 Tomcat 就绪</a></td>
+<td>SpringApplication.run 十大步骤、事件与监听器、环境与配置加载、内嵌 Web 服务器</td>
+</tr>
+<tr>
+<td>06</td>
+<td><a href="03-spring-boot/06-transaction.md">事务与数据访问：@Transactional 的秘密</a></td>
+<td>声明式事务原理、七大传播行为、事务失效的八大场景、MyBatis/JPA 集成要点</td>
+</tr>
+</tbody></table>
+<h3>🛠️ 第四阶段：应用实践篇（<code>04-practice/</code>）</h3>
+<blockquote>
+<p>目标：把前三阶段攒的内力，打出一套生产级组合拳。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>文章</th>
+<th>核心内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>01</td>
+<td><a href="04-practice/01-restful-api.md">从零搭建一个 RESTful API 服务</a></td>
+<td>项目初始化、分层架构、参数校验、统一响应与全局异常处理、接口文档</td>
+</tr>
+<tr>
+<td>02</td>
+<td><a href="04-practice/02-database.md">数据库实战：MySQL 与 MyBatis-Plus</a></td>
+<td>集成配置、CRUD 与分页、慢 SQL 定位、索引优化、深分页问题</td>
+</tr>
+<tr>
+<td>03</td>
+<td><a href="04-practice/03-redis-cache.md">缓存实战：Redis 三板斧</a></td>
+<td>Spring Cache 集成、缓存穿透/击穿/雪崩三连防、分布式锁、缓存与数据库双写一致性</td>
+</tr>
+<tr>
+<td>04</td>
+<td><a href="04-practice/04-async-mq.md">异步与消息：从 @Async 到 RocketMQ</a></td>
+<td>线程池异步化、@Async 的坑、MQ 集成、可靠投递、幂等消费</td>
+</tr>
+<tr>
+<td>05</td>
+<td><a href="04-practice/05-testing.md">测试与质量守护</a></td>
+<td>JUnit 5、Mockito、@SpringBootTest 分层测试策略、Testcontainers、覆盖率</td>
+</tr>
+<tr>
+<td>06</td>
+<td><a href="04-practice/06-logging-monitoring.md">日志、监控与上线部署</a></td>
+<td>logback 实践、Actuator、Prometheus + Grafana、打包部署、Docker 化</td>
+</tr>
+</tbody></table>
+<h3>🏔️ 第五阶段：高手进阶篇（<code>05-architecture/</code>）</h3>
+<blockquote>
+<p>目标：从&quot;实现功能&quot;进化到&quot;定义系统&quot;。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>文章</th>
+<th>核心内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>01</td>
+<td><a href="05-architecture/01-microservices.md">微服务拆分与 Spring Cloud 实战</a></td>
+<td>拆分原则与方法、Nacos 注册与配置中心、OpenFeign、Gateway、Sentinel 熔断限流</td>
+</tr>
+<tr>
+<td>02</td>
+<td><a href="05-architecture/02-distributed.md">分布式疑难杂症门诊</a></td>
+<td>CAP 与 BASE、分布式事务五种方案对比、幂等设计、分布式锁选型、分布式 ID</td>
+</tr>
+<tr>
+<td>03</td>
+<td><a href="05-architecture/03-performance.md">性能优化方法论：从慢 SQL 到全链路</a></td>
+<td>优化的正确姿势、指标与压测、各层优化清单、全链路追踪、真实优化案例复盘</td>
+</tr>
+<tr>
+<td>04</td>
+<td><a href="05-architecture/04-growth-guide.md">从码农到专家：Java 工程师成长指南</a></td>
+<td>技术深度与广度、源码阅读方法、知识体系构建、面试心法、职业路线选择</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>四、这套路线为什么这么排？（路线设计逻辑）</h2>
+<p>很多同学的学习路径是&quot;哪里火学哪里&quot;：今天追新框架，明天背面试题，结果知识像一堆没拧紧的螺丝。这条路线的编排遵循三条原则：</p>
+<p><strong>1. 依赖关系优先：先有地基，再起高楼。</strong></p>
+<ul>
+<li>为什么集合（基础篇 07/08）排在泛型（基础篇 10）前面还能学？因为用法可以先会、原理后补。但进阶篇的并发必须排在基础篇之后——线程安全问题的最小复现单位就是集合与共享变量。</li>
+<li>Spring Boot 原理篇必须排在进阶篇之后：自动配置靠的是<strong>反射 + 条件判断</strong>，IoC 里到处是<strong>Map 容器</strong>，AOP 的本质是<strong>动态代理 + 设计模式</strong>。没有前两阶段，读源码就像没学过拼音直接读文言文。</li>
+</ul>
+<p><strong>2. &quot;用法 → 原理 → 生产&quot; 三遍学习法：</strong></p>
+<ul>
+<li>第一遍（基础篇/实践篇）：会用了，建立成就感；</li>
+<li>第二遍（进阶篇/原理篇）：知其所以然，建立深度；</li>
+<li>第三遍（实践篇/高手篇）：在生产场景里闭环，建立判断力。</li>
+<li>所以实践篇放在原理篇<strong>之后</strong>——你带着&quot;自动配置是怎么生效的&quot;这类疑问去写项目，每个注解都不再是咒语。</li>
+</ul>
+<p><strong>3. 输出倒逼输入：</strong></p>
+<ul>
+<li>每篇都有&quot;课后思考 &amp; 动手练习&quot;，阶段末有验收标准；</li>
+<li>建议每学完一篇，用自己的话写一段 100 字总结（能讲清楚才算学会，这叫费曼学习法）。</li>
+</ul>
+<hr>
+<h2>五、学习方法论：老学员亲测有效的五条军规</h2>
+<ol>
+<li><strong>代码必须亲手敲。</strong> 复制粘贴的学习留存率约等于零。看懂 ≠ 会写，会写 ≠ 写对，写对 ≠ 写熟。</li>
+<li><strong>报错是礼物。</strong> 每一个 <code>NullPointerException</code>、<code>ClassCastException</code> 都是最好的老师。遇到报错先自己读堆栈，再查资料，最后再问人——这个顺序不能乱。</li>
+<li><strong>用 Git 管理你的练习代码。</strong> 从第一天就养成版本管理习惯，每篇的练习提交一次，半年后回看 commit 记录，你会被自己感动。</li>
+<li><strong>不要在工具书上恋战。</strong> 一本书读到 80% 就换下一本比死磕 100% 更划算——剩下的 20% 会在后续学习中自然补全。</li>
+<li><strong>建立&quot;问题笔记本&quot;。</strong> 把每个踩过的坑记下来（现象 → 原因 → 解法），三个月后它就是你最值钱的私房资料。</li>
+</ol>
+<hr>
+<h2>六、快速开始</h2>
+<pre><code class="language-bash"># 建议：把本仓库 clone 到本地，配合每篇的练习题边读边写
+git clone &lt;你的仓库地址&gt;
+cd java-blog-series
+
+# 从第一篇开始：先通读 → 再敲代码 → 最后做练习
+open 01-java-basics/01-hello-java.md
+</code></pre>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：这个系列一共 36 篇，别想着一口吃成胖子。真正的学习曲线不是线性的，是&quot;平台期 → 突然开窍&quot;的阶梯状。卡住的时候别自我怀疑，那是你的大脑正在砌台阶。</p>
+</blockquote>
+<p><strong>现在，深呼吸，让我们从那杯经典的咖啡开始 ☕ → <a href="01-java-basics/01-hello-java.md">01-Hello Java：从一杯咖啡到一个世界</a></strong></p>
+
+  </article>
+<div class="pnbar"><span class="pn ghost"></span><a class="pn" href="/01-java-basics/01-hello-java.html"><span>下一篇 →</span><b>Hello Java：从一杯咖啡到一个世界</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 360" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <rect width="860" height="360" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">串行 vs 并行：CompletableFuture 的价值一目了然</text>
+  <text x="430" y="60" text-anchor="middle" font-size="12" fill="#64748B">场景：首页聚合用户信息、订单、推荐三个下游接口，各 200ms</text>
+
+  <!-- time axis -->
+  <line x1="150" y1="84" x2="150" y2="320" stroke="#CBD5E1" stroke-width="2"/>
+  <g font-size="11" fill="#94A3B8" text-anchor="middle">
+    <text x="150" y="78">0</text><text x="278" y="78">200ms</text><text x="406" y="78">400ms</text><text x="534" y="78">600ms</text><text x="662" y="78">800ms</text>
+  </g>
+
+  <!-- serial -->
+  <text x="120" y="112" text-anchor="end" font-size="13" font-weight="700" fill="#B91C1C">串行</text>
+  <g font-size="12" text-anchor="middle">
+    <rect x="150" y="98" width="128" height="30" rx="6" fill="#FEE2E2" stroke="#FCA5A5"/><text x="214" y="118" fill="#B91C1C">查用户 200ms</text>
+    <rect x="278" y="98" width="128" height="30" rx="6" fill="#FEE2E2" stroke="#FCA5A5"/><text x="342" y="118" fill="#B91C1C">查订单 200ms</text>
+    <rect x="406" y="98" width="128" height="30" rx="6" fill="#FEE2E2" stroke="#FCA5A5"/><text x="470" y="118" fill="#B91C1C">查推荐 200ms</text>
+    <rect x="150" y="134" width="384" height="26" rx="6" fill="#FFF7ED" stroke="#FDBA74"/>
+    <text x="342" y="152" font-size="12" fill="#9A3412">总耗时 ≈ 600ms（排队等，一个卡全卡）</text>
+  </g>
+
+  <!-- parallel -->
+  <text x="120" y="212" text-anchor="end" font-size="13" font-weight="700" fill="#047857">并行</text>
+  <g font-size="12" text-anchor="middle">
+    <rect x="150" y="198" width="128" height="28" rx="6" fill="#D1FAE5" stroke="#6EE7B7"/><text x="214" y="217" fill="#047857">查用户 200ms</text>
+    <rect x="150" y="232" width="128" height="28" rx="6" fill="#D1FAE5" stroke="#6EE7B7"/><text x="214" y="251" fill="#047857">查订单 200ms</text>
+    <rect x="150" y="266" width="128" height="28" rx="6" fill="#D1FAE5" stroke="#6EE7B7"/><text x="214" y="285" fill="#047857">查推荐 200ms</text>
+    <line x1="278" y1="198" x2="278" y2="294" stroke="#059669" stroke-width="1.6" stroke-dasharray="5 4"/>
+    <rect x="150" y="302" width="128" height="24" rx="6" fill="#ECFDF5" stroke="#059669"/>
+    <text x="214" y="319" font-size="12" font-weight="700" fill="#047857">总耗时 ≈ 200ms</text>
+  </g>
+
+  <!-- notes -->
+  <g font-size="12" fill="#334155">
+    <rect x="600" y="120" width="236" height="200" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="616" y="146" font-weight="700" fill="#1E293B">并行三要素</text>
+    <text x="616" y="172">① 任务相互独立</text>
+    <text x="616" y="196">② supplyAsync 提交线程池</text>
+    <text x="616" y="220" font-weight="700" fill="#B45309">（必须显式传业务线程池！）</text>
+    <text x="616" y="248">③ thenCombine / allOf 聚合</text>
+    <text x="616" y="276">别忘 exceptionally 降级</text>
+    <text x="616" y="300">与 orTimeout 超时兜底</text>
+  </g>
+  <text x="430" y="346" text-anchor="middle" font-size="12" fill="#64748B">总耗时 ≈ 最慢的那一个，而不是所有耗时之和——这是接口聚合优化的第一板斧。</text>
+</svg>

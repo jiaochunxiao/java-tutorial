@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 480" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+  <rect width="860" height="480" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">B+ 树索引：为什么范围查询快、深分页慢</text>
+
+  <!-- root -->
+  <rect x="360" y="64" width="140" height="42" rx="8" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="430" y="90" text-anchor="middle" font-size="14" font-weight="700" fill="#1D4ED8">根节点 [17 | 35]</text>
+
+  <g stroke="#475569" stroke-width="1.8" marker-end="url(#arr)">
+    <line x1="395" y1="106" x2="200" y2="154"/>
+    <line x1="430" y1="106" x2="430" y2="154"/>
+    <line x1="465" y1="106" x2="660" y2="154"/>
+  </g>
+
+  <!-- internal -->
+  <rect x="130" y="156" width="140" height="38" rx="8" fill="#EFF6FF" stroke="#93C5FD"/>
+  <text x="200" y="180" text-anchor="middle" font-size="13" fill="#1E3A8A">[7 | 12]</text>
+  <rect x="360" y="156" width="140" height="38" rx="8" fill="#EFF6FF" stroke="#93C5FD"/>
+  <text x="430" y="180" text-anchor="middle" font-size="13" fill="#1E3A8A">[22 | 28]</text>
+  <rect x="590" y="156" width="140" height="38" rx="8" fill="#EFF6FF" stroke="#93C5FD"/>
+  <text x="660" y="180" text-anchor="middle" font-size="13" fill="#1E3A8A">[41 | 58]</text>
+
+  <g stroke="#475569" stroke-width="1.6" marker-end="url(#arr)">
+    <line x1="160" y1="194" x2="120" y2="246"/>
+    <line x1="200" y1="194" x2="240" y2="246"/>
+    <line x1="395" y1="194" x2="360" y2="246"/>
+    <line x1="430" y1="194" x2="470" y2="246"/>
+    <line x1="625" y1="194" x2="590" y2="246"/>
+    <line x1="665" y1="194" x2="705" y2="246"/>
+  </g>
+
+  <!-- leaves -->
+  <g font-size="12" text-anchor="middle">
+    <rect x="70" y="250" width="100" height="40" rx="7" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="120" y="275" fill="#334155">[3 | 5 | 6]</text>
+    <rect x="190" y="250" width="100" height="40" rx="7" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="240" y="275" fill="#334155">[8 | 10 | 15]</text>
+    <rect x="310" y="250" width="100" height="40" rx="7" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="360" y="275" fill="#334155">[18 | 20 | 21]</text>
+    <rect x="430" y="250" width="100" height="40" rx="7" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="480" y="275" fill="#334155">[25 | 30 | 33]</text>
+    <rect x="550" y="250" width="100" height="40" rx="7" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="600" y="275" fill="#334155">[40 | 45]</text>
+    <rect x="670" y="250" width="100" height="40" rx="7" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="720" y="275" fill="#334155">[52 | 66 | 70]</text>
+  </g>
+
+  <!-- range highlight -->
+  <path d="M 305 244 L 535 244 L 535 296 L 305 296 Z" fill="none" stroke="#2563EB" stroke-width="2" stroke-dasharray="6 4"/>
+
+  <!-- linked list -->
+  <g stroke="#059669" stroke-width="1.8" marker-end="url(#arr)">
+    <line x1="170" y1="310" x2="186" y2="310"/>
+    <line x1="290" y1="310" x2="306" y2="310"/>
+    <line x1="410" y1="310" x2="426" y2="310"/>
+    <line x1="530" y1="310" x2="546" y2="310"/>
+    <line x1="650" y1="310" x2="666" y2="310"/>
+  </g>
+  <text x="430" y="330" text-anchor="middle" font-size="11" fill="#047857">叶子节点双向链表：范围查询/排序不用回根节点</text>
+
+  <!-- query annotation top-left -->
+  <rect x="56" y="52" width="270" height="100" rx="10" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5"/>
+  <text x="72" y="74" font-size="13" font-weight="700" fill="#1D4ED8">查询 id BETWEEN 18 AND 30</text>
+  <text x="72" y="96" font-size="12" fill="#475569">根 → [17|35] → 定位 18，</text>
+  <text x="72" y="116" font-size="12" fill="#475569">沿链表扫到 30 即止：</text>
+  <text x="72" y="140" font-size="13" font-weight="700" fill="#1D4ED8">只碰 2~3 个节点，不用全表</text>
+  <path d="M 200 156 Q 260 210 348 252" fill="none" stroke="#2563EB" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrB)"/>
+
+  <!-- bottom notes -->
+  <rect x="60" y="352" width="360" height="112" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="76" y="378" font-size="13" font-weight="700" fill="#1E293B">为什么用 B+ 树不用 B 树？</text>
+  <text x="76" y="402" font-size="12" fill="#475569">数据只存叶子，非叶子能塞更多路 → 树更矮</text>
+  <text x="76" y="424" font-size="12" fill="#475569">→ 磁盘 IO 更少（3 层可扛千万行）</text>
+  <text x="76" y="448" font-size="11" fill="#64748B">叶子链表还天然支持排序与范围扫描</text>
+
+  <rect x="440" y="352" width="360" height="112" rx="10" fill="#FEF2F2" stroke="#FCA5A5"/>
+  <text x="456" y="378" font-size="13" font-weight="700" fill="#B91C1C">深分页为什么慢？</text>
+  <text x="456" y="402" font-size="12" fill="#991B1B">LIMIT 1000000,20 要沿链表"走"过</text>
+  <text x="456" y="424" font-size="12" fill="#991B1B">前 100 万行再丢弃 →</text>
+  <text x="456" y="448" font-size="12" fill="#B45309" font-weight="700">延迟关联 / 游标分页救场（上篇实战）</text>
+</svg>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hello Java：从一杯咖啡到一个世界 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item active" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / Hello Java：从一杯咖啡到一个世界</div>
+  <article>
+<h1>Hello Java：从一杯咖啡到一个世界</h1>
+<p>朋友们，欢迎来到《Java 从零到专家》系列的第一课。开讲之前，我想请你先做一件事：抬头看看你手边有没有咖啡（没有的话，白开水也行，枸杞水就先放一放）。三十多年前，大洋彼岸有一群工程师，就是盯着这样一杯冒着热气的咖啡，给一门改变了整个软件世界的编程语言起了名字——Java，本意是印尼爪哇岛产的咖啡。</p>
+<p>你可能想不到，这门如今统治着企业级开发、安卓应用、大数据生态半壁江山的语言，最初的使命是给机顶盒、烤面包机这类家用电器写控制程序。对，你没听错：一个想&quot;控制烤面包机&quot;的项目，最后烤出了全球几百万开发者饭碗里的&quot;大面包&quot;。命运的走向，有时候比最烂的代码还难预测。</p>
+<p>自我介绍一下：我是在 IT 培训行业摸爬滚打十余年的 Java 讲师，带过的学生里有厨师转行的，有会计转行的，还有一位六十岁的大爷纯粹想给孙子写个小游戏。他们最后都学有所成，所以请相信：他们能行，你也能。好了，寒暄到此结束，系好安全带，发车。</p>
+<h2>一、Java 的前世今生：一杯咖啡引发的&quot;血案&quot;</h2>
+<p>1991 年，Sun 公司（Sun Microsystems，太阳微系统公司）启动了一个代号 Green Project 的项目，目标是给下一代智能家居设备开发控制系统。项目的灵魂人物叫 James Gosling（詹姆斯·高斯林），江湖人称&quot;高司令&quot;。一开始团队打算用 C++ 干这活儿，结果写着写着发现不对劲：C++ 的指针满天飞、内存要手动管理，一个不小心程序就&quot;原地爆炸&quot;。给家电写程序，稳定压倒一切，于是高司令一咬牙：自己造个语言！</p>
+<p>新语言最初叫 Oak（橡树），因为高司令办公室窗外正好立着一棵橡树——是的，程序员起名字的随意程度，从祖师爷那辈就开始了。后来准备注册商标时才发现 Oak 这个名字早就被人占了。据说工程师们当时正捧着爪哇岛咖啡开会，一拍大腿：就叫 Java！所以今天 Java 的官方图标是一杯冒着热气的咖啡。以后别人问你为什么学 Java，你可以理直气壮地回答：我这是投身咖啡事业。</p>
+<p>再往后的发展，我给你捋一条幽默版时间线：</p>
+<ul>
+<li>1995 年：Java 1.0 横空出世，口号 Write Once, Run Anywhere（一次编写，到处运行），直接把当时的老大哥 C++ 干得坐立不安；</li>
+<li>2004 年：Java 5 发布（注意是 5 不是 1.5，Sun 也觉得小数点版本号不够排面），泛型、枚举、增强 for 全在这一版亮相，堪称 Java 的&quot;成人礼&quot;；</li>
+<li>2014 年：Java 8 发布，Lambda 表达式、Stream 流、新日期 API 三件套上线。到今天它依然是企业界的&quot;钉子户&quot;，无数十年老项目还稳稳跑在 8 上；</li>
+<li>2018 年：Java 11 发布，LTS（Long Term Support，长期支持）版本；</li>
+<li>2021 年：Java 17 发布，同为 LTS，是 Spring Boot 3 的最低门槛，如今新项目的标配。</li>
+</ul>
+<p>一句话总结这三十年：语言排行榜上风云变幻，Java 虽然被喊了无数次&quot;老了、要凉了&quot;，但在企业级开发的牌桌上始终稳坐主位——各种编程语言排行榜常年前三，不是白给的。</p>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：别纠结&quot;学哪个版本会不会过时&quot;。Java 8 / 11 / 17 的核心语法一脉相承，先把 8 的地基打牢，再了解 8 到 17 的新特性，这是企业招人时最认可的技术画像。</p>
+</blockquote>
+<h2>二、JVM、JDK、JRE：一家三口到底谁是谁？</h2>
+<p><img src="/assets/images/01-01-jdk-jre-jvm.svg" alt="JDK ⊃ JRE ⊃ JVM 的套娃关系与&quot;装哪个&quot;的选型"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：JDK ⊃ JRE ⊃ JVM 的套娃关系与&quot;装哪个&quot;的选型</p>
+</blockquote>
+<p>初学者第一次见到这三个缩写，基本和第一次进丈母娘家一样——都姓 J，谁也分不清谁是谁。来，我用一张表和一张图给你彻底讲明白。先说结论：这三者是&quot;套娃&quot;关系——JDK 包含 JRE，JRE 包含 JVM。</p>
+<table>
+<thead>
+<tr>
+<th>名字</th>
+<th>全称</th>
+<th>是什么</th>
+<th>什么时候需要它</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>JVM</td>
+<td>Java Virtual Machine，Java 虚拟机</td>
+<td>负责执行字节码的&quot;虚拟电脑&quot;，Java 跨平台的第一功臣</td>
+<td>理论上只运行 Java 程序时</td>
+</tr>
+<tr>
+<td>JRE</td>
+<td>Java Runtime Environment，Java 运行时环境</td>
+<td>JVM + Java 核心类库（String、集合这些&quot;官方零件&quot;）</td>
+<td>只想跑程序、不想写代码</td>
+</tr>
+<tr>
+<td>JDK</td>
+<td>Java Development Kit，Java 开发工具包</td>
+<td>JRE + 开发工具（编译器 javac、文档工具 javadoc、调试器 jdb 等）</td>
+<td>要写代码的你</td>
+</tr>
+</tbody></table>
+<p>用做菜打个比方：JVM 是灶台，真正开火做饭的地方；JRE 是&quot;灶台 + 一整套基础厨具和调料&quot;；JDK 则是&quot;JRE + 菜刀、砧板和菜谱笔&quot;。你不打算做菜（不开发），装个 JRE 就够；要下厨写代码，必须上 JDK。</p>
+<div class="mermaid">flowchart TD
+    subgraph JDK["JDK 开发工具包"]
+        subgraph JRE["JRE 运行时环境"]
+            JVM["JVM 虚拟机"]
+            LIB["核心类库 String 集合 日期等"]
+        end
+        TOOLS["开发工具 javac javadoc jdb"]
+    end
+</div>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：开发装 JDK 就万事大吉。另外从 Java 11 起，Oracle 不再单独提供 JRE 安装包，JDK 就是全家桶——套娃的最后一代目。</p>
+</blockquote>
+<h2>三、一次编写，到处运行：Java 的独门绝技</h2>
+<p>&quot;Write Once, Run Anywhere&quot;这句口号是 Java 的立身之本，但它到底是怎么做到的？这就要请出 Java 编译的核心三板斧：源文件、字节码、虚拟机。</p>
+<p>先看 C 语言为什么做不到。C 语言的编译器直接把源码翻译成当前平台的机器码（比如 Windows 上的 .exe 文件）。机器码和操作系统、CPU 指令集深度绑定，Windows 上编译出来的程序拿到 macOS 上就是一堆&quot;乱码天书&quot;，根本无法运行，这叫&quot;平台相关&quot;。</p>
+<p>Java 的做法聪明就聪明在，它在源码和机器码之间加了一层&quot;中间商&quot;——字节码（bytecode）。整个流程分两步走。第一步，javac 编译器把 .java 源文件翻译成 .class 字节码文件；注意，字节码不面向任何具体操作系统，它只面向 JVM 这个&quot;标准接口&quot;。第二步，各平台各自的 JVM 把字节码翻译成本平台的机器指令去执行：Windows 版 JVM 翻译成 Windows 指令，Linux 版 JVM 翻译成 Linux 指令。</p>
+<p>打个比方：字节码是一张&quot;世界通用船票&quot;，而 JVM 是各个码头上会说当地方言的翻译官。你只管拿票上船（编译一次），到哪个码头都有人给你翻译（到处运行）。真正跨平台的不是 .class 文件本身，而是&quot;每个平台都装了对应版本的 JVM&quot;这件事。</p>
+<div class="mermaid">flowchart LR
+    A[".java 源文件"] -->|"javac 编译"| B[".class 字节码"]
+    B -->|"Windows 版 JVM"| C["Windows 机器指令"]
+    B -->|"Linux 版 JVM"| D["Linux 机器指令"]
+    B -->|"macOS 版 JVM"| E["macOS 机器指令"]
+</div>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：曾有学员用 JDK 17 编译出 .class 文件，拷到一台只装了 Java 8 的电脑上运行，直接报 UnsupportedClassVersionError（不支持的类版本）。原因：高版本 JDK 编译出的字节码，低版本 JVM&quot;看不懂&quot;。记住：字节码能跨平台，但不能&quot;穿越到过去&quot;——跨平台的前提是运行环境的 JVM 版本要兼容。编译时加参数 <code>--release 8</code> 可以指定目标版本。</p>
+</blockquote>
+<h2>四、人生第一行代码：Hello World 逐行解剖</h2>
+<p>好了，激动人心的时刻到了。翻开任何一本编程书的第一页，都是这行祖传代码：</p>
+<pre><code class="language-java">public class HelloWorld {
+    // JVM 的入口方法，整个程序的&quot;总闸门&quot;
+    public static void main(String[] args) {
+        System.out.println(&quot;Hello, Java!&quot;); // 向世界打个招呼
+    }
+}
+</code></pre>
+<p>别看它只有寥寥几行，信息量堪比一套小户型。来，我们把每个关键词挨个&quot;过堂&quot;：</p>
+<ul>
+<li><strong>public class HelloWorld</strong>：class（类）是 Java 世界的&quot;户型图&quot;，Java 规定所有代码必须住在类里，不允许&quot;露宿街头&quot;（不存在类外部的独立函数）。public 表示这个类公开可见。这里有个硬性规定：文件名必须与 public 类名完全一致——HelloWorld 类必须放在 HelloWorld.java 文件里，一个字母、一个大小写都不能差。</li>
+<li><strong>public</strong>：main 方法要被 JVM 从&quot;外部&quot;调用，JVM 可不是你这个类的熟人，所以门必须敞开，否则 JVM 进不了门。</li>
+<li><strong>static</strong>（静态）：这是最容易被问&quot;为什么&quot;的关键词。JVM 启动程序时，内存里还没有创建任何一个对象，如果想调用非 static 方法，得先 new 一个对象出来——可谁来执行这个 new 呢？鸡生蛋、蛋生鸡，死循环。static 方法属于类本身，不需要对象就能调用，完美解决了&quot;先有鸡还是先有蛋&quot;的问题。</li>
+<li><strong>void</strong>：方法执行完不需要给任何人交代结果，所以返回值为空。</li>
+<li><strong>main</strong>：方法名，是 JVM 认死的&quot;入口暗号&quot;，拼写必须分毫不差。写成 mian 的话编译能过，运行时 JVM 会冷冰冰地告诉你：在类中找不到 main 方法。</li>
+<li><strong>String[] args</strong>：命令行参数，一个字符串数组。比如执行 <code>java HelloWorld 张三 18</code>，args 里就装着 {&quot;张三&quot;, &quot;18&quot;}。初学阶段用不上，但考试和面试特别爱问。</li>
+</ul>
+<p>再看输出那一行 System.out.println()。System 是 JDK 自带的系统类，out 是它持有的标准输出对象（你的屏幕），println 是&quot;打印并换行&quot;的方法。整句话翻译成人话就是：&quot;System 同学，借你的 out 喇叭喊一嗓子，喊完顺便换个行。&quot;</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：main 方法的完整签名 <code>public static void main(String[] args)</code> 属于&quot;祖传配方&quot;，背也要背下来。面试手写代码时写错一个词，第一印象分直接归零。</p>
+</blockquote>
+<h2>五、环境搭建：磨刀不误砍柴工</h2>
+<p>工欲善其事，必先利其器。搭环境是新手遇到的第一只&quot;拦路虎&quot;，我给你一套最省事的方案。</p>
+<p>第一步，下载 JDK。推荐两个渠道：Oracle 官网（版本最新，但商用许可条款要看清楚）或者开源的 Eclipse Temurin（免费无坑，社区口碑极好）。版本按前面说的选 8 或 17 皆可。Windows 安装时记得勾选&quot;将 JDK 加入 PATH&quot;；Mac 用 Homebrew 或者直接装安装包都行。</p>
+<p>第二步，验证。打开终端（Windows 是 cmd 或 PowerShell），输入：</p>
+<pre><code class="language-bash">java -version   # 查看运行环境版本
+javac -version  # 查看编译器版本
+</code></pre>
+<p>两行命令都能正常输出版本号，环境就算通了。如果提示&quot;不是内部或外部命令&quot;，九成是 PATH 环境变量没配好。PATH 是操作系统找程序的&quot;通讯录&quot;，把 JDK 的 bin 目录写进去，系统才知道 javac 这个人住在哪。</p>
+<p>第三步，装编辑器。强烈推荐 IntelliJ IDEA（JetBrains 出品，Java 圈的顶流 IDE）。社区版（Community）免费，学习阶段完全够用；旗舰版（Ultimate）收费，多了 Web 开发、数据库工具等企业级功能，学生和教师可以申请免费教育授权。</p>
+<p>在命令行里体验一次最原始的编译运行，是每个 Java 新手的成人礼：</p>
+<pre><code class="language-bash">javac HelloWorld.java   # 编译：生成 HelloWorld.class 文件
+java HelloWorld         # 运行：注意不带 .class 后缀
+</code></pre>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：初学的前两周，建议用记事本（或 VS Code）加命令行写两三个小程序，再切到 IDEA。原因很简单：IDE 的自动补全太贴心，贴心到很多学了半年的人离开 IDE 连 <code>System.out.println</code> 都拼不全。先学会走路，再坐车。</p>
+</blockquote>
+<h2>六、编译期错误 vs 运行时错误：第一次翻车初体验</h2>
+<p>写代码不可能不报错。报错不是灾难，是程序在和机器&quot;吵架再和好&quot;的过程。Java 的错误大致分两个阶段，早点搞明白，翻车时才能心平气和。</p>
+<p><strong>编译期错误（compile-time error）</strong>：javac 在编译阶段就给你拦下来的问题，基本都是&quot;语法错误&quot;，比如少个分号、大括号没配对、类名和文件名不一致。看例子：</p>
+<pre><code class="language-java">public class TypoDemo {
+    public static void main(String[] args) {
+        int age = 18      // 编译报错：缺少分号，javac 拒绝生成 class 文件
+        System.out.println(age);
+    }
+}
+</code></pre>
+<p><strong>运行时错误（runtime error）</strong>：语法全对，编译通过，程序跑起来半路&quot;翻车&quot;。最经典的就是除零：</p>
+<pre><code class="language-java">public class CrashDemo {
+    public static void main(String[] args) {
+        int a = 10;
+        int b = 0;
+        System.out.println(a / b); // 运行时抛出 ArithmeticException: / by zero
+    }
+}
+</code></pre>
+<p>打个比方：编译器像严格的语文老师，病句一个不放过，改不好别想及格（拿不到 .class 文件）；运行时像物理老师，你句子写得再通顺，&quot;10 除以 0&quot;违反了数学定律，照样让你挂科。</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>编译期错误</th>
+<th>运行时错误</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>发现时机</td>
+<td>javac 编译阶段</td>
+<td>程序运行阶段</td>
+</tr>
+<tr>
+<td>典型例子</td>
+<td>缺分号、括号不匹配、拼写错误</td>
+<td>除零、数组越界、空指针</td>
+</tr>
+<tr>
+<td>报错形式</td>
+<td>编译失败，无法生成 .class</td>
+<td>抛出异常（Exception），程序中断</td>
+</tr>
+<tr>
+<td>防范手段</td>
+<td>按编译器提示逐个修正</td>
+<td>靠经验、靠测试、靠异常处理机制</td>
+</tr>
+</tbody></table>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：一位学员曾满脸委屈地找我：&quot;老师，我代码没问题啊，怎么运行一点反应没有？&quot;过去一看，他把 main 写成了 Main。Java 严格区分大小写，main 是 JVM 的入口，Main 只是又一个普通方法名。编译器不报错（因为语法上没错），但 JVM 找不到入口暗号，程序直接&quot;罢工&quot;。这类&quot;不报错的错&quot;最气人——遇到&quot;编译过了但运行没结果&quot;，先检查 main 方法签名。</p>
+</blockquote>
+<h2>七、给初学者的三句心里话</h2>
+<p>第一句：报错不可怕，报错是 JVM 在跟你聊天。把报错信息从头到尾读一遍，它往往直接告诉你是哪一行、什么问题。新手最大的敌人不是错误本身，而是不敢面对错误。</p>
+<p>第二句：不要背 API。System、String、集合这些类，用的时候查文档、让 IDE 补全就好。你要背的是概念和原理，比如&quot;static 为什么存在&quot;，而不是&quot;println 有几个重载&quot;。</p>
+<p>第三句：动手永远大于眼睛。看懂了不等于会写，就像看了一百集做菜视频，你可能还是煎不好一个蛋。每篇文章的课后练习，请务必亲手敲一遍——肌肉记忆才是程序员真正的记忆。</p>
+<h2>本篇小结</h2>
+<ul>
+<li>Java 诞生于 1991 年 Sun 公司的 Green Project，之父是 James Gosling，名字来源于爪哇咖啡；</li>
+<li>版本里程碑：Java 5 是成人礼，Java 8 / 11 / 17 是三大 LTS 主力版本；</li>
+<li>JDK ⊃ JRE ⊃ JVM，套娃关系，开发装 JDK 一步到位；</li>
+<li>跨平台的核心是&quot;字节码 + 各平台 JVM&quot;：一次编译，到处运行；</li>
+<li>代码生命周期：.java 源文件经 javac 编译成 .class 字节码，再由 JVM 翻译执行；</li>
+<li>main 方法签名是固定配方：public static void main(String[] args)，static 的存在是为了绕开&quot;先有对象还是先有方法&quot;的死循环；</li>
+<li>编译期错误是语法问题，运行时错误是逻辑问题，一个管&quot;写得对&quot;，一个管&quot;跑得对&quot;；</li>
+<li>学习心法：多动手、敢读报错、不背 API。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>用自己的话（不超过三句）向一位完全不懂编程的朋友解释 JVM、JDK、JRE 三者的关系。</li>
+<li>为什么 main 方法必须是 static 的？如果去掉 static，JVM 启动时会遇到什么困境？</li>
+<li>分别举出一个&quot;编译期错误&quot;和一个&quot;运行时错误&quot;的例子，并说明它们在发现时机上的本质区别。</li>
+<li>【编程题】编写 PersonalCard.java：定义类 PersonalCard，在 main 方法中用 5 次 System.out.println 依次输出你的姓名、所在城市、爱好、一句座右铭，以及&quot;我为什么要学 Java&quot;。要求：先用命令行 javac 编译、java 运行成功，再移植到 IDEA 中跑一遍，体会两种方式的区别。</li>
+<li>【探索题】在你的电脑上分别执行 <code>java -version</code> 与 <code>javac -version</code>，观察输出是否一致，并查一查：什么情况下两者会不一致？不一致时可能导致什么问题？</li>
+</ol>
+<p>下一篇预告：程序的世界里全是&quot;数据&quot;，而数据得先上个&quot;户口&quot;才能干活——下一篇《变量与数据类型：8 大基本类型排排坐》，我们聊聊撑起 Java 半边天的 8 个基本类型，以及一个让无数面试者折戟沉沙的 Integer 缓存池陷阱。不见不散！</p>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/index.html"><span>← 上一篇</span><b>系列总览 · 学习路线</b></a><a class="pn" href="/01-java-basics/02-data-types.html"><span>下一篇 →</span><b>变量与数据类型：8 大基本类型排排坐</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spring Boot 启动流程：从 main 到 Tomcat 就绪 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item active" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / Spring Boot 启动流程：从 main 到 Tomcat 就绪</div>
+  <article>
+<h1>Spring Boot 启动流程：从 main 到 Tomcat 就绪</h1>
+<p>每个 Spring Boot 工程都有一行人尽皆知的代码：</p>
+<pre><code class="language-java">@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+</code></pre>
+<p>短短一行，按下回车，控制台 logo 一出、Tomcat 端口一起、Bean 全就绪——像一次火箭发射：看着是按了个按钮，背后是一整套&quot;发射检查单&quot;。今天咱们把这次发射<strong>逐秒回放</strong>：从 <code>run()</code> 进入到 Tomcat 就绪一共发生什么。啃完这篇，你会拥有两个超能力：面试时把启动流程讲得让面试官点头，以及——线上启动报错时，看一眼堆栈就知道卡在哪个阶段。</p>
+<hr>
+<h2>一、发射总览：两大阶段十步检查单</h2>
+<p><img src="/assets/images/03-05-startup-timeline.svg" alt="启动时间轴：构造阶段造火箭，run 阶段十步点火"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：启动时间轴：构造阶段造火箭，run 阶段十步点火</p>
+</blockquote>
+<p><code>SpringApplication.run(Application.class, args)</code> 的内部分为<strong>构造阶段</strong>（造火箭）和 <strong>run 阶段</strong>（点火发射）：</p>
+<div class="mermaid">flowchart TD
+    subgraph 构造阶段["new SpringApplication：造火箭"]
+        A["① 推断应用类型<br/>SERVLET / REACTIVE / NONE"]
+        B["② 加载 ApplicationContextInitializer<br/>（spring.factories）"]
+        C["③ 加载 ApplicationListener<br/>（spring.factories）"]
+    end
+    subgraph run阶段["run()：点火发射"]
+        D["④ getRunListeners + starting 广播"]
+        E["⑤ prepareEnvironment 准备环境<br/>加载全部配置 + 广播 environmentPrepared"]
+        F["⑥ printBanner 打印 Banner"]
+        G["⑦ createApplicationContext 创建容器<br/>（按应用类型选具体实现）"]
+        H["⑧ prepareContext 预热容器<br/>主类注册为配置类"]
+        I["⑨ refreshContext 刷新容器<br/>★核心：解析配置/注册Bean/初始化单例/启动Tomcat"]
+        J["⑩ afterRunner 回调 + ready 广播"]
+    end
+    构造阶段 ==> run阶段
+    style I fill:#ffe0b2
+</div>
+<hr>
+<h2>二、构造阶段：还没 run 就干了三件事</h2>
+<pre><code class="language-java">// SpringApplication 构造器（源码简化）
+public SpringApplication(ResourceLoader resourceLoader, Class&lt;?&gt;... primarySources) {
+    // ① 推断应用类型：classpath 里有什么决定造什么火箭
+    this.webApplicationType = WebApplicationType.deduceFromClasspath();
+    //   - 有 DispatcherHandler（WebFlux）→ REACTIVE
+    //   - 有 Servlet + DispatcherServlet（Spring MVC）→ SERVLET
+    //   - 都没有 → NONE（普通 Java 程序）
+    // ②③ 从 META-INF/spring.factories 加载两组扩展
+    setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
+    setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+}
+</code></pre>
+<p><strong>为什么先加载 Initializer 和 Listener？</strong> 因为发射过程中要不断&quot;广播事件&quot;（starting、environmentPrepared、contextPrepared、ready……），监听器得提前入场才能听到。这里的加载机制和上一篇的自动配置清单如出一辙——spring.factories 是 Spring Boot 所有&quot;提前登记、运行时挑选&quot;玩法的老巢。</p>
+<hr>
+<h2>三、run 阶段十步逐步拆解</h2>
+<h3>④ 第五步前先搭&quot;广播站&quot;：getRunListeners + starting 事件</h3>
+<pre><code class="language-java">// run() 源码骨架（大幅简化，保留主干）
+public ConfigurableApplicationContext run(String... args) {
+    StopWatch stopWatch = new StopWatch();                        // 计秒表：启动耗时统计
+    stopWatch.start();
+    ConfigurableApplicationContext context = null;
+
+    SpringApplicationRunListeners listeners = getRunListeners(args); // 广播站
+    listeners.starting();                                          // 事件1：starting
+    // ... ⑤⑥⑦⑧⑨⑩
+}
+</code></pre>
+<p><code>SpringApplicationRunListeners</code> 是给&quot;启动过程&quot;专门准备的广播台，典型监听器如 <code>EnvironmentPostProcessor</code>（处理配置）、<code>ConfigDataLoader</code>（读 yml 的入口之一）都在这里被触发。</p>
+<h3>⑤ 准备环境：你所有的配置在这就位</h3>
+<p><code>prepareEnvironment</code> 做的事：创建 <code>StandardEnvironment</code>，然后把所有配置源按优先级装进去。<strong>配置的优先级顺序</strong>（高 → 低）是排查&quot;配置怎么没生效&quot;的核心知识：</p>
+<table>
+<thead>
+<tr>
+<th align="center">优先级</th>
+<th>配置源</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td>命令行参数</td>
+<td><code>--server.port=9090</code>（运维覆盖神器）</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td><code>SPRING_APPLICATION_JSON</code></td>
+<td>环境变量形式的 JSON 配置</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td>操作系统环境变量</td>
+<td><code>export SERVER_PORT=9090</code></td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td>application-{profile}.yml</td>
+<td>指定环境配置（如 test/prod）</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td>application.yml / properties</td>
+<td>主配置文件</td>
+</tr>
+</tbody></table>
+<p>加载完成后广播 <strong>environmentPrepared</strong> 事件——<strong>Spring Cloud 的&quot;配置中心拉取&quot;（bootstrap 阶段）就挂在这一环</strong>。多环境切换靠 <code>spring.profiles.active</code>：</p>
+<pre><code class="language-bash">java -jar app.jar --spring.profiles.active=prod --server.port=8081
+</code></pre>
+<h3>⑥⑦ 打印 Banner、创建容器</h3>
+<p>Banner 就是控制台那个 logo（<code>banner.txt</code> 可自定义，甚至可以关掉：<code>spring.main.banner-mode=off</code>）。创建容器按构造阶段推断的类型选择实现：Servlet 应用拿到的是 <strong><code>AnnotationConfigServletWebServerApplicationContext</code></strong>——注意它现在还是个&quot;空容器&quot;，Bean 一个没装。</p>
+<h3>⑧ prepareContext：把主类&quot;喂&quot;进容器</h3>
+<p>主类（@SpringBootApplication 标注的 Application 类）作为配置类注册进容器。回忆上上篇：自动配置的入口是主类上的 @EnableAutoConfiguration——<strong>先注册主类，后面 refresh 才有解析的起点</strong>。</p>
+<h3>⑨ refreshContext：全场最佳，启动的心脏</h3>
+<p><code>refresh()</code> 是 Spring 容器的&quot;总装车间&quot;（源码在 AbstractApplicationContext，十二个步骤，Spring Framework 时代的顶梁柱）。关键几步：</p>
+<pre><code class="language-java">public void refresh() throws BeansException, IllegalStateException {
+    // 1. invokeBeanFactoryPostProcessors ★解析@Configuration/@ComponentScan/@Bean/@Import
+    //    → 触发组件扫描、加载全部 BeanDefinition（图纸阶段！IoC 篇讲过）
+    //    → @EnableAutoConfiguration 的自动配置也在这步被处理（AutoConfigurationImportSelector）
+    // 2. registerBeanPostProcessors  注册 BeanPostProcessor（AOP、@Autowired 的处理器入关）
+    // 3. onRefresh ★Web 场景的钩子：createWebServer —— 内嵌 Tomcat 在这创建并启动！
+    // 4. finishBeanFactoryInitialization ★实例化所有非懒加载单例（施工阶段：Bean 真正诞生）
+    //    → 完整走 Bean 生命周期（Bean 生命周期篇的主场）
+    // 5. publishEvent(ContextRefreshedEvent)
+}
+</code></pre>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：refresh 四个关键动作记口诀——<strong>解析图纸（BeanFactoryPostProcessor）→ 注册关卡（BeanPostProcessor）→ 点火 Tomcat（onRefresh）→ 批量造 Bean（finishBeanFactoryInitialization）</strong>。启动日志卡在哪句，就对应哪一步：卡在 &quot;Starting Servlet service&quot; 前是 Tomcat 问题；卡在 Bean 装配是循环依赖/缺依赖；卡在数据源初始化是连接问题。</p>
+</blockquote>
+<h3>⑩ 收尾：回调 Runner、广播 ready</h3>
+<pre><code class="language-java">listeners.started(context);                  // 事件：started
+callRunners(context, applicationArguments); // 回调 ApplicationRunner / CommandLineRunner
+listeners.ready(context, timeTaken);         // 事件：ready —— 发射成功！
+</code></pre>
+<p><strong>Runner 是&quot;启动完成立刻执行&quot;的业务扩展点</strong>，两者区别仅在参数封装：</p>
+<table>
+<thead>
+<tr>
+<th>Runner</th>
+<th>参数</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ApplicationRunner</td>
+<td>ApplicationArguments（解析好的 args，方便取 --key=value）</td>
+<td>推荐</td>
+</tr>
+<tr>
+<td>CommandLineRunner</td>
+<td>String... args（原始参数）</td>
+<td>老牌</td>
+</tr>
+</tbody></table>
+<pre><code class="language-java">@Component
+@Order(1)                                   // 多个 Runner 按 Order 排序执行
+public class CacheWarmUpRunner implements ApplicationRunner {
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        // 典型用途：缓存预热、字典加载、注册中心注册、启动自检
+        System.out.println(&quot;容器就绪，开始预热缓存...&quot;);
+    }
+}
+</code></pre>
+<h3>&quot;想在启动时干点事&quot;该用哪个？</h3>
+<table>
+<thead>
+<tr>
+<th>时机</th>
+<th>手段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Bean 依赖就绪后（单个 Bean 内部）</td>
+<td>@PostConstruct</td>
+</tr>
+<tr>
+<td>所有 Bean 就绪后（少量全局逻辑）</td>
+<td>ApplicationRunner / CommandLineRunner</td>
+</tr>
+<tr>
+<td>想监听启动各阶段事件</td>
+<td>ApplicationListener&lt;ApplicationReadyEvent 等&gt; / @EventListener</td>
+</tr>
+<tr>
+<td>改配置/加配置源</td>
+<td>EnvironmentPostProcessor（spring.factories 注册）</td>
+</tr>
+</tbody></table>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：把重活（预热大缓存、拉全量数据）塞进 @PostConstruct，导致<strong>启动时间从 20 秒涨到 5 分钟</strong>——因为 @PostConstruct 在 Bean 初始化阶段执行，会阻塞后续所有 Bean 的创建。重活放 Runner 里用异步线程做，或者干脆上 MQ/定时任务，别让启动流程等你。</p>
+</blockquote>
+<hr>
+<h2>四、内嵌 Tomcat：jar 包为什么能自己跑</h2>
+<p>传统部署：写 war → 扔进独立的 Tomcat → Tomcat 是&quot;房子&quot;，应用是&quot;租客&quot;。Spring Boot 反转了关系：<strong>应用是房子，Tomcat 是内置家电</strong>。</p>
+<p>原理三步（发生在 refresh 的 onRefresh 阶段）：</p>
+<ol>
+<li>自动配置发现你是 Servlet Web 应用（条件注解：@ConditionalOnWebApplication + classpath 有 Tomcat 类）；</li>
+<li><code>ServletWebServerFactory</code>（默认 TomcatServletWebServerFactory，可换 Jetty/Undertow）的 <code>getWebServer()</code> 被调用：<strong>new 一个 Tomcat 对象 → 绑定端口（默认 8080）→ 注册 DispatcherServlet → 启动</strong>；</li>
+<li>Tomcat 与应用同 JVM、非 daemon 线程守着 main 不退出——所以 <code>java -jar</code> 直接跑，不依赖外部容器。</li>
+</ol>
+<pre><code class="language-yaml">server:
+  port: 8080                       # 换端口
+  tomcat:
+    threads:
+      max: 200                     # 最大工作线程
+    max-connections: 8192          # 最大连接数
+  shutdown: graceful               # 优雅停机：先停止接新请求，处理完存量再退出（配 preStop 更佳）
+</code></pre>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：内嵌容器的线程模型要心里有数——Tomcat 默认 200 个工作线程处理请求，每个请求占一个线程（同步 Servlet 模型）。<strong>Tomcat 线程池打满的外在表现是请求排队、RT 上涨</strong>，这也是&quot;业务线程池配置不当会拖垮 Web 线程&quot;的传播链起点（性能篇细讲）。</p>
+</blockquote>
+<hr>
+<h2>五、启动报错排查地图</h2>
+<table>
+<thead>
+<tr>
+<th>报错关键词</th>
+<th>卡在哪一步</th>
+<th>排查方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ClassNotFound / NoClassDefFound</td>
+<td>容器创建前后</td>
+<td>依赖缺失/冲突：<code>mvn dependency:tree</code></td>
+</tr>
+<tr>
+<td>Port 8080 was already in use</td>
+<td>onRefresh 启动 Tomcat</td>
+<td>端口占用：<code>lsof -i:8080</code>，或换 --server.port</td>
+</tr>
+<tr>
+<td>NoSuchBeanDefinitionException</td>
+<td>finishBeanFactory 初始化单例</td>
+<td>没扫到（包位置）/条件注解没满足（debug: true 看报告）</td>
+</tr>
+<tr>
+<td>BeanCurrentlyInCreationException</td>
+<td>同上</td>
+<td>循环依赖（Bean 生命周期篇）</td>
+</tr>
+<tr>
+<td>UnsatisfiedDependencyException</td>
+<td>同上</td>
+<td>缺依赖 Bean，顺藤摸瓜看 which bean is missing</td>
+</tr>
+<tr>
+<td>Communications link failure</td>
+<td>数据源初始化</td>
+<td>DB 网络问题：先 telnet 3306 通不通</td>
+</tr>
+<tr>
+<td>启动成功但秒退</td>
+<td>main 结束</td>
+<td>非 Web 应用或 Web 类型推断失败（缺 web 依赖）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>启动分两大阶段：构造阶段（推断应用类型、加载 Initializer/Listener）+ run 阶段（十步发射检查单）；</li>
+<li>配置加载顺序：命令行 &gt; 环境变量 &gt; profile 配置 &gt; 主配置，高优先级覆盖低优先级；</li>
+<li>refresh 四大关键动作：解析 BeanDefinition → 注册 BeanPostProcessor → onRefresh 启动内嵌 Tomcat → 批量实例化单例 Bean；</li>
+<li>内嵌容器原理：ServletWebServerFactory new 出 Tomcat，同 JVM 运行，jar 包因此可独立执行；</li>
+<li>启动期扩展点选型：@PostConstruct（Bean 级）→ Runner（全局级）→ 事件监听（阶段级）；重活放 Runner 且异步执行；</li>
+<li>排查启动报错先定位阶段（依赖/端口/循环依赖/条件不满足），debug: true 和堆栈是两大武器。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）按顺序说出 run() 的十步检查单，标注哪一步创建 Tomcat、哪一步实例化 Bean。</li>
+<li>（概念）命令行 <code>--server.port=9090</code> 为什么能覆盖 yml 里的配置？从配置优先级角度解释。</li>
+<li>（概念）@PostConstruct 和 ApplicationRunner 的执行时机有何不同？各适合干什么？</li>
+<li>（动手）写一个 ApplicationRunner，在启动完成后打印环境名、激活的 Profile、JVM 最大内存；再用 @Order 验证多个 Runner 的顺序。</li>
+<li>（动手·进阶）在 application.yml 故意制造三种启动失败并收集报错：① 端口占用（先 <code>nc -l 8080</code>）；② 缺数据库连接（配错 url）；③ Bean 循环依赖。对照本文排查地图写出每个报错的关键词和定位思路。</li>
+</ol>
+<blockquote>
+<p>下一篇预告：《事务与数据访问：@Transactional 的秘密》——原理篇收官之作。Spring 事务 = IoC + AOP + 设计模式的集大成者：七大传播行为怎么选？为什么异常被 catch 了事务就不回滚？八大失效场景一次说透，让你在被事务背刺之前先看穿它。</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/03-spring-boot/04-auto-configuration.html"><span>← 上一篇</span><b>Spring Boot 自动配置：@SpringBootApplication 拆解</b></a><a class="pn" href="/03-spring-boot/06-transaction.html"><span>下一篇 →</span><b>事务与数据访问：@Transactional 的秘密</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

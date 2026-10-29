@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分布式疑难杂症门诊 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item active" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 分布式疑难杂症门诊</div>
+  <article>
+<h1>分布式疑难杂症门诊</h1>
+<p>欢迎来到分布式疑难杂症门诊，我是坐诊的老中医……啊不，老架构师。这个门诊部开张十多年，接诊的病人五花八门：有跨服务扣库存扣出负数的，有用户双击鼠标被扣两次款的，有分布式锁把别人锁丢了导致超卖的，还有 UUID 当主键把数据库页分裂到怀疑人生的。他们的共同特点是：本地跑得好好的，一上分布式，全崩了。</p>
+<p>为什么？因为单机世界里，数据库事务（Transaction）就像亲妈，把 ACID 照顾得无微不至；一旦服务拆开、库也拆开，亲妈管不过来了，你面对的是一群&quot;各管一段&quot;的继母。网络会抖、消息会重、时钟会飘、机器会挂——分布式系统的所有疑难杂症，本质上都是在跟这四件不可控的事做斗争。</p>
+<p>今天这节课就是一张完整的门诊挂号单：理论科（CAP/BASE）、事务科（分布式事务五件套）、幂等科、锁科、ID 科、哈希科。按号就诊，一个一个治。</p>
+<h2>一、挂号处必读：CAP 与 BASE 理论</h2>
+<h3>CAP：&quot;三选二&quot;的真相</h3>
+<p>CAP 定理说：分布式系统最多同时满足一致性（Consistency）、可用性（Availability）、分区容错性（Partition Tolerance）中的两个。但这个说法有个著名误导——<strong>P 根本没得选</strong>。网络分区（Network Partition）不是选择题，是必然事件：交换机抖一下、机房光纤被挖断、GC 停顿几秒，都算分区。所以真实的选择题只有一个：<strong>分区发生时，你要 C 还是要 A？</strong></p>
+<ul>
+<li>选 <strong>CP</strong>：拒绝一部分请求来保数据强一致。典型如 ZooKeeper——少数派节点不可用，整体对外拒绝写入；</li>
+<li>选 <strong>AP</strong>：保证每个请求都有响应，但可能返回旧数据。典型如 Eureka、Nacos 默认模式——注册中心宁可给你一份稍微过期的服务列表，也不整体瘫痪。</li>
+</ul>
+<p>举个人话例子：<strong>转账 vs 余额</strong>。转账扣款（资金操作）通常倾向 C——宁可让你多等一下、甚至拒绝服务，也不能把钱算错；而查询余额页面（展示类操作）倾向 A——给你看昨天的余额也行，总不能页面直接报错。</p>
+<h3>BASE：AP 的补丁</h3>
+<p>既然大多数互联网场景选了 AP，那不一致怎么办？BASE 理论（Basically Available, Soft state, Eventually consistent）就是 AP 的&quot;售后服务条款&quot;：</p>
+<ul>
+<li><strong>基本可用（Basically Available）</strong>：故障时允许损失部分体验——降级页面、响应变慢、引导排队，但核心功能还在；</li>
+<li><strong>软状态（Soft State）</strong>：允许数据存在中间状态，比如订单&quot;支付中&quot;——不追求任意时刻两边数据严格一致；</li>
+<li><strong>最终一致（Eventually Consistent）</strong>：经过一段时间（通常是毫秒到秒级），数据最终会一致。</li>
+</ul>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：CAP 不是&quot;三选二&quot;的菜单，而是&quot;P 必选，分区发生时在 C 和 A 之间二选一&quot;。BASE 是 AP 的工程化补丁：接受中间态 + 补偿机制，追求最终一致。互联网业务的绝大多数场景，都是&quot;可以用旧数据换可用性&quot;，唯独资金和库存的核心决策点不行——这就是接下来分布式事务科要解决的问题。</p>
+</blockquote>
+<h2>二、事务科：跨服务下单扣库存，事务怎么保？</h2>
+<p>先看病历：用户下单，订单服务在订单库插入订单，库存服务在库存库扣减库存。两库两服务，没有数据库事务罩着。订单插成功了，库存扣减调用失败（或超时）——订单存在但库存没扣，超卖或资损就这样诞生了。五种主流治疗方案，先上总对比表：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>一致性</th>
+<th>业务侵入</th>
+<th>性能</th>
+<th>复杂度</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2PC/3PC（XA）</td>
+<td>强一致</td>
+<td>低</td>
+<td>差（同步阻塞）</td>
+<td>中</td>
+<td>传统数据库间、强一致刚需</td>
+</tr>
+<tr>
+<td>TCC</td>
+<td>最终一致</td>
+<td>高（每操作写三方法）</td>
+<td>好</td>
+<td>高</td>
+<td>资金类核心链路</td>
+</tr>
+<tr>
+<td>本地消息表</td>
+<td>最终一致</td>
+<td>中</td>
+<td>好</td>
+<td>低</td>
+<td>中小团队首选</td>
+</tr>
+<tr>
+<td>RocketMQ 事务消息</td>
+<td>最终一致</td>
+<td>中</td>
+<td>好</td>
+<td>中</td>
+<td>已用 RocketMQ 的团队</td>
+</tr>
+<tr>
+<td>Seata AT</td>
+<td>最终一致</td>
+<td>极低（一个注解）</td>
+<td>中</td>
+<td>低</td>
+<td>快速接入、并发不极端</td>
+</tr>
+</tbody></table>
+<h3>方案一：2PC/3PC —— 教科书里的老前辈</h3>
+<p>两阶段提交（Two-Phase Commit，2PC）：协调者（Coordinator）先问所有参与者&quot;能不能提交？&quot;（Prepare 阶段，各参与者锁住资源并写 undo/redo 日志），全部同意后再统一下达提交命令（Commit 阶段）。它的两个致命伤：<strong>同步阻塞</strong>——Prepare 之后所有参与者抱着锁等命令，性能稀烂；<strong>协调者单点</strong>——协调者在关键时刻挂了，参与者进退两难，只能干等。三阶段提交（3PC）加了 CanCommit 预询问和超时机制，缓解阻塞但依然无法根除不一致。所以互联网高并发场景几乎不用 XA：数据库扛不住那种锁的持有时间。</p>
+<h3>方案二：TCC —— 资金链路的重装铠甲</h3>
+<p>TCC（Try-Confirm-Cancel）把一个业务动作拆成三个方法：<strong>Try</strong> 检查并预留资源（冻结 100 元额度，而不是真扣）；<strong>Confirm</strong> 确认提交（用冻结额度真扣，必须成功）；<strong>Cancel</strong> 取消预留（解冻）。全部由业务代码实现，框架（如 Seata TCC 模式）只负责调度：</p>
+<pre><code class="language-java">@LocalTCC
+public interface InventoryTccAction {
+
+    @TwoPhaseBusinessAction(name = &quot;deductInventory&quot;,
+            commitMethod = &quot;confirm&quot;, rollbackMethod = &quot;cancel&quot;)
+    boolean tryDeduct(BusinessActionContext ctx,
+                      @BusinessActionContextParameter(&quot;skuId&quot;) Long skuId,
+                      @BusinessActionContextParameter(&quot;count&quot;) Integer count);
+    // Try：可用库存 -100，冻结库存 +100，只预留不真正扣
+
+    boolean confirm(BusinessActionContext ctx);
+    // Confirm：冻结库存 -100，资源正式落袋，且必须实现成功（失败就一直重试）
+
+    boolean cancel(BusinessActionContext ctx);
+    // Cancel：可用库存 +100，冻结库存 -100，释放预留
+}
+</code></pre>
+<p>TCC 的三座大山，面试和实战都爱考：</p>
+<ul>
+<li><strong>空回滚</strong>：Try 请求因网络丢失没执行，事务回滚时 Cancel 却先到了。对策：Cancel 时查事务记录表，<strong>没有 Try 记录就直接返回成功</strong>（并补一条&quot;已回滚&quot;标记）；</li>
+<li><strong>悬挂</strong>：Cancel 先执行完，迟到的 Try 才到达，预留的资源从此没人释放。对策：Try 执行前先查事务记录，<strong>发现&quot;已回滚&quot;标记就拒绝执行</strong>；</li>
+<li><strong>幂等</strong>：Confirm 和 Cancel 都可能被框架重试多次。对策：记录执行状态，<strong>已执行过直接返回成功</strong>。</li>
+</ul>
+<h3>方案三：本地消息表 —— 最工程化的老实人</h3>
+<p>思路朴素到感人：<strong>业务数据和待发送消息写在同一个本地事务里</strong>，用数据库事务保证&quot;业务成功则消息必达&quot;。再用定时任务扫表补偿发送。牺牲一点实时性，换来极高的可靠性，中小团队首选。</p>
+<div class="mermaid">flowchart TD
+    A[订单服务本地事务开始] --> B[插入订单表]
+    A --> C[插入本地消息表 status=INIT]
+    B --> D{本地事务提交?}
+    C --> D
+    D -- 失败 --> E[订单和消息一起回滚<br>不会出现孤儿消息]
+    D -- 成功 --> F[定时任务扫描 INIT 消息]
+    F --> G[发送 MQ 并等确认]
+    G -- 成功 --> H[更新 status=SENT]
+    G -- 失败 --> I[指数退避, 下轮重试<br>超过阈值告警人工介入]
+    H --> J[库存服务消费扣减<br>幂等消费]
+    J --> K[回执/对账核对, 更新 status=DONE]
+</div>
+<p>它的美在于：消息和业务同库同事务，&quot;要么都有、要么都没有&quot;，天衣无缝；缺点是消息表耦合在业务库，且要自己写补偿任务和对账逻辑。</p>
+<h3>方案四：RocketMQ 事务消息 —— 让 MQ 替你写消息表</h3>
+<p>原理是<strong>半消息（Half Message）+ 本地事务 + 回查</strong>：先发一条对消费者不可见的 half 消息，执行本地事务，再提交或回滚这条消息；如果提交/回滚命令丢了，MQ 会主动回查你的事务状态。</p>
+<div class="mermaid">sequenceDiagram
+    participant P as 生产者(订单服务)
+    participant M as RocketMQ
+    participant C as 消费者(库存服务)
+    P->>M: 1. 发送 half 消息(消费者不可见)
+    M-->>P: 2. half 发送成功
+    P->>P: 3. 执行本地事务(插入订单)
+    P->>M: 4. commit 或 rollback half 消息
+    alt 第 4 步丢失/超时
+        M->>P: 5. 定时回查 checkLocalTransaction
+        P-->>M: 返回 commit / rollback
+    end
+    M->>C: 6. 消息转正后投递
+    C->>C: 7. 幂等消费扣减库存
+</div>
+<p>它把&quot;本地消息表&quot;的表和定时任务都内置进了 MQ，业务方只需实现两个回调：执行本地事务、回答回查。代价是绑定 RocketMQ，且回查逻辑要写对。</p>
+<h3>方案五：Seata AT —— 一个注解的&quot;分布式事务&quot;体验</h3>
+<p>AT（Automatic Transaction）模式对业务<strong>几乎零侵入</strong>，一个注解开启全局事务：</p>
+<pre><code class="language-java">@GlobalTransactional // 开启全局事务，TM 向 TC 注册全局事务
+public void createOrder(OrderCreateDTO dto) {
+    orderMapper.insert(convert(dto));                        // 订单库：分支事务一
+    inventoryClient.deduct(dto.getSkuId(), dto.getCount());  // 库存库：分支事务二
+    accountClient.debit(dto.getUserId(), dto.getAmount());   // 账户库：分支事务三
+}
+</code></pre>
+<p>底层原理三句话讲透：<strong>一阶段</strong>——Seata 的数据源代理拦截业务 SQL，解析出修改前后的数据镜像，生成 undo_log 与业务数据在<strong>同一个本地事务里提交</strong>，然后向事务协调器（TC）注册分支并申请<strong>全局锁</strong>，一阶段结束本地锁即释放，性能远好于 XA；<strong>二阶段提交</strong>——异步批量删除 undo_log，几乎零开销；<strong>二阶段回滚</strong>——用 undo_log 里的前镜像生成反向 SQL 补偿回去，全局锁保证回滚期间没人改这笔数据。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：某团队给一个高频下单链路无脑上 Seata AT，大促时全局锁竞争激烈，大量事务在等锁中超时回滚，吞吐量反而腰斩。AT 的全局锁决定了它适合并发不极端的场景；秒杀级别的热点扣减，请上 TCC 或 Redis 预扣 + 异步落库。</p>
+</blockquote>
+<h3>选型建议：三维评估</h3>
+<p>一致性要求（资金强一致 → TCC；普通业务最终一致即可）、侵入性（老系统改不动 → Seata AT；新核心链路愿投入 → TCC）、性能（超高并发 → MQ 异步化 + 幂等消费）。绝大多数业务，<strong>本地消息表 / 事务消息 + 幂等消费</strong>就是性价比之王。</p>
+<h2>三、幂等科：分布式系统的保命符</h2>
+<p>为什么分布式离不开幂等（Idempotency）？因为<strong>重试无处不在</strong>：调用超时了要重试、MQ 保证 at-least-once 语义必然重投、用户手快双击提交按钮、前端框架自带重发。在单机里有事务兜底，分布式里&quot;执行两次&quot;没人兜底——不幂等，就等着重复扣款、超卖、重复发货上门挨骂。</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>原理</th>
+<th>典型场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>唯一索引</td>
+<td>数据库约束兜底，重复插入直接报错</td>
+<td>注册、消息消费记录</td>
+</tr>
+<tr>
+<td>Token 预取</td>
+<td>进入页面前先领 token，提交时原子删除</td>
+<td>表单防重复提交</td>
+</tr>
+<tr>
+<td>状态机</td>
+<td>只允许合法状态单向流转</td>
+<td>订单状态流转</td>
+</tr>
+<tr>
+<td>乐观锁</td>
+<td>version 号 / 条件更新</td>
+<td>余额、库存扣减</td>
+</tr>
+<tr>
+<td>去重表</td>
+<td>唯一业务键先插去重表再处理</td>
+<td>MQ 消费去重</td>
+</tr>
+</tbody></table>
+<pre><code class="language-java">// 状态机幂等：只允许&quot;待支付 -&gt; 已支付&quot;，重复请求影响行数为 0
+int rows = orderMapper.updateStatus(orderId, OrderStatus.PAID, OrderStatus.WAIT_PAY);
+if (rows == 0) {
+    log.info(&quot;订单 {} 状态未推进，判定为重复请求，幂等返回成功&quot;, orderId);
+    return; // 直接返回成功，让上游安心停止重试
+}
+</code></pre>
+<pre><code class="language-sql">-- 唯一索引兜底：同一个消息 ID 只能插入一次，重复消费直接撞约束
+ALTER TABLE mq_consume_record ADD UNIQUE KEY uk_msg_id (msg_id);
+</code></pre>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：幂等键的选择比方案本身更重要。用&quot;业务语义键&quot;（订单号 + 操作类型），别用数据库自增 ID；查询接口天然幂等可以不管，<strong>所有写操作上线前先问一句&quot;这个接口被执行两次会怎样？&quot;</strong> 答不上来的，先补幂等再上线。</p>
+</blockquote>
+<h2>四、锁科：分布式锁深水区</h2>
+<p>单机的 <code>synchronized</code> 出了进程就失效，多实例共享资源的互斥要靠分布式锁。主流方案横向对比：</p>
+<table>
+<thead>
+<tr>
+<th>实现</th>
+<th>性能</th>
+<th>可靠性</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Redis SET NX</td>
+<td>高</td>
+<td>单主模式有丢锁风险</td>
+<td>主从异步复制，主挂锁丢</td>
+</tr>
+<tr>
+<td>Redisson</td>
+<td>高</td>
+<td>看门狗续期，生产默认</td>
+<td>锁可重入、支持红锁（有争议）</td>
+</tr>
+<tr>
+<td>RedLock</td>
+<td>中</td>
+<td>学术界有争议</td>
+<td>Martin Kleppmann 与 antirez 的著名论战</td>
+</tr>
+<tr>
+<td>ZooKeeper</td>
+<td>中</td>
+<td>高</td>
+<td>临时顺序节点 + Watch 通知</td>
+</tr>
+<tr>
+<td>ETCD</td>
+<td>中</td>
+<td>高</td>
+<td>K8s 生态同款，Raft 保证</td>
+</tr>
+</tbody></table>
+<p>原生 Redis 锁的写法与风险：</p>
+<pre><code class="language-java">// 原子地&quot;加锁 + 设置过期&quot;，value 存唯一标识用于安全解锁
+String result = jedis.set(lockKey, requestId, SetParams.setParams().nx().ex(30));
+if (!&quot;OK&quot;.equals(result)) {
+    return false; // 没抢到锁
+}
+</code></pre>
+<p>两个坑：<strong>锁过期但业务没跑完</strong>（别的线程拿到锁，并发就穿了）；<strong>解锁解了别人的锁</strong>（必须用 Lua 脚本校验 value 再删）。Redisson 一站式解决，看门狗（Watchdog）机制尤其优雅：</p>
+<pre><code class="language-java">RLock lock = redissonClient.getLock(&quot;seckill:sku:&quot; + skuId);
+lock.lock(); // 不传超时时间 -&gt; 看门狗默认 30s，后台每 1/3 时间自动续期
+try {
+    deductStock(skuId); // 业务执行期间，锁不会因过期被别人抢走
+} finally {
+    lock.unlock(); // Lua 校验持有者身份后再释放，只解自己的锁
+}
+</code></pre>
+<p>RedLock 争议一段话讲清：它向多个独立 Redis 节点依次加锁、过半成功才算成功，试图解决单点丢锁。但分布式系统学者 Martin Kleppmann 指出它依赖各节点时钟近似同步，时钟跳变时仍可能出错；Redis 作者 antirez 反驳时钟问题可控。工程界的共识是：<strong>极端正确性场景（资金结算互斥）别赌 Redis，用 ZooKeeper</strong>。ZK 的临时顺序节点方案：所有人排队，每个 watcher 只盯<strong>前面一个人</strong>，前面释放再唤醒自己——既避免羊群效应（Herd Effect，一个释放惊醒全部等待者），又天然实现公平锁，会话断开锁自动释放。</p>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：选型口诀——<strong>性能优先用 Redis（Redisson），正确性优先用 ZooKeeper</strong>。以及一句被血泪反复验证的话：先问&quot;加锁是否必要？&quot;很多并发问题用数据库乐观锁、唯一约束就能优雅解决，分布式锁是最后手段，不是第一反应。</p>
+</blockquote>
+<h2>五、ID 科：分布式 ID 生成</h2>
+<p><img src="/assets/images/05-02-snowflake-bits.svg" alt="雪花算法 64 位分字段结构与时钟回拨之坑"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：雪花算法 64 位分字段结构与时钟回拨之坑</p>
+</blockquote>
+<p>为什么 UUID 不能当主键？两个硬伤：<strong>无序</strong>——InnoDB 主键是聚簇索引，插入乱序会导致页分裂（Page Split），写入性能持续劣化；<strong>太长</strong>——36 个字符占空间，二级索引还要冗余主键，存储成本翻倍。自增主键在分库分表后又撞墙：多个库各自从 1 开始，主键必然冲突。</p>
+<p>方案一是<strong>数据库号段（Segment）模式</strong>：用一张表存 <code>biz_tag, max_id, step</code>，每次取一个号段（比如 1000 个）缓存到应用内存发号，用完再取。美团的 Leaf-segment 在此基础上加了双 Buffer 预加载，取号段时异步准备下一个，数据库短暂抖动也不影响发号。</p>
+<p>方案二是<strong>雪花算法（Snowflake）</strong>，结构逐位拆解：</p>
+<pre><code>| 1 bit |      41 bit       |     10 bit      |    12 bit    |
+| 符号位 |    毫秒时间戳      |     机器 ID      |    序列号     |
+| 恒为 0 | 相对起始纪元可撑69年 | 常拆 5位机房+5位机器 | 每毫秒4096个 |
+</code></pre>
+<ul>
+<li>41 bit 时间戳：毫秒级，相对自定义纪元，够用 69 年；</li>
+<li>10 bit 机器号：可标识 1024 个节点，业界常拆成 5 bit 机房 + 5 bit 机器；</li>
+<li>12 bit 序列号：同一毫秒同一机器可发 4096 个，单机理论 400 万+/秒。</li>
+</ul>
+<p>趋势递增、不依赖数据库、性能极高，但有个著名隐患——<strong>时钟回拨（Clock Rollback）</strong>：NTP 校时把系统时间往回调，生成的 ID 可能与之前重复。工程对策：回拨小于阈值就自旋等待追平；超过阈值直接拒绝发号并告警；或预留&quot;未来时间片&quot;垫高时间戳。开源方案一段带过：百度 UidGenerator 用 RingBuffer 预生成 + 填充时间戳尾部，规避实时依赖时钟；美团 Leaf 同时提供 Leaf-segment（号段）与 Leaf-snowflake（ZK 分配机器号 + 时钟监控）两把武器，国内落地的常客。</p>
+<h2>六、哈希科：一致性哈希</h2>
+<p>缓存分片为什么需要一致性哈希（Consistent Hashing）？看朴素方案的翻车现场：3 台缓存机器，路由规则 <code>hash(key) % 3</code>。扩容到 4 台变成 <code>% 4</code>——约 75% 的 key 映射到了新节点，缓存瞬间大面积失效，请求洪峰全部穿透到数据库，这就是<strong>扩容雪崩</strong>。</p>
+<p>一致性哈希的解法：把哈希空间首尾相连成一个 <strong>2^32 的哈希环</strong>，服务器和 key 都 hash 到环上，key 顺时针找到的第一台服务器就是归属节点。扩一台新机器，只有它落在环上那一小段区间的 key 需要迁移——理论上只影响 <code>1/N</code> 的数据。但节点少的时候，环上分布严重不均（某台机器吃掉 80% 流量的&quot;倾斜&quot;），解法是<strong>虚拟节点（Virtual Node）</strong>：每台物理节点在环上打散出 150~200 个虚拟节点，让分布均匀到可以放心用。</p>
+<div class="mermaid">flowchart LR
+    subgraph 取模扩容翻车现场
+        A["hash(key) % 3"] -- 扩容 --> B["hash(key) % 4"]
+        B --> C["约75%缓存失效<br>请求穿透打崩DB"]
+    end
+    subgraph 一致性哈希
+        D[Key顺时针找环上最近节点] --> E[扩容只迁移1/N数据]
+        E --> F[虚拟节点150-200个<br>解决分布倾斜]
+    end
+</div>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：某团队缓存集群用简单取模，双十一前紧急扩容一倍缓存节点，结果键大面积换节点，命中率从 98% 直接掉到 30%，穿透流量把 MySQL 打出了连接池耗尽——扩容扩出了生产事故。缓存的扩缩容，要么用一致性哈希客户端，要么低峰期小步慢跑 + 预热。</p>
+</blockquote>
+<h2>七、医嘱：分布式问题的通用思维</h2>
+<p>门诊看到这，你有没有发现一个规律？所有方案都在做同一件事：<strong>承认失败随时会发生，然后设计好失败之后的路</strong>。重试会带来重复，所以要幂等；分区会带来不一致，所以要有补偿；时钟会回拨，所以要有拒绝发号的兜底；节点会挂，所以锁要有看门狗和会话清理。</p>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：分布式的通用心法就八个字——<strong>宁可丑而稳，不要美而险</strong>。方案评审时，少问&quot;这个设计多优雅&quot;，多问三句：超时了怎么办？重试了怎么办？挂了怎么办？三个问题都有答案的设计，才是能上生产的设计。</p>
+</blockquote>
+<h2>本篇小结</h2>
+<ul>
+<li>CAP 真相：P 必选，分区发生时在 C 与 A 之间取舍；BASE 是 AP 的工程化补丁（基本可用/软状态/最终一致）；</li>
+<li>分布式事务五件套各有定位：2PC 强一致但阻塞、TCC 资金级但侵入高、本地消息表最工程化、RocketMQ 事务消息免建表、Seata AT 零侵入但全局锁限并发；</li>
+<li>TCC 三大坑：空回滚、悬挂、幂等，对策全部围绕&quot;事务记录表&quot;展开；</li>
+<li>幂等是分布式保命符：唯一索引/Token/状态机/乐观锁/去重表按场景选型；</li>
+<li>分布式锁：性能优先 Redisson（看门狗续期），正确性优先 ZK（临时顺序节点 + Watch）；</li>
+<li>分布式 ID：UUID 无序且长不能做主键；雪花算法 41+10+12 逐位可拆，警惕时钟回拨；Leaf/UidGenerator 是成熟开源解；</li>
+<li>一致性哈希 + 虚拟节点解决取模扩容的缓存雪崩；</li>
+<li>通用思维：为失败而设计——超时、重试、宕机三问。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>注册中心、订单库、购物车缓存，这三个系统你分别会倾向 CP 还是 AP？说出各自的取舍理由。</li>
+<li>TCC 的&quot;空回滚&quot;和&quot;悬挂&quot;是一对孪生坑，请用自己的话解释它们发生的完整时序，并说明为什么&quot;一张事务记录表&quot;能同时治这两个病。</li>
+<li>雪花算法如果两台机器被手工配置了相同的机器 ID（workerId），会发生什么？如何从制度和技术两个层面避免？</li>
+<li><strong>动手实践</strong>：用 Spring Boot + Seata AT 搭一个&quot;下单-扣库存&quot;双服务 Demo，故意在库存服务里抛出异常，观察订单数据是否被全局回滚；再打开 <code>undo_log</code> 表，看看里面存的前后镜像长什么样。</li>
+<li>思考题：既然 MQ 天然 at-least-once，那&quot;事务消息 + 幂等消费&quot;和&quot;本地消息表 + 幂等消费&quot;在极端场景（生产者发送 commit 命令前宕机）下的行为有何异同？</li>
+</ol>
+<p>下一篇预告：分布式这一关过完，你的系统总算能&quot;活着&quot;了，但&quot;活着&quot;和&quot;活得滋润&quot;是两回事——慢 SQL 十秒、接口 P99 飙红、JVM 频繁 Full GC 怎么破？下一篇《性能优化方法论：从慢 SQL 到全链路》，带你把系统从&quot;能跑&quot;调到&quot;能打&quot;。</p>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/05-architecture/01-microservices.html"><span>← 上一篇</span><b>微服务拆分与 Spring Cloud 实战</b></a><a class="pn" href="/05-architecture/03-performance.html"><span>下一篇 →</span><b>性能优化方法论：从慢 SQL 到全链路</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

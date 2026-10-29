@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>性能优化方法论：从慢 SQL 到全链路 · Java 从零到专家</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<style>
+  :root { --ink:#1E293B; --sub:#475569; --line:#E2E8F0; --brand:#2563EB; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+         color: var(--ink); background: #F8FAFC; }
+  a { color: var(--brand); text-decoration: none; }
+
+  aside { position: fixed; top: 0; left: 0; bottom: 0; width: 292px; overflow-y: auto;
+          background: #0F172A; color: #CBD5E1; padding: 20px 14px 32px; }
+  .brand { font-size: 17px; font-weight: 700; color: #F8FAFC; padding: 6px 10px 14px;
+           border-bottom: 1px solid #1E293B; margin-bottom: 12px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; color: #64748B; margin-top: 4px; }
+  #search { width: 100%; margin: 10px 0 4px; padding: 7px 10px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #1E293B; background: #1E293B; color: #E2E8F0; outline: none; }
+  #search:focus { border-color: #3B82F6; }
+  .nav-home { display: block; margin: 6px 0; padding: 9px 10px; border-radius: 8px;
+              color: #E2E8F0; font-weight: 600; font-size: 13.5px; }
+  .sec { margin: 16px 4px 6px; font-size: 12px; font-weight: 700; color: var(--c, #94A3B8); }
+  a.item { display: flex; gap: 8px; align-items: baseline; padding: 7px 10px; border-radius: 8px;
+           color: #CBD5E1; font-size: 12.5px; line-height: 1.5; }
+  a.item:hover { background: #1E293B; color: #F8FAFC; }
+  a.item.active { background: #1D4ED8; color: #FFFFFF; font-weight: 600; }
+  a.item .no { color: #64748B; font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  a.item.active .no { color: #BFDBFE; }
+
+  main { margin-left: 292px; padding: 40px 48px 80px; }
+  article { max-width: 880px; margin: 0 auto; background: #FFFFFF; border: 1px solid var(--line);
+            border-radius: 16px; padding: 44px 52px 40px; line-height: 1.85; font-size: 15.5px; }
+  article h1 { font-size: 27px; line-height: 1.4; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
+  article h2 { font-size: 21px; margin-top: 42px; padding-left: 12px; border-left: 4px solid var(--brand); }
+  article h3 { font-size: 17.5px; margin-top: 30px; }
+  article p { margin: 14px 0; }
+  article img { max-width: 100%; display: block; margin: 22px auto; border: 1px solid var(--line);
+                border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,.06); }
+  article table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  article th, article td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  article th { background: #F1F5F9; }
+  article tr:nth-child(even) td { background: #FAFBFD; }
+  article code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .88em;
+                 background: #EEF2F7; padding: 2px 6px; border-radius: 5px; }
+  article pre { background: #0D1117; border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  article pre code { background: none; padding: 0; color: #E6EDF3; font-size: 13px; line-height: 1.6; }
+  article ul, article ol { padding-left: 26px; }
+  article li { margin: 6px 0; }
+  article hr { border: none; border-top: 1px dashed var(--line); margin: 34px 0; }
+
+  blockquote { margin: 18px 0; padding: 12px 18px; border-radius: 10px;
+               border-left: 4px solid #94A3B8; background: #F8FAFC; color: var(--sub); }
+  blockquote p { margin: 6px 0; }
+  blockquote.tip-key   { border-color: #2563EB; background: #EFF6FF; }
+  blockquote.tip-warn  { border-color: #DC2626; background: #FEF2F2; }
+  blockquote.tip-expert{ border-color: #7C3AED; background: #F5F3FF; }
+  blockquote.tip-fig   { border-color: #64748B; background: #F1F5F9; font-size: 14px; }
+  .mermaid { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px;
+             padding: 18px; margin: 20px 0; overflow-x: auto; text-align: center; }
+
+  .crumb { max-width: 880px; margin: 0 auto 14px; font-size: 13px; color: #64748B; }
+  .pnbar { max-width: 880px; margin: 22px auto 0; display: flex; gap: 14px; }
+  a.pn { flex: 1; border: 1px solid var(--line); background: #FFFFFF; border-radius: 12px;
+         padding: 12px 16px; color: var(--ink); font-size: 13px; }
+  a.pn:hover { border-color: var(--brand); }
+  a.pn span { display: block; color: #94A3B8; font-size: 11.5px; margin-bottom: 4px; }
+  a.pn.ghost { visibility: hidden; }
+
+  footer.site { max-width: 880px; margin: 26px auto 0; font-size: 12px; color: #94A3B8; text-align: center; }
+  @media (max-width: 960px) {
+    aside { position: static; width: auto; }
+    main { margin-left: 0; padding: 24px 16px 60px; }
+    article { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">☕ Java 从零到专家<small>36 篇 · 五个阶段 · 从 Hello World 到架构师</small></div>
+  <input id="search" type="text" placeholder="🔍 搜索文章标题…">
+  <nav id="nav">
+<a class="nav-home" href="/index.html">🏠 系列总览 · 学习路线</a>
+<div class="sec" style="--c:#2563EB">📖 第一阶段 · Java 基础篇</div>
+<a class="item" href="/01-java-basics/01-hello-java.html"><span class="no">01</span>Hello Java：从一杯咖啡到一个世界</a>
+<a class="item" href="/01-java-basics/02-data-types.html"><span class="no">02</span>变量与数据类型：8 大基本类型排排坐</a>
+<a class="item" href="/01-java-basics/03-control-flow-arrays.html"><span class="no">03</span>流程控制与数组：程序的岔路口</a>
+<a class="item" href="/01-java-basics/04-oop-part1.html"><span class="no">04</span>面向对象（上）：封装、继承、多态三巨头</a>
+<a class="item" href="/01-java-basics/05-oop-part2.html"><span class="no">05</span>面向对象（下）：接口、抽象类与内部类的爱恨情仇</a>
+<a class="item" href="/01-java-basics/06-string-deep-dive.html"><span class="no">06</span>String 全解析：最熟悉的陌生人</a>
+<a class="item" href="/01-java-basics/07-collections-part1.html"><span class="no">07</span>集合框架（上）：容器选型地图</a>
+<a class="item" href="/01-java-basics/08-collections-part2.html"><span class="no">08</span>集合框架（下）：HashMap 源码炖着吃</a>
+<a class="item" href="/01-java-basics/09-exceptions.html"><span class="no">09</span>异常处理：优雅地搞砸事情</a>
+<a class="item" href="/01-java-basics/10-generics-reflection.html"><span class="no">10</span>泛型与反射：类型的编译期与运行时</a>
+<div class="sec" style="--c:#059669">⚡ 第二阶段 · Java 进阶篇</div>
+<a class="item" href="/02-java-advanced/01-thread-basics.html"><span class="no">11</span>多线程（一）：万物皆可 Thread</a>
+<a class="item" href="/02-java-advanced/02-jmm-volatile.html"><span class="no">12</span>多线程（二）：JMM、volatile 与锁升级</a>
+<a class="item" href="/02-java-advanced/03-aqs-threadpool.html"><span class="no">13</span>多线程（三）：AQS、显式锁与线程池</a>
+<a class="item" href="/02-java-advanced/04-juc-toolbox.html"><span class="no">14</span>并发工具箱：JUC 全家桶</a>
+<a class="item" href="/02-java-advanced/05-jvm-memory.html"><span class="no">15</span>JVM 内存结构：运行时数据区巡礼</a>
+<a class="item" href="/02-java-advanced/06-garbage-collection.html"><span class="no">16</span>垃圾回收：对象的生与死</a>
+<a class="item" href="/02-java-advanced/07-class-loading.html"><span class="no">17</span>类加载机制：双亲委派与字节码</a>
+<a class="item" href="/02-java-advanced/08-jvm-tuning.html"><span class="no">18</span>JVM 调优实战：工具箱与真实案例</a>
+<a class="item" href="/02-java-advanced/09-network-programming.html"><span class="no">19</span>网络编程：从 Socket 到 HTTP</a>
+<a class="item" href="/02-java-advanced/10-design-patterns.html"><span class="no">20</span>设计模式：高频模式实战</a>
+<div class="sec" style="--c:#D97706">🌸 第三阶段 · Spring Boot 原理篇</div>
+<a class="item" href="/03-spring-boot/01-spring-ioc.html"><span class="no">21</span>Spring IoC：控制反转的前世今生</a>
+<a class="item" href="/03-spring-boot/02-bean-lifecycle.html"><span class="no">22</span>Bean 生命周期与循环依赖</a>
+<a class="item" href="/03-spring-boot/03-spring-aop.html"><span class="no">23</span>Spring AOP：动态代理的魔法</a>
+<a class="item" href="/03-spring-boot/04-auto-configuration.html"><span class="no">24</span>Spring Boot 自动配置：@SpringBootApplication 拆解</a>
+<a class="item" href="/03-spring-boot/05-boot-startup.html"><span class="no">25</span>Spring Boot 启动流程：从 main 到 Tomcat 就绪</a>
+<a class="item" href="/03-spring-boot/06-transaction.html"><span class="no">26</span>事务与数据访问：@Transactional 的秘密</a>
+<div class="sec" style="--c:#DB2777">🛠️ 第四阶段 · 应用实践篇</div>
+<a class="item" href="/04-practice/01-restful-api.html"><span class="no">27</span>从零搭建一个 RESTful API 服务</a>
+<a class="item" href="/04-practice/02-database.html"><span class="no">28</span>数据库实战：MySQL 与 MyBatis-Plus</a>
+<a class="item" href="/04-practice/03-redis-cache.html"><span class="no">29</span>缓存实战：Redis 三板斧</a>
+<a class="item" href="/04-practice/04-async-mq.html"><span class="no">30</span>异步与消息：从 @Async 到 RocketMQ</a>
+<a class="item" href="/04-practice/05-testing.html"><span class="no">31</span>测试与质量守护</a>
+<a class="item" href="/04-practice/06-logging-monitoring.html"><span class="no">32</span>日志、监控与上线部署</a>
+<div class="sec" style="--c:#7C3AED">🏔️ 第五阶段 · 高手进阶篇</div>
+<a class="item" href="/05-architecture/01-microservices.html"><span class="no">33</span>微服务拆分与 Spring Cloud 实战</a>
+<a class="item" href="/05-architecture/02-distributed.html"><span class="no">34</span>分布式疑难杂症门诊</a>
+<a class="item active" href="/05-architecture/03-performance.html"><span class="no">35</span>性能优化方法论：从慢 SQL 到全链路</a>
+<a class="item" href="/05-architecture/04-growth-guide.html"><span class="no">36</span>从码农到专家：Java 工程师成长指南</a>
+  </nav>
+</aside>
+<main>
+  <div class="crumb">📖 Java 从零到专家 · 博客系列 / 性能优化方法论：从慢 SQL 到全链路</div>
+  <article>
+<h1>性能优化方法论：从慢 SQL 到全链路</h1>
+<p>先立个案。某电商下单接口，P99 从 800ms 涨到 2 秒，运营要炸，老板要疯。团队里的小 A 提议：&quot;咱们换个新框架吧！&quot;小 B 说：&quot;上 Kubernetes 弹性扩容！&quot;老 C 默默打开监控看了十分钟，说了三个字：&quot;慢 SQL。&quot;</p>
+<p>一小时后问题定位：一次订单列表查询没走索引，全表扫描 40 万行。加了个联合索引，P99 回到 300ms。框架没换，机器没加，一行 DDL 解决战斗。</p>
+<p>这个故事是性能优化世界的缩影：<strong>大多数性能问题不是技术不够新，而是不知道慢在哪。</strong> 这篇讲的是方法论——一套&quot;无论什么系统都能套用&quot;的排查与优化流程，外加各层的实战清单和一个完整的案例复盘。</p>
+<hr>
+<h2>一、优化的三大前提</h2>
+<p><img src="/assets/images/05-03-p99-vs-avg.svg" alt="长尾分布：平均值被稀释，P99 才是用户真实的痛"></p>
+<blockquote class="tip-fig">
+<p>🖼️ <strong>图解</strong>：长尾分布：平均值被稀释，P99 才是用户真实的痛</p>
+</blockquote>
+<h3>前提一：先定义&quot;慢&quot;——没有指标就没有优化</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+<th>关键点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RT（Response Time）</td>
+<td>响应时间</td>
+<td><strong>看 P95/P99 而不是平均值</strong>：平均值会被少量快请求稀释，而用户抱怨的恰恰是那 1% 的慢请求</td>
+</tr>
+<tr>
+<td>QPS / TPS</td>
+<td>每秒查询/事务数</td>
+<td>吞吐量，压测的核心产出</td>
+</tr>
+<tr>
+<td>并发数</td>
+<td>同时活跃的请求数</td>
+<td>Little 定律：并发数 ≈ QPS × 平均 RT</td>
+</tr>
+<tr>
+<td>错误率</td>
+<td>失败请求占比</td>
+<td>性能优化常常顺手把错误率也治了</td>
+</tr>
+</tbody></table>
+<p><strong>为什么 P99 比 RT 平均值重要？</strong> 平均 RT 50ms 的接口，P99 可能是 2 秒——100 个用户里有 1 个在忍受 2 秒。而根据经验，P99 慢的接口在流量高峰时会像雪崩一样放大（慢→线程堆积→更慢）。</p>
+<h3>前提二：要有基线（Baseline）</h3>
+<p>&quot;优化后快了 30%&quot;——快了 30% 是从多少到多少？没有优化前的测量数据，一切&quot;感觉变快了&quot;都是玄学。<strong>动手改任何东西之前，先记录当前指标</strong>：压测一遍、留档曲线、保存 GC 日志。</p>
+<h3>前提三：优化的黄金闭环</h3>
+<div class="mermaid">flowchart LR
+    A["① 测量<br/>数据说话"] --> B["② 定位<br/>慢在哪一层"]
+    B --> C["③ 优化<br/>最小改动"]
+    C --> D["④ 验证<br/>对比基线"]
+    D -->|"没达标：换下一层继续"| B
+    D -->|"达标：沉淀文档"| A
+    style A fill:#e1f5fe
+    style D fill:#e8f5e9
+</div>
+<blockquote class="tip-key">
+<p>📌 <strong>划重点</strong>：<strong>测量驱动，而不是直觉驱动</strong>。&quot;我觉得是 GC 的问题&quot;和&quot;数据显示 70% 时间耗在 SQL 上&quot;，是业余和专业的分水岭。还有一条纪律：<strong>一次只改一个变量</strong>——同时改三个地方，指标变好了你也不知道是谁的功劳，变坏了更懵。</p>
+</blockquote>
+<hr>
+<h2>二、分层排查地图：慢可能在哪一层</h2>
+<p>一次请求的完整旅程，每一层都可能是凶手：</p>
+<div class="mermaid">flowchart TD
+    U["用户"] --> GW["接入层<br/>CDN / 网关 / 负载均衡"]
+    GW --> APP["应用层<br/>业务代码 / 线程池 / GC"]
+    APP --> CACHE["缓存层<br/>Redis / 本地缓存"]
+    CACHE --> DB["数据库层<br/>MySQL 索引 / 锁 / 连接池"]
+    APP --> MQ2["中间件层<br/>MQ / RPC 下游"]
+    DB --> SYS["系统层<br/>CPU / 内存 / 磁盘 IO / 网络"]
+    MQ2 --> SYS
+</div>
+<p><strong>排查顺序有讲究：从外到内、从上游到下游。</strong> 先看监控大盘定层（网关耗时 vs 服务耗时 vs DB 耗时，谁占了 RT 的大头），再进层细查。链路追踪（SkyWalking/OpenTelemetry）是定层神器：一次请求的瀑布图直接显示每段耗时。</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>典型症状</th>
+<th>定位工具</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>网关/接入</td>
+<td>全部接口慢、静态资源慢</td>
+<td>CDN 命中率、网关日志</td>
+</tr>
+<tr>
+<td>应用层</td>
+<td>个别接口慢、线程池打满</td>
+<td>Arthas trace、jstack、链路追踪</td>
+</tr>
+<tr>
+<td>数据库</td>
+<td>慢查询日志暴增、连接池等待</td>
+<td>慢日志、explain、连接池监控</td>
+</tr>
+<tr>
+<td>缓存</td>
+<td>命中率下跌、大 Key 卡顿</td>
+<td>redis 监控、--bigkeys</td>
+</tr>
+<tr>
+<td>系统层</td>
+<td>CPU/IO 饱和、网络重传</td>
+<td>top、iostat、sar</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>三、压测：主动制造&quot;案发现场&quot;</h2>
+<p>被动等生产出事再排查，不如主动压出瓶颈。JMeter 快速上手：</p>
+<pre><code class="language-bash"># ① 新建线程组：模拟 50 并发、持续 3 分钟、1 秒内均匀拉起（Ramp-up=1）
+# ② 加 HTTP 采样器：GET http://host:8080/api/books?page=1&amp;size=10
+# ③ 加聚合报告监听器，跑完看核心数据
+</code></pre>
+<p>聚合报告读法（重点列）：</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>含义</th>
+<th>健康信号</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Average / Median / 99% Line</td>
+<td>平均/中位/P99 耗时</td>
+<td>P99 是否达标</td>
+</tr>
+<tr>
+<td>Throughput</td>
+<td>QPS</td>
+<td>是否随并发线性上涨（涨不动=到瓶颈了）</td>
+</tr>
+<tr>
+<td>Error %</td>
+<td>错误率</td>
+<td>压出 5xx 常是线程池/连接池满</td>
+</tr>
+</tbody></table>
+<p><strong>压测三板斧姿势</strong>：基准压测（单接口摸底）→ 阶梯压测（并发 10→50→100，找吞吐拐点）→ 稳定性压测（中等负载跑 4 小时，抓内存泄漏、连接泄漏这类慢性病）。<strong>压测环境数据量要贴近生产</strong>——10 条数据的压测报告毫无意义（实践篇建的那 10 万条测试数据就是为这准备的）。命令行党用 <code>wrk -t8 -c200 -d60s http://host/api</code> 更轻快。</p>
+<hr>
+<h2>四、各层优化清单</h2>
+<h3>4.1 数据库层（80% 的问题在这）</h3>
+<ul>
+<li><strong>慢 SQL 定位与 explain</strong>：实践篇讲透的四板斧（慢日志→explain→索引→改写），这是数据库优化的全部入口；</li>
+<li><strong>索引清单</strong>：联合索引最左前缀、覆盖索引避免回表、避开索引失效十大场景（函数包裹/隐式转换/前导模糊…）；</li>
+<li><strong>深分页</strong>：延迟关联或游标（<code>WHERE id &gt; lastId</code>）；</li>
+<li><strong>锁与事务</strong>：事务尽量短（别在 @Transactional 里调 RPC）、批量操作分批、热点行更新合并（攒批更新）；</li>
+<li><strong>连接池</strong>：maximum-pool-size 按公式（核数×2~4）与压测共同定，监控 active/pending。</li>
+</ul>
+<h3>4.2 缓存层</h3>
+<ul>
+<li>命中率是命根子（&gt;90% 及格），未命中率突增先查 TTL 策略与 key 设计；</li>
+<li>大 Key（value &gt;10KB）拆分、热 Key 本地缓存（Caffeine）挡一层；</li>
+<li>三大问题防护（穿透/击穿/雪崩）与一致性方案——实践篇 Redis 篇的完整地图。</li>
+</ul>
+<h3>4.3 应用层</h3>
+<ul>
+<li><strong>线程模型</strong>：Tomcat 线程打满的表现是&quot;请求排队 RT 上涨但 CPU 不高&quot;——上游慢操作（同步调第三方、大文件）占着线程不放。解法：超时收紧 + 异步化 + 熔断降级；</li>
+<li><strong>同步转异步</strong>：非主流程操作（短信/积分/日志）走 MQ（实践篇 Async/MQ 的地图）；</li>
+<li><strong>批量化</strong>：N+1 查询（循环里查库）合并为一次 IN 查询或 JOIN；循环调下游接口改为批量接口；</li>
+<li><strong>池化复用</strong>：对象复用、连接复用；避免大对象频繁创建（序列化结果缓存）；</li>
+<li><strong>JVM 层</strong>：Young GC 频繁（Eden 偏小或流量激增）、Full GC 卡顿（内存泄漏/大对象/元空间）——进阶篇 JVM 调优的完整工具箱（jstat/jmap/Arthas/MAT）。</li>
+</ul>
+<h3>4.4 接入层与架构层</h3>
+<ul>
+<li>静态资源 CDN、Gzip/Brotli 压缩、HTTP keep-alive 连接复用；</li>
+<li>读多写少加缓存、写多读少削峰（MQ）、超大表分库分表（垂直拆业务/水平拆数据）；</li>
+<li><strong>升级硬件永远是最后一张牌</strong>——它是&quot;用钱买时间&quot;，问题没找到，加机器只是推迟爆炸时间。</li>
+</ul>
+<blockquote class="tip-expert">
+<p>💡 <strong>老鸟忠告</strong>：两个优化界的经典误区。<strong>误区一&quot;过度优化&quot;</strong>：给 QPS 只有 10 的内部系统做毫秒级极致优化，优化的是寂寞（维护成本远大于收益）。<strong>误区二&quot;错把量级当问题&quot;</strong>：接口慢就怀疑 Java 慢、想换语言——99% 的情况是你的代码和 SQL 慢，不是语言慢。</p>
+</blockquote>
+<hr>
+<h2>五、全链路追踪：慢在哪一环，一眼看穿</h2>
+<p>单机时代看日志排障，微服务时代必须有<strong>分布式链路追踪（Distributed Tracing）</strong>。核心概念：</p>
+<ul>
+<li><strong>Trace</strong>：一次完整请求的全链路（贯穿所有服务）；</li>
+<li><strong>Span</strong>：链路中的一段工作（一次 RPC、一次 SQL），带开始/结束时间；</li>
+<li>Span 之间父子关系构成瀑布图：<strong>每个服务的每段耗时一目了然</strong>。</li>
+</ul>
+<pre><code class="language-xml">&lt;!-- SkyWalking Java Agent 接入：不改一行代码，加个启动参数 --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.apache.skywalking&lt;/groupId&gt;
+    &lt;artifactId&gt;apm-toolkit-trace&lt;/artifactId&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;
+</code></pre>
+<pre><code class="language-bash">java -javaagent:/path/skywalking-agent.jar \
+     -Dskywalking.agent.service_name=library-app \
+     -Dskywalking.collector.backend_service=oap:11800 \
+     -jar app.jar
+</code></pre>
+<p>实践篇手写的 TraceId+MDC 是链路追踪的&quot;民间版&quot;，SkyWalking 是&quot;正规军&quot;：自动埋点（HTTP/MySQL/Redis/MQ 全覆盖）、拓扑图、慢接口下钻。OpenTelemetry 是厂商中立的标准（想换后端不用改代码），新项目建议直接 OTel。</p>
+<hr>
+<h2>六、案例复盘：下单接口从 2s 到 200ms</h2>
+<p>完整走一遍黄金闭环，感受方法论的威力（真实项目简化版，指标为压测环境数据）：</p>
+<p><strong>背景</strong>：下单接口 P99 = 2s，目标 &lt; 500ms。基线：压测 QPS 50，平均 RT 1.2s。</p>
+<p><strong>第一轮定位（测量→定层）</strong>：链路追踪瀑布图显示：创建订单 60ms + <strong>查询用户优惠券 900ms</strong> + <strong>查询商品信息 600ms</strong> + 计算价格 100ms + 落库 140ms。——凶手两个下游查询。</p>
+<p><strong>第一轮优化（缓存）</strong>：商品信息读多写少 → 加 Redis 缓存（TTL 10 分钟 + 随机），优惠券查询改走本地库冗余表（活动开始前同步）。<strong>P99 降到 700ms。</strong></p>
+<p><strong>第二轮定位</strong>：剩下的 700ms 里，链路显示&quot;计算价格&quot;段 300ms。Arthas <code>trace</code> 下钻：价格计算里有 8 次串行的促销规则查询（N+1）。</p>
+<p><strong>第二轮优化（批量化 + 并行）</strong>：促销规则一次性 IN 查询加载；两段无依赖的校验用 CompletableFuture 并行。<strong>P99 降到 400ms。</strong></p>
+<p><strong>第三轮定位</strong>：GC 日志显示 Young GC 每 2 秒一次、单次 40ms，偶发 Full GC 200ms。jmap 发现大量订单临时对象晋升老年代（Survivor 太小）。</p>
+<p><strong>第三轮优化（JVM）</strong>：<code>-Xmn</code> 调大新生代 + 对象预分配复用。<strong>P99 稳定在 380ms，Full GC 消失。</strong></p>
+<p><strong>第四轮（兜底架构）</strong>：短信通知从同步调用改 MQ 异步（这步其实影响的是&quot;下单成功&quot;的返回速度感知）+ 对下游加 500ms 超时与降级开关。<strong>最终 P99 = 260ms，达标收工。</strong></p>
+<p>复盘要点：<strong>四轮优化用了四种武器（缓存、批量化并行、JVM、异步化），每一轮都先测量再动手，每轮结束都对比基线</strong>。没有任何一轮是&quot;拍脑袋换框架&quot;。</p>
+<blockquote class="tip-warn">
+<p>⚠️ <strong>踩坑实录</strong>：第一轮优化后曾出现&quot;缓存与库存不同步&quot;的短暂超卖——教训：<strong>性能优化的每一步都要重新过一遍正确性</strong>（并发、一致性），别把系统优化快了，但优化错了。</p>
+</blockquote>
+<hr>
+<h2>七、性能优化 CheckList（打印贴墙版）</h2>
+<ul>
+<li><input disabled="" type="checkbox"> 有 P95/P99 指标与告警吗？（没有指标先补指标，别谈优化）</li>
+<li><input disabled="" type="checkbox"> 有基线数据吗？（优化前压测留档）</li>
+<li><input disabled="" type="checkbox"> 链路追踪能看到每段耗时吗？（定层神器）</li>
+<li><input disabled="" type="checkbox"> 慢 SQL 日志开启并定期治理吗？</li>
+<li><input disabled="" type="checkbox"> 高频读路径有缓存吗？命中率多少？</li>
+<li><input disabled="" type="checkbox"> 有 N+1 查询、循环远程调用吗？（链路图上密集小格是信号）</li>
+<li><input disabled="" type="checkbox"> 下游调用都有超时 + 降级吗？（防雪崩的保命锁）</li>
+<li><input disabled="" type="checkbox"> 线程池/连接池有监控、参数有依据吗？</li>
+<li><input disabled="" type="checkbox"> GC 频率与停顿正常吗？（Young GC 频繁/Full GC 出现都要查）</li>
+<li><input disabled="" type="checkbox"> 一次只改一个变量，改完对比基线验证了吗？</li>
+</ul>
+<hr>
+<h2>本篇小结</h2>
+<ul>
+<li>性能优化三前提：定义慢（看 P99 不是平均值）、有基线、测量驱动的黄金闭环（测量→定位→优化→验证）；</li>
+<li>排查按层推进：网关→应用→缓存/DB/中间件→系统，链路追踪定层，Arthas/explain 入层；</li>
+<li>压测三板斧：基准、阶梯（找拐点）、稳定性（抓慢性病），数据量要贴近生产；</li>
+<li>80% 的问题在数据库（慢 SQL 四板斧）；应用层三招：异步化、批量化、池化；加机器是最后一张牌；</li>
+<li>全链路追踪：Trace/Span 瀑布图一眼定位慢环节，SkyWalking 无侵入接入，新项目上 OpenTelemetry；</li>
+<li>案例复盘心法：每一轮先测量再动手、只改一个变量、每轮验证、最后回归正确性。</li>
+</ul>
+<h2>课后思考 &amp; 动手练习</h2>
+<ol>
+<li>（概念）为什么性能指标看 P99 而不是平均 RT？用&quot;100 个请求里 99 个 10ms、1 个 2s&quot;算给平均值的迷惑性。</li>
+<li>（概念）&quot;Tomcat 线程打满但 CPU 不高&quot;和&quot;CPU 100%&quot;分别指向什么类型的问题？</li>
+<li>（动手）给图书系统的列表接口做一次完整压测：阶梯加并发（10/50/100），记录 QPS 与 P99 拐点，画出吞吐曲线，判断瓶颈大概率在哪一层；</li>
+<li>（动手）给详情接口加 Redis 缓存前后各压一轮，对比 P99 与数据库 QPS；再用链路视角（Arthas trace）看一次未命中时的完整调用栈；</li>
+<li>（动手·进阶）完整复刻本文案例的思路：给自己的&quot;借书&quot;接口做四轮优化（查询批量化 → 缓存 → 并行化 → 异步通知），每轮记录基线与结果，写一份 500 字的优化复盘报告——这份报告比优化本身更有价值，它是你简历上&quot;性能优化&quot;四个字的底气。</li>
+</ol>
+<blockquote>
+<p>下一篇预告（也是全系列最后一篇）：《从码农到专家：Java 工程师成长指南》——技术讲完了，聊聊人：四阶段成长地图、源码阅读方法论、面试心法、35 岁焦虑的解药。最后一杯咖啡，咱们慢慢喝。</p>
+</blockquote>
+
+  </article>
+<div class="pnbar"><a class="pn" href="/05-architecture/02-distributed.html"><span>← 上一篇</span><b>分布式疑难杂症门诊</b></a><a class="pn" href="/05-architecture/04-growth-guide.html"><span>下一篇 →</span><b>从码农到专家：Java 工程师成长指南</b></a></div>
+  <footer class="site">由 Markdown 静态构建生成 · 源文件见 java-blog-series/ · 图表支持 mermaid</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  if (window.mermaid) mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  if (window.hljs) hljs.highlightAll();
+  var box = document.getElementById('search');
+  box.addEventListener('input', function () {
+    var q = box.value.trim().toLowerCase();
+    document.querySelectorAll('#nav a.item, #nav .sec').forEach(function (el) {
+      el.style.display = (!q || (el.textContent || '').toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

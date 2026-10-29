@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 440" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#DC2626"/>
+    </marker>
+  </defs>
+  <rect width="860" height="440" fill="#F8FAFC"/>
+  <text x="430" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#1E293B">Cache Aside 读写时序：为什么是"更新库后删缓存"</text>
+
+  <!-- read flow -->
+  <rect x="46" y="66" width="380" height="300" rx="14" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+  <text x="236" y="94" text-anchor="middle" font-size="15" font-weight="700" fill="#1D4ED8">读流程：未命中才回填</text>
+  <g font-size="12" text-anchor="middle">
+    <rect x="96" y="112" width="280" height="36" rx="8" fill="#FFFFFF" stroke="#93C5FD"/>
+    <text x="236" y="135" fill="#1E3A8A">① 读缓存 GET book:1</text>
+    <line x1="236" y1="148" x2="236" y2="166" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="86" y="170" width="120" height="44" rx="8" fill="#D1FAE5" stroke="#6EE7B7"/>
+    <text x="146" y="190" fill="#047857">命中 → 直接返回</text>
+    <text x="146" y="206" fill="#047852" font-size="10">（90% 的请求到这就结束了）</text>
+    <rect x="266" y="170" width="120" height="44" rx="8" fill="#FEF3C7" stroke="#FCD34D"/>
+    <text x="326" y="190" fill="#B45309">未命中 →</text>
+    <text x="326" y="206" fill="#92400E" font-size="10">② 查数据库</text>
+    <line x1="326" y1="214" x2="326" y2="232" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="96" y="236" width="280" height="40" rx="8" fill="#FFFFFF" stroke="#93C5FD"/>
+    <text x="236" y="261" fill="#1E3A8A">③ 回填缓存（TTL 30~40 分钟随机）</text>
+    <text x="236" y="306" font-size="11" fill="#475569">TTL 随机化 = 防雪崩；查不到缓存短 TTL</text>
+    <text x="236" y="326" font-size="11" fill="#475569">空值 = 防穿透（下篇的三兄弟伏笔）</text>
+  </g>
+
+  <!-- write flow -->
+  <rect x="460" y="66" width="360" height="300" rx="14" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+  <text x="640" y="94" text-anchor="middle" font-size="15" font-weight="700" fill="#047857">写流程：先更新库，再删缓存</text>
+  <g font-size="12" text-anchor="middle">
+    <rect x="490" y="112" width="300" height="40" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="640" y="137" fill="#065F46">① UPDATE 数据库（提交）</text>
+    <line x1="640" y1="152" x2="640" y2="170" stroke="#475569" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="490" y="174" width="300" height="40" rx="8" fill="#FFFFFF" stroke="#6EE7B7"/>
+    <text x="640" y="199" fill="#065F46">② DEL book:1（下次读自动回填新值）</text>
+    <rect x="490" y="232" width="300" height="52" rx="8" fill="#FEF2F2" stroke="#FCA5A5"/>
+    <text x="640" y="254" fill="#B91C1C" font-weight="700">为什么删而不是更新缓存？</text>
+    <text x="640" y="274" fill="#991B1B" font-size="11">并发写乱序 + 聚合缓存重算浪费</text>
+    <rect x="490" y="296" width="300" height="52" rx="8" fill="#FFF7ED" stroke="#FDBA74"/>
+    <text x="640" y="318" fill="#9A3412" font-weight="700">为什么不是"先删缓存再更库"？</text>
+    <text x="640" y="338" fill="#9A3412" font-size="11">删除后、更新前，读请求会把旧库值回填 → 永久旧</text>
+  </g>
+
+  <!-- bottom: ttl safety net -->
+  <rect x="46" y="384" width="774" height="48" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="62" y="403" font-size="12" fill="#475569">兜底保命：删缓存可能失败（Redis 抖动），但缓存必设 TTL——不一致最多活一个 TTL 周期。</text>
+  <text x="62" y="423" font-size="12" fill="#64748B">更高要求：更新库 → 订阅 binlog 异步删缓存（Canal，与业务解耦、可重试）。</text>
+</svg>
